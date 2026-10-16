@@ -45,6 +45,7 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            transition: transform 0.3s ease;
         }
         
         .editor-header {
@@ -196,12 +197,38 @@
             padding: 8px 20px;
             font-weight: 700;
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
         }
         
         .preview-content {
             padding: 30px;
             display: flex;
             justify-content: center;
+        }
+
+        /* --- TAMBAHAN UNTUK TOGGLE SIDEBAR --- */
+        .hidden-sidebar {
+            display: none !important;
+        }
+        .toggle-sidebar-btn {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 11px;
+            margin-right: 15px;
+            transition: background 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .toggle-sidebar-btn:hover { 
+            background-color: #e2e8f0; 
+            color: #1e293b; 
         }
 
         /* --- DASHBOARD DESIGN --- */
@@ -704,13 +731,19 @@
             
             <button onclick="clearAllData()" style="width: 100%; padding: 12px; background: #b71c1c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px;">Kosongkan Semua Data</button>
             <button onclick="window.print()" style="width: 100%; padding: 12px; background: var(--navy-blue); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px;">Cetak Laporan / PDF</button>
-            <button onclick="downloadAsImage(this)" style="width: 100%; padding: 12px; background: var(--emerald-green); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px; margin-bottom: 30px;">Unduh Gambar (.PNG)</button>
+            <button onclick="downloadAsImage(this)" style="width: 100%; padding: 12px; background: var(--emerald-green); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px;">Unduh Gambar (.PNG)</button>
+            <button onclick="saveHTML(this)" style="width: 100%; padding: 12px; background: #0288d1; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px; margin-bottom: 30px;">Simpan Halaman (.HTML)</button>
         </div>
     </div>
 
     <!-- PREVIEW AREA -->
     <div class="preview-area">
-        <div class="preview-topbar">LIVE PREVIEW - Tampilan Responsif (Mendatar / Tegak)</div>
+        <div class="preview-topbar">
+            <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+                ☰ TAMPILKAN/SEMBUNYIKAN PANEL
+            </button>
+            LIVE PREVIEW - Tampilan Responsif (Mendatar / Tegak)
+        </div>
         
         <div class="preview-content">
             <div class="dashboard" id="printable-dashboard">
@@ -1976,6 +2009,82 @@
             }).catch(err => {
                 console.error("Gagal membuat gambar:", err);
                 alert("Terjadi kesalahan saat memproses gambar.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            });
+        }
+
+        // --- FUNGSI HIDE/UNHIDE SIDEBAR ---
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.editor-sidebar');
+            sidebar.classList.toggle('hidden-sidebar');
+            
+            // Trigger event resize agar Google Charts menyesuaikan lebar layar baru
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 100);
+        }
+
+        // --- FUNGSI SIMPAN HTML (FORMAT GAMBAR BASE64) ---
+        function saveHTML(btn) {
+            const originalText = btn.innerText;
+            btn.innerText = "Memproses HTML (Gambar)...";
+            btn.disabled = true;
+            btn.style.opacity = "0.7";
+
+            // Target area yang akan dijadikan gambar
+            const captureArea = document.getElementById('printable-dashboard');
+            const currentBgColor = getComputedStyle(document.documentElement).getPropertyValue('--print-bg').trim() || '#ffffff';
+            
+            // Render dashboard menjadi canvas gambar
+            html2canvas(captureArea, {
+                scale: 2, // Resolusi tinggi (HD)
+                useCORS: true, 
+                backgroundColor: currentBgColor
+            }).then(canvas => {
+                // Konversi canvas menjadi Base64 image URL
+                const base64Img = canvas.toDataURL('image/png');
+                
+                // Penamaan file otomatis
+                const plantName = document.getElementById('in-plant') ? document.getElementById('in-plant').value : 'PLANT';
+                const weekName = document.getElementById('in-week') ? document.getElementById('in-week').value : 'WEEK';
+                const safeFileName = `PERF_ASSY_${plantName}_${weekName}.html`.replace(/[^a-z0-9_.]/gi, '_').toUpperCase();
+
+                // Susun template HTML gambar persis seperti permintaan Anda
+                const htmlContent = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${safeFileName.replace('.html', '')}</title>
+<style>
+html,body { margin:0; width:100%; min-height:100%; background:#111; }
+body { display:flex; justify-content:center; align-items:center; min-height:100vh; overflow:auto; }
+img { display:block; max-width:100%; height:auto; }
+</style>
+</head>
+<body>
+<img src="${base64Img}">
+</body>
+</html>`;
+
+                // Eksekusi pengunduhan Blob HTML
+                const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = safeFileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Kembalikan status tombol
+                btn.innerText = originalText;
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            }).catch(err => {
+                console.error("Gagal membuat HTML:", err);
+                alert("Terjadi kesalahan saat memproses gambar ke HTML.");
                 btn.innerText = originalText;
                 btn.disabled = false;
                 btn.style.opacity = "1";
