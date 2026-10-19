@@ -1,1000 +1,3153 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Laporan Reject Assembling 2026</title>
-    <!-- Favicon Standar & Favicon Khusus HP -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laporan REJECT ASSY - ver.4</title>
+  <!-- Favicon Standar & Favicon Khusus HP -->
     <link rel="icon" type="image/png" href="97799.png">
     <link rel="apple-touch-icon" href="97799.png">
+    
+  <!-- Google Fonts: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Google Charts & html2canvas -->
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (XLSX) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- html2canvas untuk Ekspor Gambar -->
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
-        .dropzone { border: 2px dashed #475569; transition: all 0.3s ease; }
-        .dropzone.dragover { border-color: #10b981; background-color: rgba(16, 185, 129, 0.1); }
-        
-        /* Table Grid Borders */
-        table.bordered-table th, table.bordered-table td {
-            border: 1px solid #334155;
-            padding: 8px 12px;
-        }
+  <style id="coreReportStyles">
+    :root {
+      --navy: #1a237e;
+      --navy-light: #283593;
+      --emerald: #2e7d32;
+      --emerald-light: #43a047;
+      --purple-dark: #6a1b9a;
+      --teal: #00695c;
+      --blue-grey: #37474f;
+      --bg-dark: #0f172a;
+      --sidebar-width: 480px;
+      --table-font-size: 8px;
+      --table-cell-padding: 3px;
+      --paper-bg-color: #ffffff;
+    }
 
-        /* Area Capture CSS */
-        .capture-container {
-            width: 100%;
-            margin: 0 auto;
-            transition: all 0.3s ease;
-        }
+    @page {
+      margin: 0mm !important;
+    }
 
-        /* Modifikasi proporsi ketika fungsi gambar dieksekusi */
-        .rendering-mode {
-            width: 750px !important;
-            max-width: 750px !important;
-            padding: 24px !important;
-            background-color: #0f172a !important;
-            border-radius: 12px;
-            overflow: hidden;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
 
-        /* Fix Layout KPI Grid khusus saat html2canvas Rendering */
-        .rendering-mode #kpi-grid-container {
-            display: grid !important;
-            grid-template-cols: repeat(3, minmax(0, 1fr)) !important; /* Di-render 3 kolom agar lega */
-            gap: 12px !important;
-        }
+    body {
+      background-color: #1e293b;
+      color: #1e293b;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-        .rendering-mode .kpi-card-inner {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: flex-start !important;
-            justify-content: space-between !important;
-            padding: 12px !important;
-            min-height: 90px !important;
-            box-sizing: border-box !important;
-        }
+    /* ================= SIDEBAR EDITOR (KIRI - 480px) ================= */
+    #sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      max-width: var(--sidebar-width);
+      height: 100vh;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      border-right: 2px solid #334155;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+      position: relative;
+    }
 
-        .rendering-mode .kpi-card-inner .kpi-icon {
-            position: relative !important;
-            top: 0 !important;
-            right: 0 !important;
-            flex-shrink: 0 !important;
-        }
+    #sidebar.collapsed {
+      margin-left: calc(var(--sidebar-width) * -1);
+    }
 
-        /* Print Optimization */
-        @media print {
-            .no-print { display: none !important; }
-            body { 
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background-color: #0f172a !important;
-                color: #f8fafc !important;
-            }
-            .print-container { 
-                margin: 0 !important; 
-                padding: 8px !important; 
-                max-width: 100% !important; 
-                width: 100% !important;
-                overflow: visible !important;
-            }
-            .theme-card { 
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                box-shadow: none !important;
-                margin-bottom: 16px !important;
-                break-inside: avoid !important;
-                page-break-inside: avoid !important;
-                overflow: visible !important;
-            }
-            canvas {
-                max-width: 100% !important;
-                height: auto !important;
-                break-inside: avoid !important;
-                page-break-inside: avoid !important;
-            }
-        }
-    </style>
+    #toggleSidebarBtn {
+      position: fixed;
+      top: 10px;
+      left: calc(var(--sidebar-width) + 10px);
+      z-index: 200;
+      background: var(--navy);
+      color: #fff;
+      border: 2px solid #fff;
+      padding: 7px 12px;
+      border-radius: 5px;
+      font-weight: 700;
+      font-size: 10.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+      transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #toggleSidebarBtn:hover {
+      background: var(--emerald);
+    }
+
+    body.sidebar-hidden #toggleSidebarBtn {
+      left: 10px;
+    }
+
+    .sidebar-header {
+      padding: 14px 16px;
+      background: linear-gradient(135deg, var(--navy) 0%, #0d1346 100%);
+      border-bottom: 2px solid var(--emerald);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-header-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #4ade80;
+    }
+
+    .sidebar-header h1 {
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .sidebar-header p {
+      font-size: 10px;
+      color: #cbd5e1;
+      margin-top: 2px;
+    }
+
+    /* Action Toolbar */
+    .action-bar {
+      padding: 9px 12px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .btn {
+      border: none;
+      padding: 7px 9px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: opacity 0.2s, transform 0.1s;
+      text-align: center;
+    }
+
+    .btn:active { transform: scale(0.98); }
+    .btn:hover { opacity: 0.92; }
+
+    .btn-navy { background: var(--navy); }
+    .btn-emerald { background: var(--emerald); }
+    .btn-purple { background: var(--purple-dark); }
+    .btn-teal { background: var(--teal); }
+    .btn-bluegrey { background: var(--blue-grey); }
+    .btn-danger { background: #b91c1c; }
+    .btn-amber { background: #d97706; }
+
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .sidebar-body::-webkit-scrollbar { width: 6px; }
+    .sidebar-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+
+    /* Accordion System */
+    .accordion-item {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .accordion-header {
+      width: 100%;
+      padding: 10px 12px;
+      background: #263349;
+      color: #f8fafc;
+      border: none;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid var(--emerald);
+      transition: background 0.2s;
+    }
+
+    .accordion-header:hover { background: #334155; }
+    .accordion-header.active {
+      background: var(--navy);
+      border-left-color: #4ade80;
+    }
+
+    .acc-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .accordion-content {
+      display: none;
+      padding: 10px;
+      background: #0f172a;
+      border-top: 1px solid #334155;
+    }
+
+    .accordion-content.open { display: block; }
+
+    .sec-control-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .sec-control-bar .btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 10px;
+    }
+
+    /* Week Toggle Bar (W1 - W5 Hide/Unhide) */
+    .week-toggle-bar {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: 6px 8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .week-toggle-bar span.wt-title {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+    }
+
+    .week-toggle-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .week-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 9.5px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .week-chip input {
+      cursor: pointer;
+      accent-color: var(--emerald-light);
+    }
+
+    /* Form Controls */
+    .form-group { margin-bottom: 8px; }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 6px 8px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 4px;
+      color: #f8fafc;
+      font-size: 11px;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      margin-top: 4px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #e2e8f0;
+      cursor: pointer;
+      background: #1e293b;
+      padding: 5px 7px;
+      border-radius: 4px;
+      border: 1px solid #334155;
+    }
+
+    /* Smart Excel Paste Box */
+    .excel-paste-box {
+      background: #172554;
+      border: 1px dashed #60a5fa;
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .excel-paste-box textarea {
+      width: 100%;
+      height: 52px;
+      background: #0f172a;
+      color: #38bdf8;
+      border: 1px solid #3b82f6;
+      border-radius: 4px;
+      padding: 5px;
+      font-size: 9.5px;
+      font-family: monospace;
+      resize: vertical;
+      margin-top: 4px;
+    }
+
+    .helper-text {
+      font-size: 9px;
+      color: #93c5fd;
+      line-height: 1.3;
+    }
+
+    /* Editor Mini Table inside Sidebar */
+    .editor-table-wrap {
+      overflow-x: auto;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      max-height: 250px;
+    }
+
+    .editor-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5px;
+    }
+
+    .editor-table th {
+      background: #1e293b;
+      color: #cbd5e1;
+      padding: 4px 3px;
+      border: 1px solid #334155;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      white-space: nowrap;
+    }
+
+    .editor-table td {
+      border: 1px solid #334155;
+      padding: 2px;
+      background: #0f172a;
+    }
+
+    .editor-table td.prod-label {
+      padding: 4px 5px;
+      font-weight: 700;
+      color: #38bdf8;
+      white-space: nowrap;
+      background: #162032;
+    }
+
+    .editor-table input {
+      width: 58px;
+      background: transparent;
+      border: none;
+      color: #f8fafc;
+      font-size: 9.5px;
+      padding: 2px 3px;
+      text-align: right;
+    }
+
+    .editor-table input.text-input {
+      width: 78px;
+      text-align: left;
+      color: #fde047;
+    }
+
+    .editor-table input:focus {
+      background: #1e293b;
+      outline: 1px solid #38bdf8;
+    }
+
+    /* ================= POP-UP MODAL EDITOR (KLIK LUAR / ESC) ================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.82);
+      backdrop-filter: blur(3px);
+      z-index: 500;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      cursor: pointer;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-window {
+      width: 95vw;
+      max-width: 1440px;
+      max-height: 92vh;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 2px solid #38bdf8;
+      border-radius: 8px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.75);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    .modal-header {
+      padding: 12px 18px;
+      background: linear-gradient(135deg, var(--navy) 0%, #0f172a 100%);
+      border-bottom: 2px solid var(--emerald);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-body .editor-table-wrap {
+      max-height: 55vh;
+    }
+
+    .modal-body .editor-table th {
+      font-size: 11px;
+      padding: 7px 6px;
+    }
+
+    .modal-body .editor-table td.prod-label {
+      font-size: 11px;
+      padding: 6px 10px;
+    }
+
+    .modal-body .editor-table input {
+      width: 100%;
+      min-width: 72px;
+      font-size: 11.5px;
+      padding: 6px 5px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 3px;
+    }
+
+    .modal-body .editor-table input.text-input {
+      min-width: 110px;
+    }
+
+    .modal-footer {
+      padding: 10px 18px;
+      background: #1e293b;
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kbd-badge {
+      background: #334155;
+      color: #fde047;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid #64748b;
+    }
+
+    /* ================= LIVE PREVIEW AREA (KANAN - MARGIN NONE) ================= */
+    #previewContainer {
+      flex: 1;
+      height: 100vh;
+      overflow: auto;
+      padding: 12px;
+      background: #334155;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    #reportPaper {
+      background-color: var(--paper-bg-color);
+      color: #0f172a;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    #reportPaper.a4-landscape {
+      width: 297mm;
+      min-height: 210mm;
+    }
+
+    #reportPaper.a4-portrait {
+      width: 210mm;
+      min-height: 297mm;
+    }
+
+    #paperBgOverlay {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.12;
+    }
+
+    #reportContent {
+      position: relative;
+      z-index: 1;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100%;
+    }
+
+    /* Report Header Banner Flush */
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, var(--navy) 0%, #0d1b3e 65%, var(--emerald) 100%);
+      color: #ffffff;
+      padding: 8px 14px;
+      margin: 0;
+      border-bottom: 3px solid #4ade80;
+    }
+
+    .report-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .report-header-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fde047;
+    }
+
+    .report-title-block h1 {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .report-title-block h2 {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #86efac;
+      margin-top: 1px;
+      text-transform: uppercase;
+    }
+
+    .report-meta-block {
+      text-align: right;
+      background: rgba(255, 255, 255, 0.12);
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .report-meta-block .week-badge {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #fde047;
+      text-transform: uppercase;
+    }
+
+    .report-meta-block .period-text {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    /* Executive KPI Summary Strip with Icons */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 6px;
+      background: #e2e8f0;
+    }
+
+    .kpi-card {
+      padding: 7px 10px;
+      border-radius: 5px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+    }
+
+    .kpi-icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .kpi-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .kpi-navy { background: linear-gradient(135deg, var(--navy) 0%, #283593 100%); border-left: 4px solid #38bdf8; }
+    .kpi-emerald { background: linear-gradient(135deg, var(--emerald) 0%, #1b5e20 100%); border-left: 4px solid #fde047; }
+    .kpi-purple { background: linear-gradient(135deg, var(--purple-dark) 0%, #4a148c 100%); border-left: 4px solid #f472b6; }
+    .kpi-teal { background: linear-gradient(135deg, var(--teal) 0%, #004d40 100%); border-left: 4px solid #2dd4bf; }
+
+    .kpi-card .kpi-title {
+      font-size: 7.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      opacity: 0.92;
+      letter-spacing: 0.3px;
+    }
+
+    .kpi-card .kpi-val {
+      font-size: 13px;
+      font-weight: 800;
+      margin-top: 1px;
+      white-space: nowrap;
+    }
+
+    .kpi-card .kpi-sub {
+      font-size: 7px;
+      opacity: 0.85;
+      margin-top: 1px;
+    }
+
+    /* Section Styling with Icon Banner (Tanpa Label Kanan Vertikal W1-W5) */
+    .report-section {
+      margin: 0 0 6px 0;
+      background: rgba(255, 255, 255, 0.98);
+      border-bottom: 2px solid #cbd5e1;
+      padding: 0;
+      width: 100%;
+      page-break-inside: avoid;
+    }
+
+    .section-banner {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 5px 10px;
+      color: #ffffff;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.35px;
+      text-transform: uppercase;
+    }
+
+    .section-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .section-banner-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .banner-navy { background: linear-gradient(90deg, var(--navy) 0%, #283593 100%); }
+    .banner-emerald { background: linear-gradient(90deg, var(--emerald) 0%, #388e3c 100%); }
+    .banner-purple { background: linear-gradient(90deg, var(--purple-dark) 0%, #7b1fa2 100%); }
+    .banner-teal { background: linear-gradient(90deg, var(--teal) 0%, #00796b 100%); }
+    .banner-bluegrey { background: linear-gradient(90deg, var(--blue-grey) 0%, #455a64 100%); }
+
+    /* Report Matrix Table - VERTICAL STACKED PER WEEK */
+    .table-responsive {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      font-size: var(--table-font-size);
+    }
+
+    .data-table th,
+    .data-table td {
+      border: 1px solid #94a3b8;
+      padding: var(--table-cell-padding) 3px;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-wrap: break-word;
+      line-height: 1.18;
+    }
+
+    .data-table thead th {
+      background: var(--navy);
+      color: #ffffff;
+      font-weight: 800;
+      text-align: center;
+      vertical-align: middle;
+      padding: calc(var(--table-cell-padding) + 1.5px) 3px;
+    }
+
+    .data-table thead th.total-week-head {
+      background: var(--emerald);
+    }
+
+    .data-table thead th.purple-head {
+      background: var(--purple-dark);
+    }
+
+    .data-table tbody td.week-group-cell {
+      background: #1e293b;
+      color: #ffffff;
+      font-weight: 800;
+      text-align: center;
+      vertical-align: middle;
+      letter-spacing: 0.4px;
+      border-right: 2px solid var(--navy);
+    }
+
+    .data-table tbody td.total-week-group-cell {
+      background: var(--emerald);
+      color: #ffffff;
+      font-weight: 800;
+      text-align: center;
+      vertical-align: middle;
+      letter-spacing: 0.4px;
+      border-right: 2px solid #1b5e20;
+    }
+
+    .data-table tbody td.metric-label-cell {
+      text-align: left;
+      font-weight: 700;
+      color: #1e293b;
+      background: #f1f5f9;
+      padding-left: 5px;
+      white-space: nowrap;
+    }
+
+    .data-table tbody tr.row-metric-order td {
+      background: #ffffff;
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .data-table tbody tr.row-metric-reject td {
+      background: #f8fafc;
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    .data-table tbody tr.row-metric-prodname td {
+      background: #fefce8;
+      color: var(--navy);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .data-table tbody tr.row-metric-pct td {
+      background: #f3e8ff;
+      color: var(--purple-dark);
+      font-weight: 800;
+      border-bottom: 2px solid #64748b;
+    }
+
+    .data-table tbody tr.row-total-order td {
+      background: #ecfdf5;
+      color: #065f46;
+      font-weight: 800;
+    }
+
+    .data-table tbody tr.row-total-reject td {
+      background: #d1fae5;
+      color: #991b1b;
+      font-weight: 800;
+    }
+
+    .data-table tbody tr.row-total-prodname td {
+      background: #fef08a;
+      color: var(--navy);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .data-table tbody tr.row-total-pct td {
+      background: var(--navy);
+      color: #fde047;
+      font-weight: 800;
+      border-bottom: 2px solid #0f172a;
+    }
+
+    .data-table tbody tr.row-total-pct td.metric-label-cell {
+      background: #0f172a;
+      color: #fde047;
+    }
+
+    .data-table tbody td.col-type {
+      text-align: left;
+      font-weight: 800;
+      color: var(--navy);
+      background: #e2e8f0;
+      white-space: nowrap;
+      padding-left: 4px;
+    }
+
+    .data-table tbody td.col-pct {
+      font-weight: 700;
+      color: var(--purple-dark);
+      background: rgba(106, 27, 154, 0.06);
+    }
+
+    .data-table tbody td.col-total {
+      font-weight: 800;
+      background: rgba(46, 125, 50, 0.1);
+      color: #0f172a;
+    }
+
+    .data-table tfoot th,
+    .data-table tfoot td {
+      background: #1e293b;
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    .data-table tfoot td.tfoot-pct {
+      color: #fde047;
+    }
+
+    /* Chart Container */
+    .chart-box {
+      width: 100%;
+      height: 165px;
+      border-top: 1px solid #cbd5e1;
+      background: #ffffff;
+    }
+
+    /* Stacked Vertical Flow for Section E */
+    .vertical-stack {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .vertical-stack .chart-box {
+      height: 170px;
+      width: 100%;
+    }
+
+    /* Section F (Bulanan) Layout */
+    .monthly-grid {
+      display: grid;
+      grid-template-columns: 38% 62%;
+      width: 100%;
+      align-items: stretch;
+    }
+
+    .monthly-grid .chart-box {
+      height: 100%;
+      min-height: 210px;
+      border-top: none;
+      border-left: 1px solid #cbd5e1;
+    }
+
+    /* Status Toast */
+    #toast {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: var(--emerald);
+      color: #fff;
+      padding: 9px 15px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      z-index: 9999;
+    }
+
+    #toast.show { opacity: 1; }
+
+    /* Print Media Query - Margin None */
+    @media print {
+      html, body {
+        background: #ffffff !important;
+        overflow: visible !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      #sidebar,
+      #toggleSidebarBtn,
+      #editorModal,
+      #toast {
+        display: none !important;
+      }
+      #previewContainer {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+        height: auto !important;
+        display: block !important;
+      }
+      #reportPaper {
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+    }
+  </style>
 </head>
-<body id="main-body" class="bg-slate-900 text-slate-100 min-h-screen flex flex-col md:flex-row" data-theme="slate">
+<body>
 
-    <!-- Left Sidebar (Control Panel) -->
-    <aside id="sidebar-panel" class="no-print w-full md:w-72 bg-slate-800 border-r border-slate-700 p-4 flex flex-col justify-between shrink-0 min-h-screen sticky top-0 transition-colors duration-300">
-        <div class="space-y-4">
-            <div class="flex items-center space-x-3">
-                <div class="bg-emerald-500/10 p-2 rounded-xl text-emerald-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                </div>
-                <div>
-                    <h2 class="text-sm font-bold text-emerald-400 tracking-wide">CONTROL PANEL</h2>
-                    <p class="text-[10px] text-slate-400">Assembling Dept 2026</p>
-                </div>
-            </div>
+  <!-- Floating Toggle Sidebar Button -->
+  <button id="toggleSidebarBtn" onclick="toggleSidebar()" title="Sembunyikan/Tampilkan Panel Editor">
+    <span>&#9776;</span> <span id="toggleSidebarText">Sembunyikan Editor</span>
+  </button>
 
-            <!-- Theme Background Selector -->
-            <div class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-1">
-                    <span>Pilih Warna Tema Latar</span>
-                </label>
-                <div class="grid grid-cols-3 gap-1.5">
-                    <button onclick="setTheme('slate')" id="btn-theme-slate" class="px-2 py-1.5 text-[11px] font-medium rounded-lg border-2 border-emerald-500 bg-slate-900 text-white transition shadow">Dark Slate</button>
-                    <button onclick="setTheme('navy')" id="btn-theme-navy" class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-slate-600 bg-blue-950 text-white transition shadow">Deep Navy</button>
-                    <button onclick="setTheme('charcoal')" id="btn-theme-charcoal" class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-slate-600 bg-zinc-950 text-white transition shadow">Charcoal</button>
-                </div>
-            </div>
+  <!-- ================= POP-UP MODAL JENDELA INPUT LEBAR (KLIK LUAR / ESC TUTUP) ================= -->
+  <div id="editorModal" class="modal-backdrop" onclick="handleBackdropClick(event)">
+    <div class="modal-window" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="modalTitle">JENDELA POP-UP INPUT DATA</h2>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="kbd-badge" title="Tekan tombol ESC atau klik di luar kotak untuk menutup">ESC / Klik Luar = Tutup</span>
+          <button class="btn btn-danger" id="modalClearBtn" onclick="handleModalClear()">&#128465; Hapus Data Section Ini</button>
+          <button class="btn btn-emerald" onclick="closePopupModal()">&#10004; Selesai &amp; Tutup</button>
+        </div>
+      </div>
+      <div class="modal-body" id="modalBodyContent"></div>
+      <div class="modal-footer">
+        <span style="font-size:11px; color:#94a3b8;">Perubahan otomatis tersimpan. Tekan tombol <strong style="color:#fde047;">ESC</strong> atau klik di luar area jendela ini kapan saja untuk menutup.</span>
+        <button class="btn btn-navy" onclick="closePopupModal()">Tutup Jendela (ESC)</button>
+      </div>
+    </div>
+  </div>
 
-            <!-- Header Image Upload Option -->
-            <div class="space-y-1.5 pt-2 border-t border-slate-700">
-                <label class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-1">
-                    <span>Custom Gambar Header</span>
-                </label>
-                <label class="dropzone bg-slate-700/50 hover:bg-slate-700 p-2.5 rounded-lg cursor-pointer flex flex-col items-center justify-center text-center space-y-1">
-                    <span class="text-[11px] font-medium text-slate-200">Klik untuk Ganti Gambar Header</span>
-                    <input type="file" id="header-image-input" class="hidden" accept="image/*">
-                </label>
-                <button onclick="resetHeaderImage()" class="w-full text-center text-[10px] text-slate-400 hover:text-emerald-400 underline">Reset ke Default</button>
-            </div>
+  <!-- ================= LEFT SIDEBAR EDITOR ================= -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-header-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>
+      </div>
+      <div>
+        <h1>DASHBOARD &amp; LAPORAN REJECT ASSY</h1>
+        <p>Manufacturing System Analyst &bull; Interactive Suite v4</p>
+      </div>
+    </div>
 
-            <!-- Upload Box -->
-            <div class="space-y-1.5 pt-2 border-t border-slate-700">
-                <label class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-1">
-                    <span>1. Upload File Excel</span>
-                </label>
-                <label id="dropzone-label" class="dropzone bg-slate-700/50 hover:bg-slate-700 p-3 rounded-lg cursor-pointer flex flex-col items-center justify-center text-center space-y-1">
-                    <svg class="w-6 h-6 text-emerald-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                    <span id="upload-text" class="text-[11px] font-medium text-slate-200">Drag & Drop atau Klik File (.xlsx)</span>
-                    <input type="file" id="excel-file-input" class="hidden" accept=".xlsx, .xls, .csv">
-                </label>
-            </div>
+    <!-- Core Action Buttons -->
+    <div class="action-bar">
+      <button class="btn btn-navy" onclick="window.print()">&#128424; Cetak A4</button>
+      <button class="btn btn-emerald" onclick="exportHighResPNG()">&#128247; Unduh PNG</button>
+      <button class="btn btn-purple" onclick="exportOfflineHTML()">&#128190; Simpan HTML</button>
+      <button class="btn btn-teal" onclick="backupJSON()">&#11015; Backup JSON</button>
+      <button class="btn btn-bluegrey" onclick="document.getElementById('restoreInput').click()">&#11014; Restore JSON</button>
+      <button class="btn btn-danger" onclick="clearAllData()">&#128465; Reset Semua</button>
+      <input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restoreJSON(event)" />
+    </div>
 
-            <!-- Action Buttons -->
-            <div class="space-y-1.5 pt-2 border-t border-slate-700">
-                <label class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-1">
-                    <span>2. Aksi Dokumen</span>
-                </label>
-                <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 px-3 rounded-lg text-xs flex items-center justify-center space-x-2 transition shadow-lg">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                    <span>Cetak / Simpan PDF</span>
-                </button>
-                <button onclick="simpanKeGambar()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 px-3 rounded-lg text-xs flex items-center justify-center space-x-2 transition shadow-lg mt-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    <span>Simpan ke Gambar (.png)</span>
-                </button>
-            </div>
+    <div class="sidebar-body">
+      <!-- BAGIAN 1 DARI 7: HEADER LAPORAN & PENGATURAN TAMPILAN -->
+      <div class="accordion-item">
+        <button class="accordion-header active" onclick="toggleAccordion(this)">
+          <span class="acc-title-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>BAGIAN 1: HEADER &amp; PENGATURAN TAMPILAN</span>
+          </span>
+          <span>&#9662;</span>
+        </button>
+        <div class="accordion-content open">
+          <div class="sec-control-bar">
+            <button class="btn btn-amber" onclick="openPopupModal('header')">&#10530; Pop-Up Input Header &amp; Pengaturan</button>
+          </div>
 
-            <!-- Manual Input Trend Chart -->
-            <div class="space-y-1.5 pt-2 border-t border-slate-700">
-                <label class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-1">
-                    <span>3. Input Manual Kinerja Bulanan</span>
-                </label>
-                <div class="bg-slate-700/40 p-2 rounded-lg border border-slate-700 space-y-1.5">
-                    <select id="input-bulan" class="w-full bg-slate-800 text-slate-200 border border-slate-600 rounded p-1.5 text-[11px] outline-none focus:border-emerald-500">
-                        <option value="JANUARI">Januari</option>
-                        <option value="FEBRUARI">Februari</option>
-                        <option value="MARET">Maret</option>
-                        <option value="APRIL">April</option>
-                        <option value="MEI">Mei</option>
-                        <option value="JUNI">Juni</option>
-                        <option value="JULI">Juli</option>
-                        <option value="AGUSTUS">Agustus</option>
-                        <option value="SEPTEMBER">September</option>
-                        <option value="OKTOBER">Oktober</option>
-                        <option value="NOVEMBER">November</option>
-                        <option value="DESEMBER">Desember</option>
-                    </select>
-                    <input type="number" id="input-hasil" placeholder="Total Hasil (Order)" class="w-full bg-slate-800 text-slate-200 border border-slate-600 rounded p-1.5 text-[11px] outline-none focus:border-emerald-500">
-                    <input type="number" id="input-ng" placeholder="Total Keseluruhan NG" class="w-full bg-slate-800 text-slate-200 border border-slate-600 rounded p-1.5 text-[11px] outline-none focus:border-emerald-500">
-                    <button onclick="tambahDataManual()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-1.5 px-3 rounded text-[11px] transition shadow">
-                        Tambahkan ke Grafik
-                    </button>
-                </div>
+          <div class="form-group">
+            <label class="form-label">Judul Utama Laporan</label>
+            <input type="text" class="form-control" id="inpReportTitle" oninput="updateHeaderState()" />
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Nama Plant</label>
+              <input type="text" class="form-control" id="inpPlant" oninput="updateHeaderState()" />
             </div>
+            <div>
+              <label class="form-label">Minggu Aktif (Week)</label>
+              <input type="text" class="form-control" id="inpWeek" oninput="updateHeaderState()" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Periode Bulan/Tahun</label>
+              <input type="text" class="form-control" id="inpPeriod" oninput="updateHeaderState()" />
+            </div>
+            <div>
+              <label class="form-label">Orientasi Kertas A4</label>
+              <select class="form-control" id="selOrientation" onchange="updateDisplaySettings()">
+                <option value="landscape">A4 Landscape (Ideal)</option>
+                <option value="portrait">A4 Portrait</option>
+              </select>
+            </div>
+          </div>
 
-            <!-- 4. Backup & Restore Data -->
-            <div class="space-y-1.5 pt-2 border-t border-slate-700">
-                <label class="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center space-x-1">
-                    <span>4. Backup & Restore Data</span>
-                </label>
-                <div class="grid grid-cols-2 gap-1.5">
-                    <button onclick="backupDashboardData()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-1.5 px-2 rounded text-[11px] transition shadow flex items-center justify-center space-x-1">
-                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        <span>Backup Data</span>
-                    </button>
-                    <label class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-1.5 px-2 rounded text-[11px] transition shadow text-center cursor-pointer flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        <span>Upload Backup</span>
-                        <input type="file" id="backup-file-input" class="hidden" accept=".json">
-                    </label>
-                </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Warna Kertas A4</label>
+              <select class="form-control" id="selPaperColor" onchange="updateDisplaySettings()">
+                <option value="#ffffff">Putih Eksekutif (#FFFFFF)</option>
+                <option value="#f8fafc">Cool Slate (#F8FAFC)</option>
+                <option value="#fefce8">Warm Ivory (#FEFCE8)</option>
+                <option value="#f0fdf4">Soft Emerald (#F0FDF4)</option>
+                <option value="#eff6ff">Soft Navy (#EFF6FF)</option>
+              </select>
             </div>
+            <div>
+              <label class="form-label">Upload Background Lokal</label>
+              <input type="file" class="form-control" accept="image/*" onchange="handleBgUpload(event)" />
+            </div>
+          </div>
 
-            <!-- Status Box -->
-            <div class="bg-slate-700/40 p-3 rounded-lg border border-slate-700 space-y-1">
-                <p class="text-[10px] font-semibold text-slate-300">Status Sistem:</p>
-                <div class="flex items-center space-x-2">
-                    <span id="status-dot" class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
-                    <span id="status-text" class="text-[11px] text-slate-300">Menunggu File Excel</span>
-                </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Ukuran Font Tabel (Pilihan Angka)</label>
+              <select class="form-control" id="selFontSize" onchange="updateDisplaySettings()">
+                <option value="6">6 px</option>
+                <option value="6.5">6.5 px</option>
+                <option value="7">7 px</option>
+                <option value="7.5">7.5 px</option>
+                <option value="8" selected>8 px (Rekomendasi Estetik)</option>
+                <option value="8.5">8.5 px</option>
+                <option value="9">9 px</option>
+                <option value="9.5">9.5 px</option>
+                <option value="10">10 px</option>
+                <option value="11">11 px</option>
+                <option value="12">12 px</option>
+              </select>
             </div>
+            <div>
+              <label class="form-label">Jarak Baris / Padding (Angka)</label>
+              <select class="form-control" id="selPadding" onchange="updateDisplaySettings()">
+                <option value="1.5">1.5 px</option>
+                <option value="2">2 px</option>
+                <option value="2.5">2.5 px</option>
+                <option value="3" selected>3 px (Ideal)</option>
+                <option value="3.5">3.5 px</option>
+                <option value="4">4 px</option>
+                <option value="5">5 px</option>
+                <option value="6">6 px</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tampilkan / Sembunyikan Section Laporan</label>
+            <div class="checkbox-grid">
+              <label class="checkbox-label"><input type="checkbox" id="chkSec1" checked onchange="updateDisplaySettings()"> Sec 1 (A): R. Pilihan</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec2" checked onchange="updateDisplaySettings()"> Sec 2 (B): R. Proses</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec3" checked onchange="updateDisplaySettings()"> Sec 3 (C): Top Pilihan</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec4" checked onchange="updateDisplaySettings()"> Sec 4 (D): Top Proses</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec5" checked onchange="updateDisplaySettings()"> Sec 5 (E): Komparasi</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec6" checked onchange="updateDisplaySettings()"> Sec 6 (F): Bulanan</label>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <button class="btn btn-teal" style="width:100%" onclick="loadDemoData()">&#9889; Muat Data Simulasi</button>
+            <button class="btn btn-bluegrey" style="width:100%" onclick="clearBgImage()">Hapus BG</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BAGIAN 2 DARI 7: SEC 1 (REKAP REJECT PILIHAN) -->
+      <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="acc-title-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>SEC 1 (A): REKAP ORDER &amp; REJECT PILIHAN</span>
+          </span>
+          <span>&#9662;</span>
+        </button>
+        <div class="accordion-content">
+          <div class="sec-control-bar">
+            <button class="btn btn-amber" onclick="openPopupModal('sec1')">&#10530; Pop-Up Input Data</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec1')">&#128465; Hapus Data Sec 1</button>
+          </div>
+          <div class="week-toggle-bar" id="weekToggleBar_sec1"></div>
+          <div class="excel-paste-box">
+            <div class="helper-text"><strong>Smart Excel Paste (Sec 1):</strong> Tempel blok tabel W1–W5 dari Excel:</div>
+            <textarea id="pasteSec1" placeholder="Paste data Excel Section 1 di sini..." oninput="handleExcelPasteMatrix('sec1', this.value)"></textarea>
+          </div>
+          <div class="editor-table-wrap" id="editorSec1"></div>
+        </div>
+      </div>
+
+      <!-- BAGIAN 3 DARI 7: SEC 2 (REKAP REJECT PROSES) -->
+      <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="acc-title-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.2"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+            <span>SEC 2 (B): REKAP ORDER &amp; REJECT PROSES</span>
+          </span>
+          <span>&#9662;</span>
+        </button>
+        <div class="accordion-content">
+          <div class="sec-control-bar">
+            <button class="btn btn-amber" onclick="openPopupModal('sec2')">&#10530; Pop-Up Input Data</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec2')">&#128465; Hapus Data Sec 2</button>
+          </div>
+          <div class="week-toggle-bar" id="weekToggleBar_sec2"></div>
+          <div class="excel-paste-box">
+            <div class="helper-text"><strong>Smart Excel Paste (Sec 2):</strong> Tempel blok tabel W1–W5 dari Excel:</div>
+            <textarea id="pasteSec2" placeholder="Paste data Excel Section 2 di sini..." oninput="handleExcelPasteMatrix('sec2', this.value)"></textarea>
+          </div>
+          <div style="margin-bottom:6px;">
+            <button class="btn btn-navy" style="width:100%" onclick="syncOrderFromSec1()">&#128260; Salin Total Order W1-W5 dari Sec 1</button>
+          </div>
+          <div class="editor-table-wrap" id="editorSec2"></div>
+        </div>
+      </div>
+
+      <!-- BAGIAN 4 DARI 7: SEC 3 (PRODUK REJECT PILIHAN TERTINGGI) -->
+      <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="acc-title-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2.2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <span>SEC 3 (C): PRODUK REJECT PILIHAN TERTINGGI</span>
+          </span>
+          <span>&#9662;</span>
+        </button>
+        <div class="accordion-content">
+          <div class="sec-control-bar">
+            <button class="btn btn-amber" onclick="openPopupModal('sec3')">&#10530; Pop-Up Input Data</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec3')">&#128465; Hapus Data Sec 3</button>
+          </div>
+          <div class="week-toggle-bar" id="weekToggleBar_sec3"></div>
+          <div class="excel-paste-box">
+            <div class="helper-text"><strong>Smart Excel Paste (Sec 3):</strong> Tempel <code>Nama Produk | Order | Qty R.Pilihan</code> atau <code>Nama Produk | Qty R.Pilihan | %</code>:</div>
+            <textarea id="pasteSec3" placeholder="Paste data Excel Section 3 di sini..." oninput="handleExcelPasteTopProduct('sec3', this.value)"></textarea>
+          </div>
+          <div class="editor-table-wrap" id="editorSec3"></div>
+        </div>
+      </div>
+
+      <!-- BAGIAN 5 DARI 7: SEC 4 (PRODUK REJECT PROSES TERTINGGI) -->
+      <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="acc-title-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>SEC 4 (D): PRODUK REJECT PROSES TERTINGGI</span>
+          </span>
+          <span>&#9662;</span>
+        </button>
+        <div class="accordion-content">
+          <div class="sec-control-bar">
+            <button class="btn btn-amber" onclick="openPopupModal('sec4')">&#10530; Pop-Up Input Data</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec4')">&#128465; Hapus Data Sec 4</button>
+          </div>
+          <div class="week-toggle-bar" id="weekToggleBar_sec4"></div>
+          <div class="excel-paste-box">
+            <div class="helper-text"><strong>Smart Excel Paste (Sec 4):</strong> Tempel <code>Nama Produk | Order | Qty R.Proses</code> atau <code>Nama Produk | Qty R.Proses | %</code>:</div>
+            <textarea id="pasteSec4" placeholder="Paste data Excel Section 4 di sini..." oninput="handleExcelPasteTopProduct('sec4', this.value)"></textarea>
+          </div>
+          <div class="editor-table-wrap" id="editorSec4"></div>
+        </div>
+      </div>
+
+      <!-- BAGIAN 6 DARI 7: SEC 5 (PERBANDINGAN REJECT PILIHAN VS PROSES) -->
+      <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="acc-title-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>SEC 5 (E): KOMPARASI PILIHAN VS PROSES</span>
+          </span>
+          <span>&#9662;</span>
+        </button>
+        <div class="accordion-content">
+          <div class="sec-control-bar">
+            <button class="btn btn-amber" onclick="openPopupModal('sec5')">&#10530; Pop-Up Editor Sec 5</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec5')">&#128465; Hapus Data Sec 5</button>
+          </div>
+          <p class="helper-text" style="color:#cbd5e1; margin-bottom:6px;">
+            Section 5 (Bagian E) otomatis mensinkronkan perbandingan Reject Pilihan (Sec 1) &amp; Reject Proses (Sec 2) secara vertikal menurun.
+          </p>
+        </div>
+      </div>
+
+      <!-- BAGIAN 7 DARI 7: SEC 6 (DATA & GRAFIK REJECT BULANAN) -->
+      <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="acc-title-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>SEC 6 (F): DATA &amp; GRAFIK REJECT BULANAN</span>
+          </span>
+          <span>&#9662;</span>
+        </button>
+        <div class="accordion-content">
+          <div class="sec-control-bar">
+            <button class="btn btn-amber" onclick="openPopupModal('sec6')">&#10530; Pop-Up Input Data</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec6')">&#128465; Hapus Data Sec 6</button>
+          </div>
+          <div class="excel-paste-box">
+            <div class="helper-text"><strong>Smart Excel Paste (Sec 6):</strong> Tempel <code>Bulan | Total Order | Total Reject Pilihan+Proses</code>:</div>
+            <textarea id="pasteSec6" placeholder="Paste data Excel Bulanan (Januari - Desember) di sini..." oninput="handleExcelPasteMonthly(this.value)"></textarea>
+          </div>
+          <div class="editor-table-wrap" id="editorSec6"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= RIGHT LIVE PREVIEW AREA ================= -->
+  <main id="previewContainer">
+    <div id="reportPaper" class="a4-landscape">
+      <div id="paperBgOverlay"></div>
+      <div id="reportContent">
+
+        <!-- HEADER LAPORAN -->
+        <header class="report-header">
+          <div class="report-title-wrap">
+            <div class="report-header-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>
+            </div>
+            <div class="report-title-block">
+              <h1 id="outReportTitle">LAPORAN REJECT ASSEMBLING</h1>
+              <h2 id="outPlant">PLANT ALPHA</h2>
+            </div>
+          </div>
+          <div class="report-meta-block">
+            <div class="week-badge" id="outWeek">WEEK 2</div>
+            <div class="period-text" id="outPeriod">OKTOBER 2026</div>
+          </div>
+        </header>
+
+        <!-- EXECUTIVE KPI SUMMARY STRIP WITH ICONS -->
+        <div class="kpi-strip">
+          <div class="kpi-card kpi-navy">
+            <div class="kpi-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-title">Total Order (Minggu Aktif)</span>
+              <span class="kpi-val" id="kpiTotalOrder">0</span>
+              <span class="kpi-sub">Akumulasi Output Produksi</span>
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-emerald">
+            <div class="kpi-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-title">Total Reject Pilihan</span>
+              <span class="kpi-val" id="kpiTotalPilihan">0 (0.00%)</span>
+              <span class="kpi-sub">Terhadap Total Order Sec A</span>
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-purple">
+            <div class="kpi-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-title">Total Reject Proses</span>
+              <span class="kpi-val" id="kpiTotalProses">0 (0.00%)</span>
+              <span class="kpi-sub">Terhadap Total Order Sec B</span>
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-teal">
+            <div class="kpi-icon-box">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-title">Kumulatif Reject Tahunan</span>
+              <span class="kpi-val" id="kpiYearlyReject">0 (0.00%)</span>
+              <span class="kpi-sub">Rekapitulasi Bulanan (Jan-Des)</span>
+            </div>
+          </div>
         </div>
 
-        <div class="pt-4 border-t border-slate-700 text-center text-[10px] text-slate-500">
-            Assembling Dept &bull; 2026
-        </div>
-    </aside>
-
-    <!-- Main Dashboard Preview Area -->
-    <main class="flex-1 p-2 md:p-3 print-container w-full overflow-y-auto">
-        <div id="captureArea" class="capture-container space-y-4">
-            
-            <!-- Header Banner -->
-            <div id="dashboard-header-banner" class="theme-card relative overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-6 md:p-10 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center transition-all w-full">
-                <div id="header-bg-overlay" class="absolute inset-0 bg-cover bg-center opacity-25 pointer-events-none hidden"></div>
-                
-                <div class="relative z-10 flex items-center space-x-4">
-                    <div class="bg-emerald-500/20 p-3.5 rounded-2xl text-emerald-400">
-                        <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    </div>
-                    <div class="space-y-1">
-                        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-wide">DASHBOARD LAPORAN REJECT ASSEMBLING</h1>
-                        <p class="text-sm text-slate-300">Analisis Kinerja Produksi, Reject Pilihan, & Reject Bongkaran Tahun 2026</p>
-                    </div>
-                </div>
-                <div class="relative z-10 text-right mt-3 md:mt-0 bg-slate-900/80 backdrop-blur px-4 py-2.5 rounded-xl border border-slate-700">
-                    <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Periode Laporan:</p>
-                    <p id="label-periode" class="text-sm font-bold text-emerald-400 mt-0.5">Belum Dimuat</p>
-                </div>
+        <!-- SECTION 1 (A): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PILIHAN (TANPA LABEL VERTIKAL KANAN) -->
+        <section class="report-section" id="viewSec1">
+          <div class="section-banner banner-navy">
+            <div class="section-banner-left">
+              <span class="section-banner-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </span>
+              <span>A. REKAPITULASI JUMLAH ORDER &amp; PERSENTASE REJECT PILIHAN</span>
             </div>
+          </div>
+          <div class="table-responsive" id="tableWrapSec1"></div>
+          <div class="chart-box" id="chartSec1"></div>
+        </section>
 
-            <!-- Welcome Banner -->
-            <div id="welcome-banner" class="theme-card bg-slate-800 border border-emerald-500/40 rounded-xl p-5 text-center shadow-lg space-y-1.5 w-full">
-                <h3 class="text-sm font-semibold text-emerald-300">Silakan Upload File Excel Laporan Anda di Sidebar Kiri</h3>
-                <p class="text-xs text-slate-300">Seluruh KPI sejajar presisi, grafik, tabel ber-border, diagram rekap, dan rangking reject akan terisi otomatis.</p>
+        <!-- SECTION 2 (B): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PROSES (TANPA LABEL VERTIKAL KANAN) -->
+        <section class="report-section" id="viewSec2">
+          <div class="section-banner banner-emerald">
+            <div class="section-banner-left">
+              <span class="section-banner-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="m4.9 4.9 2.1 2.1"/><path d="m17 17 2.1 2.1"/><path d="m4.9 19.1 2.1-2.1"/><path d="m17 7 2.1-2.1"/></svg>
+              </span>
+              <span>B. REKAPITULASI JUMLAH ORDER &amp; PERSENTASE REJECT PROSES</span>
             </div>
+          </div>
+          <div class="table-responsive" id="tableWrapSec2"></div>
+          <div class="chart-box" id="chartSec2"></div>
+        </section>
 
-            <!-- KPI Summary Cards -->
-            <div id="kpi-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
-                
-                <!-- Card 1 -->
-                <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow-lg flex items-start justify-between kpi-card-inner">
-                    <div class="flex flex-col justify-between h-full space-y-1 min-w-0 pr-2">
-                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 leading-tight">Total Order</p>
-                        <h3 id="kpi-order" class="text-base font-extrabold text-white tracking-tight leading-none my-1">0</h3>
-                        <p class="text-[9px] text-emerald-400 leading-tight">Akumulasi Order</p>
-                    </div>
-                    <div class="kpi-icon bg-blue-500/20 p-2 rounded-xl text-blue-400 shrink-0 flex items-center justify-center">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                    </div>
-                </div>
-
-                <!-- Card 2 -->
-                <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow-lg flex items-start justify-between kpi-card-inner">
-                    <div class="flex flex-col justify-between h-full space-y-1 min-w-0 pr-2">
-                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 leading-tight">Total Reject Pilihan</p>
-                        <h3 id="kpi-pilihan" class="text-base font-extrabold text-white tracking-tight leading-none my-1">0</h3>
-                        <p class="text-[9px] text-sky-400 leading-tight">Reject Pilihan</p>
-                    </div>
-                    <div class="kpi-icon bg-sky-500/20 p-2 rounded-xl text-sky-400 shrink-0 flex items-center justify-center">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 022 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                    </div>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow-lg flex items-start justify-between kpi-card-inner">
-                    <div class="flex flex-col justify-between h-full space-y-1 min-w-0 pr-2">
-                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 leading-tight">Total Reject Bongkaran</p>
-                        <h3 id="kpi-bongkaran" class="text-base font-extrabold text-white tracking-tight leading-none my-1">0</h3>
-                        <p class="text-[9px] text-amber-400 leading-tight">Reject Proses</p>
-                    </div>
-                    <div class="kpi-icon bg-amber-500/20 p-2 rounded-xl text-amber-400 shrink-0 flex items-center justify-center">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                    </div>
-                </div>
-
-                <!-- Card 4 -->
-                <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow-lg flex items-start justify-between kpi-card-inner">
-                    <div class="flex flex-col justify-between h-full space-y-1 min-w-0 pr-2">
-                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 leading-tight">Total Keseluruhan NG</p>
-                        <h3 id="kpi-total-reject" class="text-base font-extrabold text-white tracking-tight leading-none my-1">0</h3>
-                        <p class="text-[9px] text-purple-400 leading-tight">Pilihan + Bongkaran</p>
-                    </div>
-                    <div class="kpi-icon bg-purple-500/20 p-2 rounded-xl text-purple-400 shrink-0 flex items-center justify-center">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    </div>
-                </div>
-
-                <!-- Card 5 -->
-                <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow-lg flex items-start justify-between kpi-card-inner">
-                    <div class="flex flex-col justify-between h-full space-y-1 min-w-0 pr-2">
-                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 leading-tight">% Keseluruhan NG</p>
-                        <h3 id="kpi-pct-total-reject" class="text-base font-extrabold text-white tracking-tight leading-none my-1">0%</h3>
-                        <p class="text-[9px] text-rose-400 leading-tight">Rasio thd Order</p>
-                    </div>
-                    <div class="kpi-icon bg-rose-500/20 p-2 rounded-xl text-rose-400 shrink-0 flex items-center justify-center">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
-                    </div>
-                </div>
-
+        <!-- SECTION 3 (C): PRODUK REJECT PILIHAN TERTINGGI (TANPA LABEL VERTIKAL KANAN) -->
+        <section class="report-section" id="viewSec3">
+          <div class="section-banner banner-purple">
+            <div class="section-banner-left">
+              <span class="section-banner-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </span>
+              <span>C. PRODUK REJECT PILIHAN TERTINGGI</span>
             </div>
+          </div>
+          <div class="table-responsive" id="tableWrapSec3"></div>
+          <div class="chart-box" id="chartSec3"></div>
+        </section>
 
-            <!-- Table 1 -->
-            <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg space-y-3 w-full">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                    <h3 class="text-sm font-semibold text-white">1. Rekapitulasi Jumlah Order & Persentase Reject per Type Produk</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse bordered-table" id="table-type-summary">
-                        <thead>
-                            <tr class="bg-slate-700 text-slate-200 text-[11px] uppercase tracking-wider">
-                                <th class="py-2.5 px-3">Type Produk</th>
-                                <th class="py-2.5 px-3">Jumlah Order</th>
-                                <th class="py-2.5 px-3">Qty Pilihan</th>
-                                <th class="py-2.5 px-3">% Pilihan</th>
-                                <th class="py-2.5 px-3">Qty Bongkaran</th>
-                                <th class="py-2.5 px-3">% Bongkaran</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-700 text-xs text-slate-300">
-                            <tr><td colspan="6" class="py-3 text-center text-slate-500">Belum ada data di-load</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+        <!-- SECTION 4 (D): PRODUK REJECT PROSES TERTINGGI (TANPA LABEL VERTIKAL KANAN) -->
+        <section class="report-section" id="viewSec4">
+          <div class="section-banner banner-teal">
+            <div class="section-banner-left">
+              <span class="section-banner-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </span>
+              <span>D. PRODUK REJECT PROSES TERTINGGI</span>
             </div>
+          </div>
+          <div class="table-responsive" id="tableWrapSec4"></div>
+          <div class="chart-box" id="chartSec4"></div>
+        </section>
 
-            <!-- Table 2 -->
-            <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg space-y-3 w-full">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                    <h3 class="text-sm font-semibold text-white">2. Produk Reject Pilihan Tertinggi per Type</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse bordered-table" id="table-top-pilihan">
-                        <thead>
-                            <tr class="bg-slate-700 text-slate-200 text-[11px] uppercase tracking-wider">
-                                <th class="py-2.5 px-3 w-[18%]">Type</th>
-                                <th class="py-2.5 px-3 w-[42%]">Nama Produk</th>
-                                <th class="py-2.5 px-3 w-[15%]">Jumlah Order</th>
-                                <th class="py-2.5 px-3 w-[15%]">Qty Reject Pilihan</th>
-                                <th class="py-2.5 px-3 w-[10%]">% Terhadap Order</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-700 text-xs text-slate-300">
-                            <tr><td colspan="5" class="py-3 text-center text-slate-500">Belum ada data</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+        <!-- SECTION 5 (E): URUTAN MENURUN: TABEL -> GRAFIK KOMPARASI TYPE PRODUK -> GRAFIK TREN W1-W5 -->
+        <section class="report-section" id="viewSec5">
+          <div class="section-banner banner-bluegrey">
+            <div class="section-banner-left">
+              <span class="section-banner-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </span>
+              <span>E. PERBANDINGAN REJECT PILIHAN DAN REJECT PROSES PER TYPE PRODUK &amp; TREN W1-W5</span>
             </div>
+          </div>
+          <div class="vertical-stack">
+            <div class="table-responsive" id="tableWrapSec5"></div>
+            <div class="chart-box" id="chartSec5Type"></div>
+            <div class="chart-box" id="chartSec5Trend"></div>
+          </div>
+        </section>
 
-            <!-- Table 3 -->
-            <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg space-y-3 w-full">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
-                    <h3 class="text-sm font-semibold text-white">3. Produk Reject Bongkaran Tertinggi per Type</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse bordered-table" id="table-top-bongkaran">
-                        <thead>
-                            <tr class="bg-slate-700 text-slate-200 text-[11px] uppercase tracking-wider">
-                                <th class="py-2.5 px-3 w-[18%]">Type</th>
-                                <th class="py-2.5 px-3 w-[42%]">Nama Produk</th>
-                                <th class="py-2.5 px-3 w-[15%]">Jumlah Order</th>
-                                <th class="py-2.5 px-3 w-[15%]">Qty Reject Bongkaran</th>
-                                <th class="py-2.5 px-3 w-[10%]">% Terhadap Order</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-700 text-xs text-slate-300">
-                            <tr><td colspan="5" class="py-3 text-center text-slate-500">Belum ada data</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+        <!-- SECTION 6 (F): DATA DAN GRAFIK REJECT BULANAN -->
+        <section class="report-section" id="viewSec6">
+          <div class="section-banner banner-navy">
+            <div class="section-banner-left">
+              <span class="section-banner-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <span>F. DATA DAN GRAFIK REJECT BULANAN (HASIL, TOTAL NG PILIHAN + PROSES, %)</span>
             </div>
+          </div>
+          <div class="monthly-grid">
+            <div class="table-responsive" id="tableWrapSec6"></div>
+            <div class="chart-box" id="chartSec6"></div>
+          </div>
+        </section>
 
-            <!-- Charts Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 w-full">
-                <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
-                    <div class="flex items-center space-x-2 mb-3">
-                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
-                        <h3 class="text-sm font-semibold text-white">Grafik Order per Type Produk</h3>
-                    </div>
-                    <div class="relative h-64">
-                        <canvas id="typeChart"></canvas>
-                    </div>
-                </div>
+      </div>
+    </div>
+  </main>
 
-                <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
-                    <div class="flex items-center space-x-2 mb-3">
-                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
-                        <h3 class="text-sm font-semibold text-white">Komparasi % Reject Pilihan vs Bongkaran</h3>
-                    </div>
-                    <div class="relative h-64">
-                        <canvas id="ratioChart"></canvas>
-                    </div>
-                </div>
+  <!-- Notification Toast -->
+  <div id="toast">Status OK</div>
+
+  <script>
+    /* =========================================================================
+       1. KONSTANTA & STRUKTUR STATE UTAMA (ANTI TYPE-ERROR)
+       ========================================================================= */
+    const PRODUCT_TYPES = [
+      'LIPSTICK',
+      'LIPGLOSS',
+      'COMPACT',
+      'EYELINER',
+      'MASCARA',
+      'LIPBALM',
+      'COVER TANPA BS',
+      'JAR'
+    ];
+
+    const MONTHS = [
+      'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI',
+      'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'
+    ];
+
+    const STORAGE_KEY = 'REJECT_ASSY_SPA_STATE_V4';
+    let chartsReady = false;
+    let activeModalSection = null;
+    let appState = createDefaultState();
+
+    function safeNum(val) {
+      if (typeof val === 'number') return Number.isFinite(val) ? val : 0;
+      if (val === null || val === undefined) return 0;
+      let cleaned = String(val).trim().replace(/%/g, '').replace(/\s+/g, '');
+      if (cleaned.includes(',') && cleaned.includes('.')) {
+        if (cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')) {
+          cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+        } else {
+          cleaned = cleaned.replace(/,/g, '');
+        }
+      } else if (cleaned.includes(',')) {
+        const parts = cleaned.split(',');
+        if (parts.length === 2 && parts[1].length <= 2) {
+          cleaned = cleaned.replace(',', '.');
+        } else {
+          cleaned = cleaned.replace(/,/g, '');
+        }
+      }
+      const parsed = parseFloat(cleaned);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function safeStr(val, fallback = '-') {
+      if (val === null || val === undefined) return fallback;
+      const s = String(val).trim();
+      return s.length > 0 ? s : fallback;
+    }
+
+    function safeArr(arr) {
+      return Array.isArray(arr) ? arr : [];
+    }
+
+    function fmtInt(num) {
+      return Math.round(safeNum(num)).toLocaleString('id-ID');
+    }
+
+    function fmtPct(num) {
+      return safeNum(num).toFixed(2) + '%';
+    }
+
+    function calcPct(rejectQty, orderQty) {
+      const r = safeNum(rejectQty);
+      const o = safeNum(orderQty);
+      return o > 0 ? (r / o) * 100 : 0;
+    }
+
+    function createDefaultState() {
+      return {
+        header: {
+          title: 'LAPORAN REJECT ASSEMBLING',
+          plant: 'PLANT ALPHA',
+          week: 'WEEK 2',
+          period: 'OKTOBER 2026',
+          bgImage: ''
+        },
+        settings: {
+          orientation: 'landscape',
+          paperColor: '#ffffff',
+          fontSize: 8,
+          padding: 3,
+          visible: {
+            sec1: true,
+            sec2: true,
+            sec3: true,
+            sec4: true,
+            sec5: true,
+            sec6: true
+          },
+          weekVisible: {
+            sec1: [true, true, true, true, true],
+            sec2: [true, true, true, true, true],
+            sec3: [true, true, true, true, true],
+            sec4: [true, true, true, true, true]
+          }
+        },
+        sec1: PRODUCT_TYPES.map((type, idx) => ({
+          type,
+          weeks: [
+            { order: 12500 - idx * 800, reject: 145 - idx * 8 },
+            { order: 13200 - idx * 750, reject: 138 - idx * 7 },
+            { order: 11800 - idx * 600, reject: 120 - idx * 6 },
+            { order: 14000 - idx * 850, reject: 152 - idx * 9 },
+            { order: 12900 - idx * 700, reject: 130 - idx * 7 }
+          ]
+        })),
+        sec2: PRODUCT_TYPES.map((type, idx) => ({
+          type,
+          weeks: [
+            { order: 12500 - idx * 800, reject: 98 - idx * 6 },
+            { order: 13200 - idx * 750, reject: 112 - idx * 7 },
+            { order: 11800 - idx * 600, reject: 89 - idx * 5 },
+            { order: 14000 - idx * 850, reject: 105 - idx * 6 },
+            { order: 12900 - idx * 700, reject: 94 - idx * 5 }
+          ]
+        })),
+        sec3: PRODUCT_TYPES.map((type, idx) => ({
+          type,
+          weeks: [
+            { name: type.slice(0, 4) + '-01A', order: 4200 - idx * 200, reject: 68 - idx * 4 },
+            { name: type.slice(0, 4) + '-02B', order: 4500 - idx * 210, reject: 64 - idx * 3 },
+            { name: type.slice(0, 4) + '-01A', order: 3900 - idx * 180, reject: 55 - idx * 3 },
+            { name: type.slice(0, 4) + '-03C', order: 4800 - idx * 220, reject: 72 - idx * 4 },
+            { name: type.slice(0, 4) + '-02B', order: 4300 - idx * 190, reject: 60 - idx * 3 }
+          ]
+        })),
+        sec4: PRODUCT_TYPES.map((type, idx) => ({
+          type,
+          weeks: [
+            { name: type.slice(0, 4) + '-PR1', order: 4200 - idx * 200, reject: 46 - idx * 3 },
+            { name: type.slice(0, 4) + '-PR2', order: 4500 - idx * 210, reject: 52 - idx * 3 },
+            { name: type.slice(0, 4) + '-PR1', order: 3900 - idx * 180, reject: 41 - idx * 2 },
+            { name: type.slice(0, 4) + '-PR3', order: 4800 - idx * 220, reject: 49 - idx * 3 },
+            { name: type.slice(0, 4) + '-PR2', order: 4300 - idx * 190, reject: 44 - idx * 2 }
+          ]
+        })),
+        sec6: MONTHS.map((month, mIdx) => ({
+          month,
+          order: mIdx <= 9 ? 385000 + (mIdx * 14500) : 0,
+          reject: mIdx <= 9 ? 6420 + (mIdx * 190) : 0
+        }))
+      };
+    }
+
+    function ensureWeekVisibleStructure() {
+      if (!appState.settings) appState.settings = {};
+      if (!appState.settings.weekVisible) {
+        appState.settings.weekVisible = {
+          sec1: [true, true, true, true, true],
+          sec2: [true, true, true, true, true],
+          sec3: [true, true, true, true, true],
+          sec4: [true, true, true, true, true]
+        };
+      }
+      ['sec1', 'sec2', 'sec3', 'sec4'].forEach(k => {
+        if (!Array.isArray(appState.settings.weekVisible[k]) || appState.settings.weekVisible[k].length !== 5) {
+          appState.settings.weekVisible[k] = [true, true, true, true, true];
+        }
+      });
+    }
+
+    function getActiveWeekIndices(secKey) {
+      ensureWeekVisibleStructure();
+      const flags = appState.settings.weekVisible[secKey] || [true, true, true, true, true];
+      const indices = [];
+      for (let w = 0; w < 5; w++) {
+        if (flags[w] !== false) indices.push(w);
+      }
+      return indices;
+    }
+
+    /* =========================================================================
+       2. INISIALISASI GOOGLE CHARTS & EVENT KEYBOARD ESC
+       ========================================================================= */
+    google.charts.load('current', { packages: ['corechart'] });
+    google.charts.setOnLoadCallback(() => {
+      chartsReady = true;
+      renderAllCharts();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadFromStorage();
+      ensureWeekVisibleStructure();
+      syncControlsFromState();
+      buildAllSidebarEditors();
+      renderAll();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        const modal = document.getElementById('editorModal');
+        if (modal && modal.classList.contains('open')) {
+          e.preventDefault();
+          closePopupModal();
+          showToast('Jendela Pop-Up ditutup (ESC)');
+        }
+      }
+    });
+
+    function handleBackdropClick(event) {
+      if (event.target && event.target.id === 'editorModal') {
+        closePopupModal();
+        showToast('Jendela Pop-Up ditutup');
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      if (chartsReady) renderAllCharts();
+    });
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2400);
+    }
+
+    function saveToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('Storage limit reached:', e);
+      }
+    }
+
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('REJECT_ASSY_SPA_STATE_V3') || localStorage.getItem('REJECT_ASSY_SPA_STATE_V2');
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          const def = createDefaultState();
+          appState = Object.assign(def, parsed);
+          appState.settings = Object.assign(def.settings, parsed.settings || {});
+        }
+      } catch (e) {
+        console.warn('Failed loading state:', e);
+      }
+    }
+
+    /* =========================================================================
+       3. UI INTERAKSI SIDEBAR, ACCORDION & HIDE/UNHIDE W1-W5
+       ========================================================================= */
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const txt = document.getElementById('toggleSidebarText');
+      sb.classList.toggle('collapsed');
+      document.body.classList.toggle('sidebar-hidden');
+      const isHidden = sb.classList.contains('collapsed');
+      txt.textContent = isHidden ? 'Tampilkan Editor' : 'Sembunyikan Editor';
+      setTimeout(() => {
+        if (chartsReady) renderAllCharts();
+      }, 320);
+    }
+
+    function toggleAccordion(btn) {
+      const content = btn.nextElementSibling;
+      const isOpen = content.classList.contains('open');
+      btn.classList.toggle('active', !isOpen);
+      content.classList.toggle('open', !isOpen);
+    }
+
+    function syncControlsFromState() {
+      document.getElementById('inpReportTitle').value = safeStr(appState.header.title, 'LAPORAN REJECT ASSEMBLING');
+      document.getElementById('inpPlant').value = safeStr(appState.header.plant, 'PLANT ALPHA');
+      document.getElementById('inpWeek').value = safeStr(appState.header.week, 'WEEK 2');
+      document.getElementById('inpPeriod').value = safeStr(appState.header.period, 'OKTOBER 2026');
+
+      document.getElementById('selOrientation').value = appState.settings.orientation || 'landscape';
+      document.getElementById('selPaperColor').value = appState.settings.paperColor || '#ffffff';
+      document.getElementById('selFontSize').value = String(safeNum(appState.settings.fontSize) || 8);
+      document.getElementById('selPadding').value = String(safeNum(appState.settings.padding) || 3);
+
+      const vis = appState.settings.visible || {};
+      ['Sec1', 'Sec2', 'Sec3', 'Sec4', 'Sec5', 'Sec6'].forEach((s, idx) => {
+        const key = 'sec' + (idx + 1);
+        const chk = document.getElementById('chk' + s);
+        if (chk) chk.checked = vis[key] !== false;
+      });
+    }
+
+    function updateHeaderState() {
+      appState.header.title = document.getElementById('inpReportTitle').value;
+      appState.header.plant = document.getElementById('inpPlant').value;
+      appState.header.week = document.getElementById('inpWeek').value;
+      appState.header.period = document.getElementById('inpPeriod').value;
+      saveToStorage();
+      renderHeader();
+    }
+
+    function updateDisplaySettings() {
+      const orient = document.getElementById('selOrientation').value;
+      const paperColor = document.getElementById('selPaperColor').value;
+      const fontSize = safeNum(document.getElementById('selFontSize').value) || 8;
+      const padding = safeNum(document.getElementById('selPadding').value) || 3;
+
+      appState.settings.orientation = orient;
+      appState.settings.paperColor = paperColor;
+      appState.settings.fontSize = fontSize;
+      appState.settings.padding = padding;
+
+      const paper = document.getElementById('reportPaper');
+      paper.className = orient === 'portrait' ? 'a4-portrait' : 'a4-landscape';
+      document.documentElement.style.setProperty('--paper-bg-color', paperColor);
+      document.documentElement.style.setProperty('--table-font-size', fontSize + 'px');
+      document.documentElement.style.setProperty('--table-cell-padding', padding + 'px');
+
+      ['sec1', 'sec2', 'sec3', 'sec4', 'sec5', 'sec6'].forEach((key, idx) => {
+        const chk = document.getElementById('chkSec' + (idx + 1));
+        const isVis = chk ? chk.checked : true;
+        appState.settings.visible[key] = isVis;
+        const secEl = document.getElementById('viewSec' + (idx + 1));
+        if (secEl) secEl.style.display = isVis ? 'block' : 'none';
+      });
+
+      saveToStorage();
+      if (chartsReady) setTimeout(renderAllCharts, 60);
+    }
+
+    function buildWeekToggleBars() {
+      ensureWeekVisibleStructure();
+      ['sec1', 'sec2', 'sec3', 'sec4'].forEach(secKey => {
+        const bar = document.getElementById('weekToggleBar_' + secKey);
+        if (bar) bar.innerHTML = generateWeekToggleHTML(secKey);
+      });
+    }
+
+    function generateWeekToggleHTML(secKey) {
+      const flags = appState.settings.weekVisible[secKey];
+      let html = `<span class="wt-title">Tampilan Minggu:</span><div class="week-toggle-group">`;
+      for (let w = 0; w < 5; w++) {
+        const checked = flags[w] !== false ? 'checked' : '';
+        html += `
+          <label class="week-chip">
+            <input type="checkbox" ${checked} onchange="toggleWeekVisibility('${secKey}', ${w}, this.checked)" />
+            W${w + 1}
+          </label>
+        `;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    function toggleWeekVisibility(secKey, wIdx, isChecked) {
+      ensureWeekVisibleStructure();
+      const activeCount = appState.settings.weekVisible[secKey].filter(Boolean).length;
+      if (!isChecked && activeCount <= 1) {
+        showToast('Minimal 1 minggu harus ditampilkan pada tabel!');
+        buildWeekToggleBars();
+        if (activeModalSection === secKey) openPopupModal(secKey);
+        return;
+      }
+      appState.settings.weekVisible[secKey][wIdx] = Boolean(isChecked);
+      saveToStorage();
+      buildWeekToggleBars();
+      buildAllSidebarEditors();
+      if (activeModalSection === secKey) renderModalBody(secKey);
+      renderAll();
+    }
+
+    function handleBgUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        appState.header.bgImage = e.target.result;
+        saveToStorage();
+        renderHeader();
+        showToast('Background kertas berhasil diperbarui');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearBgImage() {
+      appState.header.bgImage = '';
+      saveToStorage();
+      renderHeader();
+      showToast('Background gambar dihapus');
+    }
+
+    /* =========================================================================
+       4. PEMBANGUN FORM EDITOR SIDEBAR & POP-UP MODAL
+       ========================================================================= */
+    function buildAllSidebarEditors() {
+      buildWeekToggleBars();
+      document.getElementById('editorSec1').innerHTML = generateMatrixEditorHTML('sec1', 'R.Pilihan');
+      document.getElementById('editorSec2').innerHTML = generateMatrixEditorHTML('sec2', 'R.Proses');
+      document.getElementById('editorSec3').innerHTML = generateTopProductEditorHTML('sec3', 'Qty Pilihan');
+      document.getElementById('editorSec4').innerHTML = generateTopProductEditorHTML('sec4', 'Qty Proses');
+      document.getElementById('editorSec6').innerHTML = generateMonthlyEditorHTML();
+    }
+
+    function generateMatrixEditorHTML(secKey, rejectLabel) {
+      const rows = safeArr(appState[secKey]);
+      const activeWeeks = getActiveWeekIndices(secKey);
+
+      let html = `<table class="editor-table">
+        <thead>
+          <tr>
+            <th>TYPE PRODUK</th>`;
+      activeWeeks.forEach(w => {
+        html += `<th>W${w + 1} Order</th><th>W${w + 1} ${rejectLabel}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      rows.forEach((row, rIdx) => {
+        const weeks = safeArr(row.weeks);
+        html += `<tr><td class="prod-label">${safeStr(row.type)}</td>`;
+        activeWeeks.forEach(w => {
+          const wk = weeks[w] || { order: 0, reject: 0 };
+          html += `
+            <td><input type="number" value="${safeNum(wk.order)}" oninput="onEditMatrix('${secKey}', ${rIdx}, ${w}, 'order', this.value)" /></td>
+            <td><input type="number" value="${safeNum(wk.reject)}" oninput="onEditMatrix('${secKey}', ${rIdx}, ${w}, 'reject', this.value)" /></td>
+          `;
+        });
+        html += `</tr>`;
+      });
+
+      html += `</tbody></table>`;
+      return html;
+    }
+
+    function generateTopProductEditorHTML(secKey, qtyLabel) {
+      const rows = safeArr(appState[secKey]);
+      const activeWeeks = getActiveWeekIndices(secKey);
+
+      let html = `<table class="editor-table">
+        <thead>
+          <tr>
+            <th>TYPE PRODUK</th>`;
+      activeWeeks.forEach(w => {
+        html += `<th>W${w + 1} Nama Produk</th><th>W${w + 1} Order</th><th>W${w + 1} ${qtyLabel}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      rows.forEach((row, rIdx) => {
+        const weeks = safeArr(row.weeks);
+        html += `<tr><td class="prod-label">${safeStr(row.type)}</td>`;
+        activeWeeks.forEach(w => {
+          const wk = weeks[w] || { name: '-', order: 0, reject: 0 };
+          html += `
+            <td><input type="text" class="text-input" value="${safeStr(wk.name, '-')}" oninput="onEditTopProd('${secKey}', ${rIdx}, ${w}, 'name', this.value)" /></td>
+            <td><input type="number" value="${safeNum(wk.order)}" oninput="onEditTopProd('${secKey}', ${rIdx}, ${w}, 'order', this.value)" /></td>
+            <td><input type="number" value="${safeNum(wk.reject)}" oninput="onEditTopProd('${secKey}', ${rIdx}, ${w}, 'reject', this.value)" /></td>
+          `;
+        });
+        html += `</tr>`;
+      });
+
+      html += `</tbody></table>`;
+      return html;
+    }
+
+    function generateSec5CombinedEditorHTML() {
+      const activeWeeks = getActiveWeekIndices('sec1');
+      let html = `<table class="editor-table">
+        <thead>
+          <tr>
+            <th>TYPE PRODUK</th>`;
+      activeWeeks.forEach(w => {
+        html += `<th>W${w + 1} Order</th><th>W${w + 1} R.Pilihan</th><th>W${w + 1} R.Proses</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      PRODUCT_TYPES.forEach((type, rIdx) => {
+        const w1 = safeArr(appState.sec1[rIdx] && appState.sec1[rIdx].weeks);
+        const w2 = safeArr(appState.sec2[rIdx] && appState.sec2[rIdx].weeks);
+        html += `<tr><td class="prod-label">${type}</td>`;
+        activeWeeks.forEach(w => {
+          const ord = safeNum(w1[w] && w1[w].order);
+          const pil = safeNum(w1[w] && w1[w].reject);
+          const pro = safeNum(w2[w] && w2[w].reject);
+          html += `
+            <td><input type="number" value="${ord}" oninput="onEditSec5Combined(${rIdx}, ${w}, 'order', this.value)" /></td>
+            <td><input type="number" value="${pil}" oninput="onEditSec5Combined(${rIdx}, ${w}, 'pilihan', this.value)" /></td>
+            <td><input type="number" value="${pro}" oninput="onEditSec5Combined(${rIdx}, ${w}, 'proses', this.value)" /></td>
+          `;
+        });
+        html += `</tr>`;
+      });
+
+      html += `</tbody></table>`;
+      return html;
+    }
+
+    function generateMonthlyEditorHTML() {
+      const rows = safeArr(appState.sec6);
+      let html = `<table class="editor-table">
+        <thead>
+          <tr>
+            <th>BULAN</th>
+            <th>TOTAL ORDER</th>
+            <th>TOTAL REJECT (PILIHAN + PROSES)</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      rows.forEach((row, mIdx) => {
+        html += `
+          <tr>
+            <td class="prod-label">${safeStr(row.month)}</td>
+            <td><input type="number" style="width:100%" value="${safeNum(row.order)}" oninput="onEditMonthly(${mIdx}, 'order', this.value)" /></td>
+            <td><input type="number" style="width:100%" value="${safeNum(row.reject)}" oninput="onEditMonthly(${mIdx}, 'reject', this.value)" /></td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      return html;
+    }
+
+    function onEditMatrix(secKey, rIdx, wIdx, field, val) {
+      if (!appState[secKey] || !appState[secKey][rIdx]) return;
+      appState[secKey][rIdx].weeks[wIdx][field] = safeNum(val);
+      saveToStorage();
+      if (activeModalSection) buildAllSidebarEditors();
+      renderAll();
+    }
+
+    function onEditTopProd(secKey, rIdx, wIdx, field, val) {
+      if (!appState[secKey] || !appState[secKey][rIdx]) return;
+      appState[secKey][rIdx].weeks[wIdx][field] = field === 'name' ? String(val) : safeNum(val);
+      saveToStorage();
+      if (activeModalSection) buildAllSidebarEditors();
+      renderAll();
+    }
+
+    function onEditSec5Combined(rIdx, wIdx, field, val) {
+      const v = safeNum(val);
+      if (field === 'order') {
+        appState.sec1[rIdx].weeks[wIdx].order = v;
+        appState.sec2[rIdx].weeks[wIdx].order = v;
+      } else if (field === 'pilihan') {
+        appState.sec1[rIdx].weeks[wIdx].reject = v;
+      } else if (field === 'proses') {
+        appState.sec2[rIdx].weeks[wIdx].reject = v;
+      }
+      saveToStorage();
+      buildAllSidebarEditors();
+      renderAll();
+    }
+
+    function onEditMonthly(mIdx, field, val) {
+      if (!appState.sec6 || !appState.sec6[mIdx]) return;
+      appState.sec6[mIdx][field] = safeNum(val);
+      saveToStorage();
+      if (activeModalSection) buildAllSidebarEditors();
+      renderAll();
+    }
+
+    function syncOrderFromSec1() {
+      safeArr(appState.sec1).forEach((row1, rIdx) => {
+        if (appState.sec2[rIdx]) {
+          safeArr(row1.weeks).forEach((w1, wIdx) => {
+            appState.sec2[rIdx].weeks[wIdx].order = safeNum(w1.order);
+          });
+        }
+      });
+      buildAllSidebarEditors();
+      if (activeModalSection === 'sec2') renderModalBody('sec2');
+      saveToStorage();
+      renderAll();
+      showToast('Total Order W1-W5 berhasil disalin dari Sec 1 ke Sec 2');
+    }
+
+    /* =========================================================================
+       5. POP-UP JENDELA EDITOR LELUASA UNTUK KETUJUH BAGIAN
+       ========================================================================= */
+    function openPopupModal(secKey) {
+      activeModalSection = secKey;
+      const modal = document.getElementById('editorModal');
+      const clearBtn = document.getElementById('modalClearBtn');
+      clearBtn.style.display = secKey === 'header' ? 'none' : 'inline-flex';
+      renderModalBody(secKey);
+      modal.classList.add('open');
+    }
+
+    function closePopupModal() {
+      activeModalSection = null;
+      document.getElementById('editorModal').classList.remove('open');
+      syncControlsFromState();
+      buildAllSidebarEditors();
+      renderAll();
+    }
+
+    function handleModalClear() {
+      if (activeModalSection && activeModalSection !== 'header') {
+        clearSectionData(activeModalSection);
+      }
+    }
+
+    function renderModalBody(secKey) {
+      const titleEl = document.getElementById('modalTitle');
+      const bodyEl = document.getElementById('modalBodyContent');
+
+      if (secKey === 'header') {
+        titleEl.textContent = 'POP-UP BAGIAN 1: HEADER LAPORAN & PENGATURAN KERTAS A4';
+        bodyEl.innerHTML = `
+          <div class="form-row">
+            <div>
+              <label class="form-label">Judul Utama Laporan</label>
+              <input type="text" class="form-control" value="${safeStr(appState.header.title)}" oninput="appState.header.title=this.value; syncControlsFromState(); updateHeaderState();" />
             </div>
-
-            <!-- Trend Chart Section -->
-            <div class="theme-card bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg space-y-3 w-full">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <h3 class="text-sm font-semibold text-white">Grafik Kinerja Bulanan (Total Hasil, Total NG, Persentase)</h3>
-                </div>
-                <div class="relative h-72">
-                    <canvas id="paretoChart"></canvas>
-                </div>
+            <div>
+              <label class="form-label">Nama Plant</label>
+              <input type="text" class="form-control" value="${safeStr(appState.header.plant)}" oninput="appState.header.plant=this.value; syncControlsFromState(); updateHeaderState();" />
             </div>
-            
-        </div>
-    </main>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Minggu Aktif (Week)</label>
+              <input type="text" class="form-control" value="${safeStr(appState.header.week)}" oninput="appState.header.week=this.value; syncControlsFromState(); updateHeaderState();" />
+            </div>
+            <div>
+              <label class="form-label">Periode Bulan/Tahun</label>
+              <input type="text" class="form-control" value="${safeStr(appState.header.period)}" oninput="appState.header.period=this.value; syncControlsFromState(); updateHeaderState();" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Ukuran Font Tabel (Pilihan Angka)</label>
+              <select class="form-control" onchange="document.getElementById('selFontSize').value=this.value; updateDisplaySettings();">
+                ${[6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12].map(n => `<option value="${n}" ${safeNum(appState.settings.fontSize) === n ? 'selected' : ''}>${n} px</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Padding Baris Tabel (Pilihan Angka)</label>
+              <select class="form-control" onchange="document.getElementById('selPadding').value=this.value; updateDisplaySettings();">
+                ${[1.5, 2, 2.5, 3, 3.5, 4, 5, 6].map(n => `<option value="${n}" ${safeNum(appState.settings.padding) === n ? 'selected' : ''}>${n} px</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        `;
+        return;
+      }
 
-    <!-- JavaScript Theme, Backup/Restore, & Dashboard Logic -->
-    <script>
-        let typeChartInstance = null;
-        let ratioChartInstance = null;
-        let paretoChartInstance = null;
-        
-        let globalParetoData = {};
-        const monthOrder = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
+      if (secKey === 'sec1' || secKey === 'sec2') {
+        const isSec1 = secKey === 'sec1';
+        titleEl.textContent = isSec1
+          ? 'POP-UP SEC 1 (A): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PILIHAN'
+          : 'POP-UP SEC 2 (B): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PROSES';
+        bodyEl.innerHTML = `
+          <div class="week-toggle-bar">${generateWeekToggleHTML(secKey)}</div>
+          <div class="excel-paste-box">
+            <div class="helper-text"><strong>Smart Excel Paste (${secKey.toUpperCase()}):</strong> Copy &amp; Paste langsung baris tabel dari Excel di bawah ini:</div>
+            <textarea placeholder="Paste data Excel di sini..." oninput="handleExcelPasteMatrix('${secKey}', this.value); renderModalBody('${secKey}');"></textarea>
+          </div>
+          <div class="editor-table-wrap">${generateMatrixEditorHTML(secKey, isSec1 ? 'R.Pilihan' : 'R.Proses')}</div>
+        `;
+        return;
+      }
 
-        function setTheme(theme) {
-            const body = document.getElementById('main-body');
-            const btnSlate = document.getElementById('btn-theme-slate');
-            const btnNavy = document.getElementById('btn-theme-navy');
-            const btnCharcoal = document.getElementById('btn-theme-charcoal');
+      if (secKey === 'sec3' || secKey === 'sec4') {
+        const isSec3 = secKey === 'sec3';
+        titleEl.textContent = isSec3
+          ? 'POP-UP SEC 3 (C): PRODUK REJECT PILIHAN TERTINGGI (W1 - W5)'
+          : 'POP-UP SEC 4 (D): PRODUK REJECT PROSES TERTINGGI (W1 - W5)';
+        bodyEl.innerHTML = `
+          <div class="week-toggle-bar">${generateWeekToggleHTML(secKey)}</div>
+          <div class="excel-paste-box">
+            <div class="helper-text"><strong>Smart Excel Paste (${secKey.toUpperCase()}):</strong> Copy &amp; Paste blok tabel dari Excel di bawah ini:</div>
+            <textarea placeholder="Paste data Excel di sini..." oninput="handleExcelPasteTopProduct('${secKey}', this.value); renderModalBody('${secKey}');"></textarea>
+          </div>
+          <div class="editor-table-wrap">${generateTopProductEditorHTML(secKey, isSec3 ? 'Qty Pilihan' : 'Qty Proses')}</div>
+        `;
+        return;
+      }
 
-            btnSlate.className = "px-2 py-1.5 text-[11px] font-medium rounded-lg border border-slate-600 bg-slate-900 text-white transition shadow";
-            btnNavy.className = "px-2 py-1.5 text-[11px] font-medium rounded-lg border border-slate-600 bg-blue-950 text-white transition shadow";
-            btnCharcoal.className = "px-2 py-1.5 text-[11px] font-medium rounded-lg border border-slate-600 bg-zinc-950 text-white transition shadow";
+      if (secKey === 'sec5') {
+        titleEl.textContent = 'POP-UP SEC 5 (E): EDITOR KOMPARASI REJECT PILIHAN VS REJECT PROSES (W1 - W5)';
+        bodyEl.innerHTML = `
+          <p class="helper-text" style="margin-bottom:10px; font-size:11px;">
+            Edit langsung nilai Order, Reject Pilihan, dan Reject Proses secara berdampingan di bawah ini:
+          </p>
+          <div class="editor-table-wrap">${generateSec5CombinedEditorHTML()}</div>
+        `;
+        return;
+      }
 
-            if (theme === 'slate') {
-                body.className = "bg-slate-900 text-slate-100 min-h-screen flex flex-col md:flex-row";
-                btnSlate.className = "px-2 py-1.5 text-[11px] font-medium rounded-lg border-2 border-emerald-500 bg-slate-900 text-white transition shadow";
-            } else if (theme === 'navy') {
-                body.className = "bg-blue-950 text-slate-100 min-h-screen flex flex-col md:flex-row";
-                btnNavy.className = "px-2 py-1.5 text-[11px] font-medium rounded-lg border-2 border-emerald-500 bg-blue-950 text-white transition shadow";
-            } else if (theme === 'charcoal') {
-                body.className = "bg-zinc-950 text-slate-100 min-h-screen flex flex-col md:flex-row";
-                btnCharcoal.className = "px-2 py-1.5 text-[11px] font-medium rounded-lg border-2 border-emerald-500 bg-zinc-950 text-white transition shadow";
-            }
+      if (secKey === 'sec6') {
+        titleEl.textContent = 'POP-UP SEC 6 (F): DATA DAN GRAFIK REJECT BULANAN (JANUARI - DESEMBER)';
+        bodyEl.innerHTML = `
+          <div class="excel-paste-box">
+            <div class="helper-text"><strong>Smart Excel Paste Bulanan:</strong> Copy &amp; Paste 12 baris bulan dari Excel di bawah ini:</div>
+            <textarea placeholder="Paste data Excel Bulanan di sini..." oninput="handleExcelPasteMonthly(this.value); renderModalBody('sec6');"></textarea>
+          </div>
+          <div class="editor-table-wrap">${generateMonthlyEditorHTML()}</div>
+        `;
+      }
+    }
+
+    /* =========================================================================
+       6. SMART EXCEL PASTE PARSER (\t dan \n)
+       ========================================================================= */
+    function handleExcelPasteMatrix(secKey, rawText) {
+      if (!rawText || !rawText.trim()) return;
+      const lines = rawText.trim().split(/\r?\n/);
+
+      lines.forEach((line, idx) => {
+        if (idx >= appState[secKey].length) return;
+        let cols = line.split('\t').map(c => c.trim());
+        if (cols.length === 0) return;
+
+        if (isNaN(parseFloat(cols[0].replace(/[.,]/g, '')))) {
+          cols = cols.slice(1);
         }
 
-        const headerImageInput = document.getElementById('header-image-input');
-        const headerBgOverlay = document.getElementById('header-bg-overlay');
+        const step = cols.length >= 15 ? 3 : 2;
+        for (let w = 0; w < 5; w++) {
+          const base = w * step;
+          if (base + 1 < cols.length) {
+            appState[secKey][idx].weeks[w].order = safeNum(cols[base]);
+            appState[secKey][idx].weeks[w].reject = safeNum(cols[base + 1]);
+          }
+        }
+      });
 
-        headerImageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    headerBgOverlay.style.backgroundImage = `url('${evt.target.result}')`;
-                    headerBgOverlay.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
+      buildAllSidebarEditors();
+      saveToStorage();
+      renderAll();
+      showToast('Data Excel berhasil di-parse ke ' + secKey.toUpperCase());
+    }
+
+    function handleExcelPasteTopProduct(secKey, rawText) {
+      if (!rawText || !rawText.trim()) return;
+      const lines = rawText.trim().split(/\r?\n/);
+      const refSec = secKey === 'sec3' ? 'sec1' : 'sec2';
+
+      lines.forEach((line, idx) => {
+        if (idx >= appState[secKey].length) return;
+        let cols = line.split('\t').map(c => c.trim());
+        if (cols.length === 0) return;
+
+        const firstUp = cols[0].toUpperCase();
+        if (PRODUCT_TYPES.some(p => firstUp.includes(p.slice(0, 5)))) {
+          cols = cols.slice(1);
+        }
+
+        for (let w = 0; w < 5; w++) {
+          const base = w * 3;
+          if (base + 1 < cols.length) {
+            const c0 = cols[base];
+            const c1 = cols[base + 1];
+            const c2 = cols[base + 2] || '';
+
+            appState[secKey][idx].weeks[w].name = safeStr(c0, '-');
+            if (c2.includes('%') || (safeNum(c1) >= safeNum(c2) && safeNum(c2) <= 100)) {
+              const fallbackOrder = appState[refSec][idx].weeks[w].order;
+              appState[secKey][idx].weeks[w].order = safeNum(fallbackOrder);
+              appState[secKey][idx].weeks[w].reject = safeNum(c1);
+            } else {
+              appState[secKey][idx].weeks[w].order = safeNum(c1);
+              appState[secKey][idx].weeks[w].reject = safeNum(c2);
             }
+          }
+        }
+      });
+
+      buildAllSidebarEditors();
+      saveToStorage();
+      renderAll();
+      showToast('Data Excel Top Reject berhasil di-parse ke ' + secKey.toUpperCase());
+    }
+
+    function handleExcelPasteMonthly(rawText) {
+      if (!rawText || !rawText.trim()) return;
+      const lines = rawText.trim().split(/\r?\n/);
+
+      lines.forEach((line, idx) => {
+        if (idx >= appState.sec6.length) return;
+        let cols = line.split('\t').map(c => c.trim());
+        if (cols.length === 0) return;
+
+        if (isNaN(parseFloat(cols[0].replace(/[.,]/g, '')))) {
+          cols = cols.slice(1);
+        }
+        if (cols.length >= 2) {
+          appState.sec6[idx].order = safeNum(cols[0]);
+          appState.sec6[idx].reject = safeNum(cols[1]);
+        }
+      });
+
+      buildAllSidebarEditors();
+      saveToStorage();
+      renderAll();
+      showToast('Data Bulanan Excel berhasil di-parse ke Section 6');
+    }
+
+    /* =========================================================================
+       7. RENDER TABEL LAPORAN: MENURUN PER WEEK (TANPA LABEL VERTIKAL KANAN)
+       ========================================================================= */
+    function renderAll() {
+      renderHeader();
+      updateDisplaySettings();
+      renderMatrixSectionVertical('sec1', 'tableWrapSec1', 'TOTAL R. PILIHAN');
+      renderMatrixSectionVertical('sec2', 'tableWrapSec2', 'TOTAL R. PROSES');
+      renderTopProductSectionVertical('sec3', 'tableWrapSec3', 'QTY R. PILIHAN');
+      renderTopProductSectionVertical('sec4', 'tableWrapSec4', 'QTY R. PROSES');
+      renderComparisonSection5();
+      renderMonthlySection6();
+      renderKPIStrip();
+      if (chartsReady) renderAllCharts();
+    }
+
+    function renderHeader() {
+      document.getElementById('outReportTitle').textContent = safeStr(appState.header.title, 'LAPORAN REJECT ASSEMBLING');
+      document.getElementById('outPlant').textContent = safeStr(appState.header.plant, 'PLANT ALPHA');
+      document.getElementById('outWeek').textContent = safeStr(appState.header.week, 'WEEK 2');
+      document.getElementById('outPeriod').textContent = safeStr(appState.header.period, 'OKTOBER 2026');
+
+      const bgEl = document.getElementById('paperBgOverlay');
+      bgEl.style.backgroundImage = appState.header.bgImage ? `url(${appState.header.bgImage})` : 'none';
+    }
+
+    function renderKPIStrip() {
+      const wSec1 = getActiveWeekIndices('sec1');
+      let totOrder1 = 0, totPilihan = 0;
+      safeArr(appState.sec1).forEach(r => {
+        const wks = safeArr(r.weeks);
+        wSec1.forEach(w => {
+          totOrder1 += safeNum(wks[w] && wks[w].order);
+          totPilihan += safeNum(wks[w] && wks[w].reject);
+        });
+      });
+
+      const wSec2 = getActiveWeekIndices('sec2');
+      let totOrder2 = 0, totProses = 0;
+      safeArr(appState.sec2).forEach(r => {
+        const wks = safeArr(r.weeks);
+        wSec2.forEach(w => {
+          totOrder2 += safeNum(wks[w] && wks[w].order);
+          totProses += safeNum(wks[w] && wks[w].reject);
+        });
+      });
+
+      let yrOrder = 0, yrReject = 0;
+      safeArr(appState.sec6).forEach(m => {
+        yrOrder += safeNum(m.order);
+        yrReject += safeNum(m.reject);
+      });
+
+      document.getElementById('kpiTotalOrder').textContent = fmtInt(totOrder1);
+      document.getElementById('kpiTotalPilihan').textContent = `${fmtInt(totPilihan)} (${fmtPct(calcPct(totPilihan, totOrder1))})`;
+      document.getElementById('kpiTotalProses').textContent = `${fmtInt(totProses)} (${fmtPct(calcPct(totProses, totOrder2))})`;
+      document.getElementById('kpiYearlyReject').textContent = `${fmtInt(yrReject)} (${fmtPct(calcPct(yrReject, yrOrder))})`;
+    }
+
+    function renderMatrixSectionVertical(secKey, wrapId, rejectLabel) {
+      const wrap = document.getElementById(wrapId);
+      if (!wrap) return;
+      const rows = safeArr(appState[secKey]);
+      const activeWeeks = getActiveWeekIndices(secKey);
+
+      let html = `<table class="data-table">
+        <colgroup>
+          <col style="width:7.5%">
+          <col style="width:11.5%">
+          ${PRODUCT_TYPES.map(() => `<col style="width:9.0%">`).join('')}
+          <col style="width:9.0%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>MINGGU</th>
+            <th>PARAMETER</th>
+            ${PRODUCT_TYPES.map(t => `<th>${t}</th>`).join('')}
+            <th class="total-week-head">SUBTOTAL<br>ALL TYPE</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      const prodTotals = PRODUCT_TYPES.map(() => ({ order: 0, reject: 0 }));
+      let grandOrderAll = 0;
+      let grandRejectAll = 0;
+
+      activeWeeks.forEach(w => {
+        let weekSumOrd = 0;
+        let weekSumRej = 0;
+
+        let ordCells = '';
+        let rejCells = '';
+        let pctCells = '';
+
+        PRODUCT_TYPES.forEach((_, pIdx) => {
+          const wkData = (rows[pIdx] && safeArr(rows[pIdx].weeks)[w]) || { order: 0, reject: 0 };
+          const ord = safeNum(wkData.order);
+          const rej = safeNum(wkData.reject);
+          const pct = calcPct(rej, ord);
+
+          weekSumOrd += ord;
+          weekSumRej += rej;
+          prodTotals[pIdx].order += ord;
+          prodTotals[pIdx].reject += rej;
+
+          ordCells += `<td>${fmtInt(ord)}</td>`;
+          rejCells += `<td>${fmtInt(rej)}</td>`;
+          pctCells += `<td>${fmtPct(pct)}</td>`;
         });
 
-        function resetHeaderImage() {
-            headerBgOverlay.style.backgroundImage = 'none';
-            headerBgOverlay.classList.add('hidden');
-            headerImageInput.value = '';
-        }
+        grandOrderAll += weekSumOrd;
+        grandRejectAll += weekSumRej;
+        const weekPct = calcPct(weekSumRej, weekSumOrd);
 
-        const fileInput = document.getElementById('excel-file-input');
-        const dropzoneLabel = document.getElementById('dropzone-label');
-        const uploadText = document.getElementById('upload-text');
-        const welcomeBanner = document.getElementById('welcome-banner');
+        html += `
+          <tr class="row-metric-order">
+            <td rowspan="3" class="week-group-cell">WEEK ${w + 1}</td>
+            <td class="metric-label-cell">TOTAL ORDER</td>
+            ${ordCells}
+            <td class="col-total">${fmtInt(weekSumOrd)}</td>
+          </tr>
+          <tr class="row-metric-reject">
+            <td class="metric-label-cell">${rejectLabel}</td>
+            ${rejCells}
+            <td class="col-total">${fmtInt(weekSumRej)}</td>
+          </tr>
+          <tr class="row-metric-pct">
+            <td class="metric-label-cell">PERSENTASE (%)</td>
+            ${pctCells}
+            <td class="col-total">${fmtPct(weekPct)}</td>
+          </tr>
+        `;
+      });
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropzoneLabel.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropzoneLabel.classList.add('dragover');
-            }, false);
+      let totOrdCells = '';
+      let totRejCells = '';
+      let totPctCells = '';
+
+      prodTotals.forEach(pt => {
+        totOrdCells += `<td>${fmtInt(pt.order)}</td>`;
+        totRejCells += `<td>${fmtInt(pt.reject)}</td>`;
+        totPctCells += `<td>${fmtPct(calcPct(pt.reject, pt.order))}</td>`;
+      });
+
+      const grandPctAll = calcPct(grandRejectAll, grandOrderAll);
+
+      html += `
+        <tr class="row-total-order">
+          <td rowspan="3" class="total-week-group-cell">TOTAL<br>WEEK</td>
+          <td class="metric-label-cell">TOTAL ORDER</td>
+          ${totOrdCells}
+          <td>${fmtInt(grandOrderAll)}</td>
+        </tr>
+        <tr class="row-total-reject">
+          <td class="metric-label-cell">${rejectLabel}</td>
+          ${totRejCells}
+          <td>${fmtInt(grandRejectAll)}</td>
+        </tr>
+        <tr class="row-total-pct">
+          <td class="metric-label-cell">% TOTAL WEEK</td>
+          ${totPctCells}
+          <td>${fmtPct(grandPctAll)}</td>
+        </tr>
+      </tbody></table>`;
+
+      wrap.innerHTML = html;
+    }
+
+    function renderTopProductSectionVertical(secKey, wrapId, qtyLabel) {
+      const wrap = document.getElementById(wrapId);
+      if (!wrap) return;
+      const rows = safeArr(appState[secKey]);
+      const activeWeeks = getActiveWeekIndices(secKey);
+
+      let html = `<table class="data-table">
+        <colgroup>
+          <col style="width:7.5%">
+          <col style="width:11.5%">
+          ${PRODUCT_TYPES.map(() => `<col style="width:9.0%">`).join('')}
+          <col style="width:9.0%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>MINGGU</th>
+            <th>PARAMETER</th>
+            ${PRODUCT_TYPES.map(t => `<th>${t}</th>`).join('')}
+            <th class="purple-head">SUBTOTAL /<br>TOP ITEM</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      const prodTotals = PRODUCT_TYPES.map(() => ({
+        order: 0,
+        reject: 0,
+        peakName: '-',
+        peakRej: -1
+      }));
+      let grandOrderAll = 0;
+      let grandRejectAll = 0;
+      let overallPeakName = '-';
+      let overallPeakRej = -1;
+
+      activeWeeks.forEach(w => {
+        let weekSumOrd = 0;
+        let weekSumRej = 0;
+        let weekPeakName = '-';
+        let weekPeakVal = -1;
+
+        let nameCells = '';
+        let ordCells = '';
+        let rejCells = '';
+        let pctCells = '';
+
+        PRODUCT_TYPES.forEach((_, pIdx) => {
+          const wkData = (rows[pIdx] && safeArr(rows[pIdx].weeks)[w]) || { name: '-', order: 0, reject: 0 };
+          const name = safeStr(wkData.name, '-');
+          const ord = safeNum(wkData.order);
+          const rej = safeNum(wkData.reject);
+          const pct = calcPct(rej, ord);
+
+          weekSumOrd += ord;
+          weekSumRej += rej;
+          prodTotals[pIdx].order += ord;
+          prodTotals[pIdx].reject += rej;
+
+          if (rej > prodTotals[pIdx].peakRej) {
+            prodTotals[pIdx].peakRej = rej;
+            prodTotals[pIdx].peakName = name;
+          }
+          if (rej > weekPeakVal) {
+            weekPeakVal = rej;
+            weekPeakName = name;
+          }
+          if (rej > overallPeakRej) {
+            overallPeakRej = rej;
+            overallPeakName = name;
+          }
+
+          nameCells += `<td>${name}</td>`;
+          ordCells += `<td>${fmtInt(ord)}</td>`;
+          rejCells += `<td>${fmtInt(rej)}</td>`;
+          pctCells += `<td>${fmtPct(pct)}</td>`;
         });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropzoneLabel.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropzoneLabel.classList.remove('dragover');
-            }, false);
+        grandOrderAll += weekSumOrd;
+        grandRejectAll += weekSumRej;
+        const weekPct = calcPct(weekSumRej, weekSumOrd);
+
+        html += `
+          <tr class="row-metric-prodname">
+            <td rowspan="4" class="week-group-cell">WEEK ${w + 1}</td>
+            <td class="metric-label-cell">NAMA PRODUK</td>
+            ${nameCells}
+            <td class="col-total" style="text-align:center;">${weekPeakName}</td>
+          </tr>
+          <tr class="row-metric-order">
+            <td class="metric-label-cell">TOTAL ORDER</td>
+            ${ordCells}
+            <td class="col-total">${fmtInt(weekSumOrd)}</td>
+          </tr>
+          <tr class="row-metric-reject">
+            <td class="metric-label-cell">${qtyLabel}</td>
+            ${rejCells}
+            <td class="col-total">${fmtInt(weekSumRej)}</td>
+          </tr>
+          <tr class="row-metric-pct">
+            <td class="metric-label-cell">PERSENTASE (%)</td>
+            ${pctCells}
+            <td class="col-total">${fmtPct(weekPct)}</td>
+          </tr>
+        `;
+      });
+
+      let totNameCells = '';
+      let totOrdCells = '';
+      let totRejCells = '';
+      let totPctCells = '';
+
+      prodTotals.forEach(pt => {
+        totNameCells += `<td>${pt.peakName}</td>`;
+        totOrdCells += `<td>${fmtInt(pt.order)}</td>`;
+        totRejCells += `<td>${fmtInt(pt.reject)}</td>`;
+        totPctCells += `<td>${fmtPct(calcPct(pt.reject, pt.order))}</td>`;
+      });
+
+      const grandPctAll = calcPct(grandRejectAll, grandOrderAll);
+
+      html += `
+        <tr class="row-total-prodname">
+          <td rowspan="4" class="total-week-group-cell" style="background:var(--purple-dark);">TOTAL<br>WEEK</td>
+          <td class="metric-label-cell">TOP PRODUK</td>
+          ${totNameCells}
+          <td style="text-align:center;">${overallPeakName}</td>
+        </tr>
+        <tr class="row-total-order">
+          <td class="metric-label-cell">TOTAL ORDER</td>
+          ${totOrdCells}
+          <td>${fmtInt(grandOrderAll)}</td>
+        </tr>
+        <tr class="row-total-reject">
+          <td class="metric-label-cell">${qtyLabel}</td>
+          ${totRejCells}
+          <td>${fmtInt(grandRejectAll)}</td>
+        </tr>
+        <tr class="row-total-pct">
+          <td class="metric-label-cell">% TOTAL WEEK</td>
+          ${totPctCells}
+          <td>${fmtPct(grandPctAll)}</td>
+        </tr>
+      </tbody></table>`;
+
+      wrap.innerHTML = html;
+    }
+
+    function renderComparisonSection5() {
+      const wrap = document.getElementById('tableWrapSec5');
+      if (!wrap) return;
+
+      const wSec1 = getActiveWeekIndices('sec1');
+      const wSec2 = getActiveWeekIndices('sec2');
+      let totOrdAll = 0, totPilAll = 0, totProAll = 0;
+
+      let html = `<table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:14%;">TYPE PRODUK</th>
+            <th>TOTAL ORDER</th>
+            <th>TOTAL REJECT PILIHAN (QTY)</th>
+            <th>% REJECT PILIHAN</th>
+            <th>TOTAL REJECT PROSES (QTY)</th>
+            <th>% REJECT PROSES</th>
+            <th class="total-week-head">TOTAL NG (PILIHAN + PROSES)</th>
+            <th class="total-week-head">% TOTAL REJECT</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      PRODUCT_TYPES.forEach((type, idx) => {
+        const r1 = (appState.sec1 && appState.sec1[idx]) ? safeArr(appState.sec1[idx].weeks) : [];
+        const r2 = (appState.sec2 && appState.sec2[idx]) ? safeArr(appState.sec2[idx].weeks) : [];
+
+        let ord = 0, pil = 0, pro = 0;
+        wSec1.forEach(w => {
+          ord += safeNum(r1[w] && r1[w].order);
+          pil += safeNum(r1[w] && r1[w].reject);
+        });
+        wSec2.forEach(w => {
+          pro += safeNum(r2[w] && r2[w].reject);
         });
 
-        dropzoneLabel.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            if (dt.files.length > 0) handleFile(dt.files[0]);
+        const comb = pil + pro;
+        totOrdAll += ord;
+        totPilAll += pil;
+        totProAll += pro;
+
+        html += `
+          <tr>
+            <td class="col-type">${type}</td>
+            <td>${fmtInt(ord)}</td>
+            <td>${fmtInt(pil)}</td>
+            <td class="col-pct">${fmtPct(calcPct(pil, ord))}</td>
+            <td>${fmtInt(pro)}</td>
+            <td class="col-pct">${fmtPct(calcPct(pro, ord))}</td>
+            <td class="col-total">${fmtInt(comb)}</td>
+            <td class="col-pct col-total">${fmtPct(calcPct(comb, ord))}</td>
+          </tr>
+        `;
+      });
+
+      const grandComb = totPilAll + totProAll;
+      html += `</tbody><tfoot>
+        <tr>
+          <th style="text-align:left; padding-left:4px;">GRAND TOTAL</th>
+          <td>${fmtInt(totOrdAll)}</td>
+          <td>${fmtInt(totPilAll)}</td>
+          <td class="tfoot-pct">${fmtPct(calcPct(totPilAll, totOrdAll))}</td>
+          <td>${fmtInt(totProAll)}</td>
+          <td class="tfoot-pct">${fmtPct(calcPct(totProAll, totOrdAll))}</td>
+          <td>${fmtInt(grandComb)}</td>
+          <td class="tfoot-pct">${fmtPct(calcPct(grandComb, totOrdAll))}</td>
+        </tr>
+      </tfoot></table>`;
+
+      wrap.innerHTML = html;
+    }
+
+    function renderMonthlySection6() {
+      const wrap = document.getElementById('tableWrapSec6');
+      if (!wrap) return;
+      const rows = safeArr(appState.sec6);
+
+      let sumOrd = 0, sumRej = 0;
+
+      let html = `<table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:26%;">BULAN</th>
+            <th>TOTAL ORDER</th>
+            <th>TOTAL REJECT<br>PILIHAN + PROSES</th>
+            <th style="width:18%;">%</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      rows.forEach(r => {
+        const ord = safeNum(r.order);
+        const rej = safeNum(r.reject);
+        const pct = calcPct(rej, ord);
+        sumOrd += ord;
+        sumRej += rej;
+
+        html += `
+          <tr>
+            <td class="col-type">${safeStr(r.month)}</td>
+            <td>${fmtInt(ord)}</td>
+            <td>${fmtInt(rej)}</td>
+            <td class="col-pct">${fmtPct(pct)}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody><tfoot>
+        <tr>
+          <th style="text-align:left; padding-left:4px;">TOTAL TAHUNAN</th>
+          <td>${fmtInt(sumOrd)}</td>
+          <td>${fmtInt(sumRej)}</td>
+          <td class="tfoot-pct">${fmtPct(calcPct(sumRej, sumOrd))}</td>
+        </tr>
+      </tfoot></table>`;
+
+      wrap.innerHTML = html;
+    }
+
+    /* =========================================================================
+       8. GOOGLE CHARTS VISUALISASI INTERAKTIF (SENTUH/KLIK MUNCUL DETAIL)
+       ========================================================================= */
+    function renderAllCharts() {
+      if (!chartsReady || !window.google || !google.visualization) return;
+      drawWeeklyComboChart('sec1', 'chartSec1', 'GRAFIK REJECT PILIHAN (TREN MINGGU AKTIF)', '#1a237e', '#2e7d32', '#d97706');
+      drawWeeklyComboChart('sec2', 'chartSec2', 'GRAFIK REJECT PROSES (TREN MINGGU AKTIF)', '#00695c', '#6a1b9a', '#dc2626');
+      drawTopProductComboChart('sec3', 'chartSec3', 'GRAFIK PRODUK REJECT PILIHAN TERTINGGI PER TYPE PRODUK');
+      drawTopProductComboChart('sec4', 'chartSec4', 'GRAFIK PRODUK REJECT PROSES TERTINGGI PER TYPE PRODUK');
+      drawSection5Charts();
+      drawMonthlyComboChart();
+    }
+
+    function baseComboOptions(title, colors) {
+      return {
+        title: title,
+        titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
+        fontName: 'Montserrat',
+        fontSize: 8,
+        chartArea: { left: 52, right: 48, top: 24, bottom: 26, width: '86%', height: '66%' },
+        legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 8, bold: true } },
+        tooltip: { isHtml: false, trigger: 'both' },
+        focusTarget: 'datum',
+        seriesType: 'bars',
+        colors: colors,
+        vAxes: {
+          0: { title: 'Qty (Pcs)', textStyle: { fontSize: 7.5 }, titleTextStyle: { fontSize: 7.5, bold: true, italic: false } },
+          1: { title: '% Reject', textStyle: { fontSize: 7.5 }, titleTextStyle: { fontSize: 7.5, bold: true, italic: false }, format: '#.##%' }
+        },
+        series: {
+          2: { type: 'line', targetAxisIndex: 1, lineWidth: 2.2, pointSize: 5 }
+        },
+        bar: { groupWidth: '58%' }
+      };
+    }
+
+    function drawWeeklyComboChart(secKey, elId, title, colOrder, colRej, colLine) {
+      const el = document.getElementById(elId);
+      if (!el || el.offsetParent === null) return;
+
+      const rows = safeArr(appState[secKey]);
+      const activeWeeks = getActiveWeekIndices(secKey);
+      const dataArr = [['Minggu', 'Total Order', 'Total Reject', '% Reject']];
+
+      activeWeeks.forEach(w => {
+        let sumOrd = 0, sumRej = 0;
+        rows.forEach(r => {
+          const wk = safeArr(r.weeks)[w] || {};
+          sumOrd += safeNum(wk.order);
+          sumRej += safeNum(wk.reject);
         });
+        const ratio = sumOrd > 0 ? (sumRej / sumOrd) : 0;
+        dataArr.push([`WEEK ${w + 1}`, sumOrd, sumRej, Number(ratio.toFixed(4))]);
+      });
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+      const data = google.visualization.arrayToDataTable(dataArr);
+      const opts = baseComboOptions(title, [colOrder, colRej, colLine]);
+      new google.visualization.ComboChart(el).draw(data, opts);
+    }
+
+    function drawTopProductComboChart(secKey, elId, title) {
+      const el = document.getElementById(elId);
+      if (!el || el.offsetParent === null) return;
+
+      const rows = safeArr(appState[secKey]);
+      const activeWeeks = getActiveWeekIndices(secKey);
+      const headerRow = ['Type Produk', ...activeWeeks.map(w => `W${w + 1}`), '% Total Reject'];
+      const dataArr = [headerRow];
+
+      rows.forEach(r => {
+        const wks = safeArr(r.weeks);
+        let sumOrd = 0, sumRej = 0;
+        const weekVals = activeWeeks.map(w => {
+          const ord = safeNum(wks[w] && wks[w].order);
+          const rej = safeNum(wks[w] && wks[w].reject);
+          sumOrd += ord;
+          sumRej += rej;
+          return rej;
         });
+        const ratio = sumOrd > 0 ? (sumRej / sumOrd) : 0;
+        dataArr.push([safeStr(r.type), ...weekVals, Number(ratio.toFixed(4))]);
+      });
 
-        function handleFile(file) {
-            uploadText.innerText = file.name;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                processWorkbook(workbook);
-            };
-            reader.readAsArrayBuffer(file);
+      const palette = ['#1a237e', '#2e7d32', '#6a1b9a', '#00695c', '#37474f'];
+      const activeColors = activeWeeks.map(w => palette[w % palette.length]);
+      activeColors.push('#dc2626');
+
+      const lineSeriesIdx = activeWeeks.length;
+      const data = google.visualization.arrayToDataTable(dataArr);
+      const opts = {
+        title: title,
+        titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
+        fontName: 'Montserrat',
+        fontSize: 7.5,
+        chartArea: { left: 48, right: 48, top: 24, bottom: 26, width: '86%', height: '66%' },
+        legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
+        tooltip: { isHtml: false, trigger: 'both' },
+        focusTarget: 'datum',
+        seriesType: 'bars',
+        colors: activeColors,
+        vAxes: {
+          0: { title: 'Qty Reject', textStyle: { fontSize: 7.5 } },
+          1: { title: '% Reject', textStyle: { fontSize: 7.5 }, format: '#.##%' }
+        },
+        series: {
+          [lineSeriesIdx]: { type: 'line', targetAxisIndex: 1, lineWidth: 2.2, pointSize: 5 }
         }
+      };
 
-        function processWorkbook(workbook) {
-            let sheetName = workbook.SheetNames[0];
-            const foundSheet = workbook.SheetNames.find(s => s.toUpperCase().includes('JANUARI') || s.toUpperCase().includes('LAPORAN'));
-            if (foundSheet) sheetName = foundSheet;
+      new google.visualization.ComboChart(el).draw(data, opts);
+    }
 
-            document.getElementById('label-periode').innerText = sheetName.toUpperCase();
-            
-            const worksheet = workbook.Sheets[sheetName];
-            const jsonRows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+    function drawSection5Charts() {
+      const elType = document.getElementById('chartSec5Type');
+      const elTrend = document.getElementById('chartSec5Trend');
+      if (!elType || elType.offsetParent === null) return;
 
-            let productsMap = {};
-            let typeSummary = {};
+      const wSec1 = getActiveWeekIndices('sec1');
+      const wSec2 = getActiveWeekIndices('sec2');
 
-            for (let i = 7; i < jsonRows.length; i++) {
-                const row = jsonRows[i];
-                if (!row || (row[1] == null && row[2] == null)) continue;
-                
-                let namaProduk = String(row[1] || '').trim();
-                let prodType = String(row[2] || '').trim();
-                if (!prodType || prodType.toUpperCase() === 'TYPE' || prodType === 'nan') continue;
+      const typeArr = [['Type Produk', 'Reject Pilihan', 'Reject Proses', 'Total Reject (Garis)']];
+      PRODUCT_TYPES.forEach((type, idx) => {
+        const r1 = safeArr(appState.sec1[idx] && appState.sec1[idx].weeks);
+        const r2 = safeArr(appState.sec2[idx] && appState.sec2[idx].weeks);
+        let pil = 0, pro = 0;
+        wSec1.forEach(w => { pil += safeNum(r1[w] && r1[w].reject); });
+        wSec2.forEach(w => { pro += safeNum(r2[w] && r2[w].reject); });
+        typeArr.push([type, pil, pro, pil + pro]);
+      });
 
-                let orderAll = parseFloat(row[6]) || 0;
-                
-                let getVal = (col) => parseFloat(row[col]) || 0;
-                let rejBase = getVal(7);
-                let rejRing = getVal(9);
-                let rejInnerBase = getVal(11);
-                let rejMechanism = getVal(13);
-                let rejMetal = getVal(15);
-                let rejCover = getVal(17);
-                let rejInnerCover = getVal(19);
+      const dataType = google.visualization.arrayToDataTable(typeArr);
+      const optsType = {
+        title: 'KOMPARASI REJECT PILIHAN VS PROSES PER TYPE PRODUK',
+        titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
+        fontName: 'Montserrat',
+        fontSize: 7.5,
+        chartArea: { left: 50, right: 24, top: 24, bottom: 26, width: '88%', height: '66%' },
+        legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
+        tooltip: { isHtml: false, trigger: 'both' },
+        focusTarget: 'datum',
+        seriesType: 'bars',
+        colors: ['#1a237e', '#2e7d32', '#6a1b9a'],
+        series: { 2: { type: 'line', lineWidth: 2.2, pointSize: 5 } }
+      };
+      new google.visualization.ComboChart(elType).draw(dataType, optsType);
 
-                let totalPilihan = rejBase + rejRing + rejInnerBase + rejMechanism + rejMetal + rejCover + rejInnerCover;
-                let rejBongkaran = getVal(21);
+      const trendArr = [['Minggu', 'Reject Pilihan', 'Reject Proses', 'Total NG (Pilihan + Proses)']];
+      for (let w = 0; w < 5; w++) {
+        if (!appState.settings.weekVisible.sec1[w] && !appState.settings.weekVisible.sec2[w]) continue;
+        let pilW = 0, proW = 0;
+        PRODUCT_TYPES.forEach((_, idx) => {
+          if (appState.settings.weekVisible.sec1[w]) pilW += safeNum(appState.sec1[idx].weeks[w].reject);
+          if (appState.settings.weekVisible.sec2[w]) proW += safeNum(appState.sec2[idx].weeks[w].reject);
+        });
+        trendArr.push([`WEEK ${w + 1}`, pilW, proW, pilW + proW]);
+      }
 
-                if (!typeSummary[prodType]) {
-                    typeSummary[prodType] = { order: 0, pilihan: 0, bongkaran: 0 };
-                }
-                typeSummary[prodType].order += orderAll;
-                typeSummary[prodType].pilihan += totalPilihan;
-                typeSummary[prodType].bongkaran += rejBongkaran;
+      const dataTrend = google.visualization.arrayToDataTable(trendArr);
+      const optsTrend = {
+        title: 'TREN MINGGUAN (W1 - W5): REJECT PILIHAN VS REJECT PROSES',
+        titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#00695c' },
+        fontName: 'Montserrat',
+        fontSize: 7.5,
+        chartArea: { left: 50, right: 24, top: 24, bottom: 26, width: '88%', height: '66%' },
+        legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
+        tooltip: { isHtml: false, trigger: 'both' },
+        focusTarget: 'datum',
+        seriesType: 'bars',
+        colors: ['#2e7d32', '#6a1b9a', '#dc2626'],
+        series: { 2: { type: 'line', lineWidth: 2.2, pointSize: 5 } }
+      };
+      new google.visualization.ComboChart(elTrend).draw(dataTrend, optsTrend);
+    }
 
-                productsMap[namaProduk + '_' + prodType] = {
-                    name: namaProduk,
-                    type: prodType,
-                    order: orderAll,
-                    pilihan: totalPilihan,
-                    bongkaran: rejBongkaran
-                };
-            }
+    function drawMonthlyComboChart() {
+      const el = document.getElementById('chartSec6');
+      if (!el || el.offsetParent === null) return;
 
-            // Process Monthly Pareto Data
-            workbook.SheetNames.forEach(sName => {
-                let upperS = sName.toUpperCase();
-                let matchedM = monthOrder.find(m => upperS.includes(m));
-                if (matchedM) {
-                    let mSheet = workbook.Sheets[sName];
-                    let mRows = XLSX.utils.sheet_to_json(mSheet, {header: 1});
-                    let mOrder = 0;
-                    let mNg = 0;
-                    for (let r = 7; r < mRows.length; r++) {
-                        let row = mRows[r];
-                        if (!row || (row[1] == null && row[2] == null)) continue;
-                        let ord = parseFloat(row[6]) || 0;
-                        let getV = (c) => parseFloat(row[c]) || 0;
-                        let pil = getV(7)+getV(9)+getV(11)+getV(13)+getV(15)+getV(17)+getV(19);
-                        let bon = getV(21);
-                        mOrder += ord;
-                        mNg += (pil + bon);
-                    }
-                    if (mOrder > 0 || mNg > 0) {
-                        let pct = mOrder > 0 ? (mNg / mOrder) * 100 : 0;
-                        globalParetoData[matchedM] = { hasil: mOrder, ng: mNg, pct: pct };
-                    }
-                }
-            });
+      const dataArr = [['Bulan', 'Total Order', 'Total Reject (Pilihan+Proses)', '% Reject']];
+      safeArr(appState.sec6).forEach(m => {
+        const ord = safeNum(m.order);
+        const rej = safeNum(m.reject);
+        const ratio = ord > 0 ? (rej / ord) : 0;
+        dataArr.push([safeStr(m.month).slice(0, 3), ord, rej, Number(ratio.toFixed(4))]);
+      });
 
-            if (Object.keys(globalParetoData).length === 0) {
-                let totalH = Object.values(typeSummary).reduce((a,b)=>a+b.order,0);
-                let totalN = Object.values(typeSummary).reduce((a,b)=>a+b.pilihan+b.bongkaran,0);
-                let fallbackMonth = monthOrder.find(m => sheetName.toUpperCase().includes(m)) || sheetName.toUpperCase();
-                globalParetoData[fallbackMonth] = { hasil: totalH, ng: totalN, pct: totalH>0?(totalN/totalH)*100:0 };
-            }
-
-            updateDashboardUI(typeSummary, productsMap);
+      const data = google.visualization.arrayToDataTable(dataArr);
+      const opts = {
+        title: 'GRAFIK DATA E: PERBANDINGAN TOTAL ORDER VS TOTAL REJECT BULANAN (JAN - DES)',
+        titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
+        fontName: 'Montserrat',
+        fontSize: 7.5,
+        chartArea: { left: 52, right: 46, top: 26, bottom: 28, width: '80%', height: '68%' },
+        legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
+        tooltip: { isHtml: false, trigger: 'both' },
+        focusTarget: 'datum',
+        seriesType: 'bars',
+        colors: ['#1a237e', '#6a1b9a', '#2e7d32'],
+        vAxes: {
+          0: { title: 'Kuantitas (Pcs)', textStyle: { fontSize: 7.5 } },
+          1: { title: '% Reject', textStyle: { fontSize: 7.5 }, format: '#.##%' }
+        },
+        series: {
+          2: { type: 'line', targetAxisIndex: 1, lineWidth: 2.2, pointSize: 5 }
         }
+      };
 
-        function updateDashboardUI(typeSummary, productsMap) {
-            welcomeBanner.style.display = 'none';
-            document.getElementById('status-dot').className = 'w-2 h-2 bg-emerald-500 rounded-full';
-            document.getElementById('status-text').innerText = 'Data Berhasil Dimuat';
+      new google.visualization.ComboChart(el).draw(data, opts);
+    }
 
-            let totalOrderAll = 0;
-            let totalPilihanAll = 0;
-            let totalBongkaranAll = 0;
+    /* =========================================================================
+       9. HAPUS DATA PER SECTION & MANAJEMEN DATA
+       ========================================================================= */
+    function clearSectionData(secKey) {
+      const labels = {
+        sec1: 'Section 1 (Rekap Reject Pilihan)',
+        sec2: 'Section 2 (Rekap Reject Proses)',
+        sec3: 'Section 3 (Produk Reject Pilihan Tertinggi)',
+        sec4: 'Section 4 (Produk Reject Proses Tertinggi)',
+        sec5: 'Section 5 (Komparasi Reject Pilihan & Proses)',
+        sec6: 'Section 6 (Data Reject Bulanan Jan-Des)'
+      };
+      if (!confirm(`Hapus / kosongkan seluruh data pada ${labels[secKey] || secKey}?`)) return;
 
-            Object.values(typeSummary).forEach(t => {
-                totalOrderAll += t.order;
-                totalPilihanAll += t.pilihan;
-                totalBongkaranAll += t.bongkaran;
-            });
+      if (secKey === 'sec1' || secKey === 'sec2') {
+        appState[secKey] = PRODUCT_TYPES.map(type => ({
+          type,
+          weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 }))
+        }));
+      } else if (secKey === 'sec3' || secKey === 'sec4') {
+        appState[secKey] = PRODUCT_TYPES.map(type => ({
+          type,
+          weeks: Array.from({ length: 5 }, () => ({ name: '-', order: 0, reject: 0 }))
+        }));
+      } else if (secKey === 'sec5') {
+        ['sec1', 'sec2'].forEach(k => {
+          appState[k].forEach(r => {
+            r.weeks.forEach(w => { w.reject = 0; });
+          });
+        });
+      } else if (secKey === 'sec6') {
+        appState.sec6 = MONTHS.map(month => ({ month, order: 0, reject: 0 }));
+      }
 
-            document.getElementById('kpi-order').innerText = totalOrderAll.toLocaleString('id-ID');
-            document.getElementById('kpi-pilihan').innerText = totalPilihanAll.toLocaleString('id-ID');
-            document.getElementById('kpi-bongkaran').innerText = totalBongkaranAll.toLocaleString('id-ID');
-            
-            let totalRejectAll = totalPilihanAll + totalBongkaranAll;
-            document.getElementById('kpi-total-reject').innerText = totalRejectAll.toLocaleString('id-ID');
-            
-            let totalPctReject = totalOrderAll > 0 ? (totalRejectAll / totalOrderAll) * 100 : 0;
-            document.getElementById('kpi-pct-total-reject').innerText = totalPctReject.toFixed(2) + '%';
+      saveToStorage();
+      buildAllSidebarEditors();
+      if (activeModalSection === secKey) renderModalBody(secKey);
+      renderAll();
+      showToast(`Data ${labels[secKey]} telah dikosongkan`);
+    }
 
-            let t1Body = document.querySelector('#table-type-summary tbody');
-            t1Body.innerHTML = '';
-            let typeLabels = [];
-            let orderValues = [];
-            let pilihanPctValues = [];
-            let bongkaranPctValues = [];
+    function clearAllData() {
+      if (!confirm('Kosongkan semua angka pada tabel Section 1 s/d Section 6 menjadi 0?')) return;
 
-            Object.entries(typeSummary).forEach(([type, data]) => {
-                let pctPilihan = data.order > 0 ? (data.pilihan / data.order) * 100 : 0;
-                let pctBongkaran = data.order > 0 ? (data.bongkaran / data.order) * 100 : 0;
+      ['sec1', 'sec2'].forEach(secKey => {
+        appState[secKey] = PRODUCT_TYPES.map(type => ({
+          type,
+          weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 }))
+        }));
+      });
 
-                typeLabels.push(type);
-                orderValues.push(data.order);
-                pilihanPctValues.push(pctPilihan.toFixed(2));
-                bongkaranPctValues.push(pctBongkaran.toFixed(2));
+      ['sec3', 'sec4'].forEach(secKey => {
+        appState[secKey] = PRODUCT_TYPES.map(type => ({
+          type,
+          weeks: Array.from({ length: 5 }, () => ({ name: '-', order: 0, reject: 0 }))
+        }));
+      });
 
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="py-2.5 px-3 font-medium text-white">${type}</td>
-                    <td class="py-2.5 px-3">${data.order.toLocaleString('id-ID')}</td>
-                    <td class="py-2.5 px-3 text-blue-400 font-medium">${data.pilihan.toLocaleString('id-ID')}</td>
-                    <td class="py-2.5 px-3 font-bold">${pctPilihan.toFixed(2)}%</td>
-                    <td class="py-2.5 px-3 text-amber-400 font-medium">${data.bongkaran.toLocaleString('id-ID')}</td>
-                    <td class="py-2.5 px-3 font-bold">${pctBongkaran.toFixed(2)}%</td>
-                `;
-                t1Body.appendChild(tr);
-            });
+      appState.sec6 = MONTHS.map(month => ({ month, order: 0, reject: 0 }));
 
-            let totalPctPilihan = totalOrderAll > 0 ? (totalPilihanAll / totalOrderAll) * 100 : 0;
-            let totalPctBongkaran = totalOrderAll > 0 ? (totalBongkaranAll / totalOrderAll) * 100 : 0;
-            let trTotal = document.createElement('tr');
-            trTotal.className = 'border-t-2 border-slate-500 font-bold text-white bg-slate-700/40';
-            trTotal.innerHTML = `
-                <td class="py-2.5 px-3">TOTAL</td>
-                <td class="py-2.5 px-3">${totalOrderAll.toLocaleString('id-ID')}</td>
-                <td class="py-2.5 px-3 text-blue-400">${totalPilihanAll.toLocaleString('id-ID')}</td>
-                <td class="py-2.5 px-3">${totalPctPilihan.toFixed(2)}%</td>
-                <td class="py-2.5 px-3 text-amber-400">${totalBongkaranAll.toLocaleString('id-ID')}</td>
-                <td class="py-2.5 px-3">${totalPctBongkaran.toFixed(2)}%</td>
-            `;
-            t1Body.appendChild(trTotal);
+      saveToStorage();
+      buildAllSidebarEditors();
+      if (activeModalSection) renderModalBody(activeModalSection);
+      renderAll();
+      showToast('Seluruh data laporan Section 1 s/d 6 telah dikosongkan');
+    }
 
-            let types = Object.keys(typeSummary);
-            let topPilihanList = [];
-            let topBongkaranList = [];
+    function loadDemoData() {
+      appState = createDefaultState();
+      saveToStorage();
+      syncControlsFromState();
+      buildAllSidebarEditors();
+      if (activeModalSection) renderModalBody(activeModalSection);
+      renderAll();
+      showToast('Data simulasi pabrik berhasil dimuat!');
+    }
 
-            types.forEach(t => {
-                let items = Object.values(productsMap).filter(p => p.type === t);
-                if (items.length > 0) {
-                    let getPctP = (item) => item.order > 0 ? (item.pilihan / item.order) : 0;
-                    let getPctB = (item) => item.order > 0 ? (item.bongkaran / item.order) : 0;
-                    
-                    let maxP = items.reduce((max, item) => getPctP(item) > getPctP(max) ? item : max, items[0]);
-                    let maxB = items.reduce((max, item) => getPctB(item) > getPctB(max) ? item : max, items[0]);
-                    
-                    if (maxP.pilihan > 0) topPilihanList.push(maxP);
-                    if (maxB.bongkaran > 0) topBongkaranList.push(maxB);
-                }
-            });
+    /* =========================================================================
+       10. EXPORT PNG & SIMPAN HTML INTERAKTIF (TANPA BANNER SNAPSHOT OFFLINE)
+       ========================================================================= */
+    async function captureReportCanvas() {
+      const paper = document.getElementById('reportPaper');
+      showToast('Memproses tangkapan resolusi tinggi...');
+      return await html2canvas(paper, {
+        scale: 2.5,
+        useCORS: true,
+        backgroundColor: appState.settings.paperColor || '#ffffff',
+        logging: false
+      });
+    }
 
-            let t2Body = document.querySelector('#table-top-pilihan tbody');
-            t2Body.innerHTML = '';
-            topPilihanList.forEach(item => {
-                let pct = item.order > 0 ? (item.pilihan / item.order) * 100 : 0;
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="py-2.5 px-3 w-[18%]"><span class="bg-slate-700 px-2 py-0.5 rounded text-[11px] text-slate-300 font-medium">${item.type}</span></td>
-                    <td class="py-2.5 px-3 w-[42%] text-white font-medium">${item.name}</td>
-                    <td class="py-2.5 px-3 w-[15%]">${item.order.toLocaleString('id-ID')}</td>
-                    <td class="py-2.5 px-3 w-[15%] text-blue-400 font-bold">${item.pilihan.toLocaleString('id-ID')}</td>
-                    <td class="py-2.5 px-3 w-[10%] font-semibold text-sky-400">${pct.toFixed(2)}%</td>
-                `;
-                t2Body.appendChild(tr);
-            });
+    async function exportHighResPNG() {
+      try {
+        const canvas = await captureReportCanvas();
+        const link = document.createElement('a');
+        const filename = `LAPORAN_REJECT_ASSY_${safeStr(appState.header.plant).replace(/\s+/g, '_')}_${safeStr(appState.header.week).replace(/\s+/g, '_')}.png`;
+        link.download = filename;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+        showToast('Gambar PNG Resolusi Tinggi berhasil diunduh!');
+      } catch (err) {
+        console.error(err);
+        showToast('Gagal mengekspor PNG');
+      }
+    }
 
-            let t3Body = document.querySelector('#table-top-bongkaran tbody');
-            t3Body.innerHTML = '';
-            topBongkaranList.forEach(item => {
-                let pct = item.order > 0 ? (item.bongkaran / item.order) * 100 : 0;
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="py-2.5 px-3 w-[18%]"><span class="bg-slate-700 px-2 py-0.5 rounded text-[11px] text-slate-300 font-medium">${item.type}</span></td>
-                    <td class="py-2.5 px-3 w-[42%] text-white font-medium">${item.name}</td>
-                    <td class="py-2.5 px-3 w-[15%]">${item.order.toLocaleString('id-ID')}</td>
-                    <td class="py-2.5 px-3 w-[15%] text-amber-400 font-bold">${item.bongkaran.toLocaleString('id-ID')}</td>
-                    <td class="py-2.5 px-3 w-[10%] font-semibold text-amber-400">${pct.toFixed(2)}%</td>
-                `;
-                t3Body.appendChild(tr);
-            });
+    // REQ 1 & REQ 2: Simpan HTML dengan Grafik Interaktif (Sentuh/Klik muncul detail) & Tanpa Banner SNAPSHOT OFFLINE
+    function exportOfflineHTML() {
+      try {
+        const title = `${safeStr(appState.header.title)} - ${safeStr(appState.header.plant)} (${safeStr(appState.header.week)})`;
+        const cssText = document.getElementById('coreReportStyles').innerHTML;
+        const paperHTML = document.getElementById('reportPaper').outerHTML;
+        const serializedState = JSON.stringify(appState);
 
-            renderCharts(typeLabels, orderValues, pilihanPctValues, bongkaranPctValues);
-            renderParetoChart();
+        const interactiveHtmlContent = `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"><\/script>
+  <style>
+    ${cssText}
+    :root {
+      --paper-bg-color: ${appState.settings.paperColor || '#ffffff'};
+      --table-font-size: ${safeNum(appState.settings.fontSize) || 8}px;
+      --table-cell-padding: ${safeNum(appState.settings.padding) || 3}px;
+    }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background-color: #000000 !important;
+      height: auto !important;
+      min-height: 100vh;
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    #reportPaper {
+      margin: 0 auto !important;
+      box-shadow: none !important;
+    }
+    @media (max-width: 1150px) {
+      body {
+        justify-content: flex-start;
+      }
+      #reportPaper.a4-landscape,
+      #reportPaper.a4-portrait {
+        width: 100vw !important;
+        min-width: 720px;
+      }
+    }
+  </style>
+</head>
+<body>
+  ${paperHTML}
+  <script>
+    const PRODUCT_TYPES = ${JSON.stringify(PRODUCT_TYPES)};
+    const appState = ${serializedState};
+    let chartsReady = false;
+
+    ${safeNum.toString()}
+    ${safeStr.toString()}
+    ${safeArr.toString()}
+    ${ ensureWeekVisibleStructure.toString() }
+    ${ getActiveWeekIndices.toString() }
+    ${ baseComboOptions.toString() }
+    ${ drawWeeklyComboChart.toString() }
+    ${ drawTopProductComboChart.toString() }
+    ${ drawSection5Charts.toString() }
+    ${ drawMonthlyComboChart.toString() }
+    ${ renderAllCharts.toString() }
+
+    google.charts.load('current', { packages: ['corechart'] });
+    google.charts.setOnLoadCallback(function() {
+      chartsReady = true;
+      renderAllCharts();
+    });
+
+    window.addEventListener('resize', function() {
+      if (chartsReady) renderAllCharts();
+    });
+  <\/script>
+</body>
+</html>`;
+
+        const blob = new Blob([interactiveHtmlContent], { type: 'text/html;charset=utf-8' });
+        const link = document.createElement('a');
+        link.download = `LAPORAN_INTERAKTIF_${safeStr(appState.header.plant).replace(/\s+/g, '_')}_${safeStr(appState.header.week).replace(/\s+/g, '_')}.html`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        showToast('File HTML Interaktif berhasil disimpan!');
+      } catch (err) {
+        console.error(err);
+        showToast('Gagal menyimpan HTML Interaktif');
+      }
+    }
+
+    function backupJSON() {
+      const dataStr = JSON.stringify(appState, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.download = `BACKUP_REJECT_ASSY_${safeStr(appState.header.plant).replace(/\s+/g, '_')}.json`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      showToast('State data berhasil diunduh ke file .JSON');
+    }
+
+    function restoreJSON(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && typeof parsed === 'object') {
+            const def = createDefaultState();
+            appState = Object.assign(def, parsed);
+            appState.settings = Object.assign(def.settings, parsed.settings || {});
+            ensureWeekVisibleStructure();
+            saveToStorage();
+            syncControlsFromState();
+            buildAllSidebarEditors();
+            renderAll();
+            showToast('Data JSON berhasil di-restore!');
+          }
+        } catch (err) {
+          alert('Format file JSON tidak valid.');
         }
-
-        function renderCharts(labels, orders, pilihanPct, bongkaranPct) {
-            const ctx1 = document.getElementById('typeChart').getContext('2d');
-            if (typeChartInstance) typeChartInstance.destroy();
-            typeChartInstance = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Jumlah Order',
-                        data: orders,
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 0 },
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
-                    }
-                }
-            });
-
-            const ctx2 = document.getElementById('ratioChart').getContext('2d');
-            if (ratioChartInstance) ratioChartInstance.destroy();
-            ratioChartInstance = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: '% Reject Pilihan',
-                            data: pilihanPct,
-                            backgroundColor: '#38bdf8',
-                            borderRadius: 4
-                        },
-                        {
-                            label: '% Reject Bongkaran',
-                            data: bongkaranPct,
-                            backgroundColor: '#fbbf24',
-                            borderRadius: 4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 0 },
-                    plugins: { legend: { labels: { color: '#94a3b8' } } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
-                    }
-                }
-            });
-        }
-
-        function renderParetoChart() {
-            let sortedKeys = Object.keys(globalParetoData).sort((a, b) => {
-                let idxA = monthOrder.indexOf(a);
-                let idxB = monthOrder.indexOf(b);
-                if(idxA === -1) idxA = 99;
-                if(idxB === -1) idxB = 99;
-                return idxA - idxB;
-            });
-
-            const pLabels = sortedKeys;
-            const pHasil = sortedKeys.map(k => globalParetoData[k].hasil);
-            const pNg = sortedKeys.map(k => globalParetoData[k].ng);
-            const pPct = sortedKeys.map(k => globalParetoData[k].pct);
-
-            const ctx3 = document.getElementById('paretoChart').getContext('2d');
-            if (paretoChartInstance) paretoChartInstance.destroy();
-            paretoChartInstance = new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: pLabels,
-                    datasets: [
-                        {
-                            label: 'Total Hasil (Order)',
-                            data: pHasil,
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 4,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'Total NG (Reject)',
-                            data: pNg,
-                            backgroundColor: '#ef4444',
-                            borderRadius: 4,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'Persentase (%) NG',
-                            data: pPct,
-                            type: 'line',
-                            borderColor: '#10b981',
-                            backgroundColor: '#10b981',
-                            borderWidth: 2,
-                            yAxisID: 'y1',
-                            tension: 0.2
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 0 },
-                    plugins: { legend: { labels: { color: '#94a3b8' } } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: {size: 10} } },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: 'Jumlah Qty', color: '#94a3b8', font: {size: 10} },
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            ticks: { color: '#94a3b8' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: { display: true, text: 'Persentase (%)', color: '#10b981', font: {size: 10} },
-                            grid: { drawOnChartArea: false },
-                            ticks: { color: '#10b981' }
-                        }
-                    }
-                }
-            });
-        }
-
-        function tambahDataManual() {
-            let bulan = document.getElementById('input-bulan').value;
-            let hasil = parseFloat(document.getElementById('input-hasil').value);
-            let ng = parseFloat(document.getElementById('input-ng').value);
-
-            if (isNaN(hasil) || isNaN(ng)) {
-                alert("Harap masukkan angka yang valid untuk Hasil dan NG.");
-                return;
-            }
-
-            let pct = hasil > 0 ? (ng / hasil) * 100 : 0;
-            globalParetoData[bulan] = { hasil: hasil, ng: ng, pct: pct };
-            
-            renderParetoChart();
-            
-            document.getElementById('input-hasil').value = '';
-            document.getElementById('input-ng').value = '';
-            
-            document.getElementById('status-dot').className = 'w-2 h-2 bg-blue-500 rounded-full animate-pulse';
-            document.getElementById('status-text').innerText = 'Grafik Diperbarui Manual';
-        }
-
-        function backupDashboardData() {
-            const backupPayload = {
-                version: "1.0",
-                date: new Date().toISOString(),
-                globalParetoData: globalParetoData
-            };
-            
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPayload, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `dashboard_reject_backup_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-
-            document.getElementById('status-dot').className = 'w-2 h-2 bg-emerald-500 rounded-full';
-            document.getElementById('status-text').innerText = 'Backup Data Berhasil Diunduh';
-        }
-
-        const backupFileInput = document.getElementById('backup-file-input');
-        if (backupFileInput) {
-            backupFileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        try {
-                            const parsed = JSON.parse(evt.target.result);
-                            if (parsed && parsed.globalParetoData) {
-                                globalParetoData = parsed.globalParetoData;
-                                renderParetoChart();
-                                
-                                document.getElementById('status-dot').className = 'w-2 h-2 bg-emerald-500 rounded-full';
-                                document.getElementById('status-text').innerText = 'Data Backup Berhasil Dipulihkan';
-                            } else {
-                                alert("Format file backup tidak valid.");
-                            }
-                        } catch (err) {
-                            alert("Gagal membaca file JSON. Pastikan file backup benar.");
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            });
-        }
-
-        // Fungsi Simpan ke Gambar dengan html2canvas
-        function simpanKeGambar() {
-            const captureTarget = document.getElementById('captureArea');
-            const statusText = document.getElementById('status-text');
-            const statusDot = document.getElementById('status-dot');
-            
-            if (!captureTarget) {
-                alert("Area capture tidak ditemukan.");
-                return;
-            }
-
-            statusDot.className = 'w-2 h-2 bg-indigo-500 rounded-full animate-pulse';
-            statusText.innerText = 'Merender Gambar HD...';
-
-            // Kunci lebar elemen agar rasio mobile stabil
-            captureTarget.classList.add('rendering-mode');
-
-            const options = {
-                scale: 3,
-                useCORS: true,
-                backgroundColor: '#0f172a',
-                logging: false
-            };
-
-            // Jeda 300ms untuk kalkulasi ulang layout DOM sebelum kanvas dirender
-            setTimeout(() => {
-                html2canvas(captureTarget, options).then(canvas => {
-                    captureTarget.classList.remove('rendering-mode');
-
-                    const now = new Date();
-                    const dateStr = now.getFullYear() + 
-                        String(now.getMonth() + 1).padStart(2, '0') + 
-                        String(now.getDate()).padStart(2, '0');
-                    const timeStr = String(now.getHours()).padStart(2, '0') + 
-                        String(now.getMinutes()).padStart(2, '0') + 
-                        String(now.getSeconds()).padStart(2, '0');
-                    const fileName = `Dashboard_Reject_Assy_${dateStr}_${timeStr}.png`;
-
-                    const dataURL = canvas.toDataURL('image/png');
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = dataURL;
-                    downloadLink.download = fileName;
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    document.body.removeChild(downloadLink);
-
-                    statusDot.className = 'w-2 h-2 bg-emerald-500 rounded-full';
-                    statusText.innerText = 'Gambar HD Berhasil Diunduh';
-
-                }).catch(error => {
-                    captureTarget.classList.remove('rendering-mode');
-                    statusDot.className = 'w-2 h-2 bg-red-500 rounded-full';
-                    statusText.innerText = 'Gagal Merender Gambar';
-                    console.error("Kesalahan rendering gambar:", error);
-                    alert("Terjadi kegagalan saat mengekstrak gambar.");
-                });
-            }, 300);
-        }
-    </script>
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+  </script>
 </body>
 </html>
