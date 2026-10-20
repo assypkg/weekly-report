@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Laporan REJECT ASSY - ver.4</title>
-  <!-- Favicon Standar & Favicon Khusus HP -->
+  <title>Laporan REJECT ASSY - ver.5</title>
+   <!-- Favicon Standar & Favicon Khusus HP -->
     <link rel="icon" type="image/png" href="97799.png">
     <link rel="apple-touch-icon" href="97799.png">
-    
+
   <!-- Google Fonts: Montserrat -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,9 +23,11 @@
       --navy-light: #283593;
       --emerald: #2e7d32;
       --emerald-light: #43a047;
-      --purple-dark: #6a1b9a;
+      --sky-bright: #0284c7;
+      --sky-light: #0ea5e9;
       --teal: #00695c;
       --blue-grey: #37474f;
+      --red-alert: #dc2626;
       --bg-dark: #0f172a;
       --sidebar-width: 480px;
       --table-font-size: 8px;
@@ -169,7 +171,7 @@
 
     .btn-navy { background: var(--navy); }
     .btn-emerald { background: var(--emerald); }
-    .btn-purple { background: var(--purple-dark); }
+    .btn-sky { background: var(--sky-bright); }
     .btn-teal { background: var(--teal); }
     .btn-bluegrey { background: var(--blue-grey); }
     .btn-danger { background: #b91c1c; }
@@ -654,7 +656,7 @@
       color: #f1f5f9;
     }
 
-    /* Executive KPI Summary Strip with Icons */
+    /* Executive KPI Summary Strip with Icons (Warna Ungu Diganti Biru Cerah Sky) */
     .kpi-strip {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -677,8 +679,8 @@
       width: 34px;
       height: 34px;
       border-radius: 7px;
-      background: rgba(255, 255, 255, 0.16);
-      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.32);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -694,14 +696,14 @@
 
     .kpi-navy { background: linear-gradient(135deg, var(--navy) 0%, #283593 100%); border-left: 4px solid #38bdf8; }
     .kpi-emerald { background: linear-gradient(135deg, var(--emerald) 0%, #1b5e20 100%); border-left: 4px solid #fde047; }
-    .kpi-purple { background: linear-gradient(135deg, var(--purple-dark) 0%, #4a148c 100%); border-left: 4px solid #f472b6; }
+    .kpi-sky { background: linear-gradient(135deg, var(--sky-bright) 0%, var(--sky-light) 100%); border-left: 4px solid #fde047; }
     .kpi-teal { background: linear-gradient(135deg, var(--teal) 0%, #004d40 100%); border-left: 4px solid #2dd4bf; }
 
     .kpi-card .kpi-title {
       font-size: 7.5px;
       font-weight: 700;
       text-transform: uppercase;
-      opacity: 0.92;
+      opacity: 0.95;
       letter-spacing: 0.3px;
     }
 
@@ -714,11 +716,11 @@
 
     .kpi-card .kpi-sub {
       font-size: 7px;
-      opacity: 0.85;
+      opacity: 0.9;
       margin-top: 1px;
     }
 
-    /* Section Styling with Icon Banner (Tanpa Label Kanan Vertikal W1-W5) */
+    /* Section Styling with Icon Banner */
     .report-section {
       margin: 0 0 6px 0;
       background: rgba(255, 255, 255, 0.98);
@@ -750,7 +752,7 @@
       width: 20px;
       height: 20px;
       border-radius: 4px;
-      background: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.2);
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -759,7 +761,7 @@
 
     .banner-navy { background: linear-gradient(90deg, var(--navy) 0%, #283593 100%); }
     .banner-emerald { background: linear-gradient(90deg, var(--emerald) 0%, #388e3c 100%); }
-    .banner-purple { background: linear-gradient(90deg, var(--purple-dark) 0%, #7b1fa2 100%); }
+    .banner-sky { background: linear-gradient(90deg, var(--sky-bright) 0%, var(--sky-light) 100%); }
     .banner-teal { background: linear-gradient(90deg, var(--teal) 0%, #00796b 100%); }
     .banner-bluegrey { background: linear-gradient(90deg, var(--blue-grey) 0%, #455a64 100%); }
 
@@ -800,8 +802,13 @@
       background: var(--emerald);
     }
 
-    .data-table thead th.purple-head {
-      background: var(--purple-dark);
+    .data-table thead th.sky-head {
+      background: var(--sky-bright);
+    }
+
+    .data-table thead th.red-head {
+      background: var(--red-alert);
+      color: #ffffff;
     }
 
     .data-table tbody td.week-group-cell {
@@ -852,9 +859,10 @@
       text-align: center;
     }
 
+    /* Baris % Cerah (Pengganti Ungu Muda -> Biru Cerah Sky) */
     .data-table tbody tr.row-metric-pct td {
-      background: #f3e8ff;
-      color: var(--purple-dark);
+      background: #e0f2fe;
+      color: #0369a1;
       font-weight: 800;
       border-bottom: 2px solid #64748b;
     }
@@ -899,10 +907,24 @@
       padding-left: 4px;
     }
 
+    /* Kolom % Standar (Biru Cerah Sky) */
     .data-table tbody td.col-pct {
       font-weight: 700;
-      color: var(--purple-dark);
-      background: rgba(106, 27, 154, 0.06);
+      color: var(--sky-bright);
+      background: #e0f2fe;
+    }
+
+    /* REQ 2: Kolom % Khusus Section F berwarna MERAH */
+    .data-table tbody td.col-pct-red {
+      font-weight: 800;
+      color: var(--red-alert) !important;
+      background: #fef2f2 !important;
+    }
+
+    .data-table tfoot td.tfoot-pct-red {
+      background: var(--red-alert) !important;
+      color: #ffffff !important;
+      font-weight: 800;
     }
 
     .data-table tbody td.col-total {
@@ -1043,7 +1065,7 @@
       </div>
       <div>
         <h1>DASHBOARD &amp; LAPORAN REJECT ASSY</h1>
-        <p>Manufacturing System Analyst &bull; Interactive Suite v4</p>
+        <p>Manufacturing System Analyst &bull; Interactive Suite v5</p>
       </div>
     </div>
 
@@ -1051,10 +1073,10 @@
     <div class="action-bar">
       <button class="btn btn-navy" onclick="window.print()">&#128424; Cetak A4</button>
       <button class="btn btn-emerald" onclick="exportHighResPNG()">&#128247; Unduh PNG</button>
-      <button class="btn btn-purple" onclick="exportOfflineHTML()">&#128190; Simpan HTML</button>
+      <button class="btn btn-sky" onclick="exportOfflineHTML()">&#128190; Simpan HTML</button>
       <button class="btn btn-teal" onclick="backupJSON()">&#11015; Backup JSON</button>
       <button class="btn btn-bluegrey" onclick="document.getElementById('restoreInput').click()">&#11014; Restore JSON</button>
-      <button class="btn btn-danger" onclick="clearAllData()">&#128465; Reset Semua</button>
+      <button class="btn btn-danger" onclick="clearAllData()">&#128465; Kosongkan Data</button>
       <input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restoreJSON(event)" />
     </div>
 
@@ -1222,7 +1244,7 @@
       <div class="accordion-item">
         <button class="accordion-header" onclick="toggleAccordion(this)">
           <span class="acc-title-wrap">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2.2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
             <span>SEC 3 (C): PRODUK REJECT PILIHAN TERTINGGI</span>
           </span>
           <span>&#9662;</span>
@@ -1288,7 +1310,7 @@
       <div class="accordion-item">
         <button class="accordion-header" onclick="toggleAccordion(this)">
           <span class="acc-title-wrap">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span>SEC 6 (F): DATA &amp; GRAFIK REJECT BULANAN</span>
           </span>
           <span>&#9662;</span>
@@ -1331,7 +1353,7 @@
           </div>
         </header>
 
-        <!-- EXECUTIVE KPI SUMMARY STRIP WITH ICONS -->
+        <!-- EXECUTIVE KPI SUMMARY STRIP WITH ICONS (WARNA UNGU DIGANTI BIRU CERAH SKY) -->
         <div class="kpi-strip">
           <div class="kpi-card kpi-navy">
             <div class="kpi-icon-box">
@@ -1355,9 +1377,9 @@
             </div>
           </div>
 
-          <div class="kpi-card kpi-purple">
+          <div class="kpi-card kpi-sky">
             <div class="kpi-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </div>
             <div class="kpi-info">
               <span class="kpi-title">Total Reject Proses</span>
@@ -1378,7 +1400,7 @@
           </div>
         </div>
 
-        <!-- SECTION 1 (A): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PILIHAN (TANPA LABEL VERTIKAL KANAN) -->
+        <!-- SECTION 1 (A): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PILIHAN -->
         <section class="report-section" id="viewSec1">
           <div class="section-banner banner-navy">
             <div class="section-banner-left">
@@ -1392,7 +1414,7 @@
           <div class="chart-box" id="chartSec1"></div>
         </section>
 
-        <!-- SECTION 2 (B): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PROSES (TANPA LABEL VERTIKAL KANAN) -->
+        <!-- SECTION 2 (B): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PROSES -->
         <section class="report-section" id="viewSec2">
           <div class="section-banner banner-emerald">
             <div class="section-banner-left">
@@ -1406,12 +1428,12 @@
           <div class="chart-box" id="chartSec2"></div>
         </section>
 
-        <!-- SECTION 3 (C): PRODUK REJECT PILIHAN TERTINGGI (TANPA LABEL VERTIKAL KANAN) -->
+        <!-- SECTION 3 (C): PRODUK REJECT PILIHAN TERTINGGI (WARNA UNGU DIGANTI BIRU CERAH SKY) -->
         <section class="report-section" id="viewSec3">
-          <div class="section-banner banner-purple">
+          <div class="section-banner banner-sky">
             <div class="section-banner-left">
               <span class="section-banner-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </span>
               <span>C. PRODUK REJECT PILIHAN TERTINGGI</span>
             </div>
@@ -1420,7 +1442,7 @@
           <div class="chart-box" id="chartSec3"></div>
         </section>
 
-        <!-- SECTION 4 (D): PRODUK REJECT PROSES TERTINGGI (TANPA LABEL VERTIKAL KANAN) -->
+        <!-- SECTION 4 (D): PRODUK REJECT PROSES TERTINGGI -->
         <section class="report-section" id="viewSec4">
           <div class="section-banner banner-teal">
             <div class="section-banner-left">
@@ -1451,7 +1473,7 @@
           </div>
         </section>
 
-        <!-- SECTION 6 (F): DATA DAN GRAFIK REJECT BULANAN -->
+        <!-- SECTION 6 (F): DATA DAN GRAFIK REJECT BULANAN (% BERWARNA MERAH) -->
         <section class="report-section" id="viewSec6">
           <div class="section-banner banner-navy">
             <div class="section-banner-left">
@@ -1476,7 +1498,7 @@
 
   <script>
     /* =========================================================================
-       1. KONSTANTA & STRUKTUR STATE UTAMA (ANTI TYPE-ERROR)
+       1. KONSTANTA & STRUKTUR STATE UTAMA (DEFAULT KOSONG SAAT BUKA HALAMAN)
        ========================================================================= */
     const PRODUCT_TYPES = [
       'LIPSTICK',
@@ -1494,7 +1516,7 @@
       'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'
     ];
 
-    const STORAGE_KEY = 'REJECT_ASSY_SPA_STATE_V4';
+    const STORAGE_KEY = 'REJECT_ASSY_SPA_STATE_V5';
     let chartsReady = false;
     let activeModalSection = null;
     let appState = createDefaultState();
@@ -1545,6 +1567,7 @@
       return o > 0 ? (r / o) * 100 : 0;
     }
 
+    // REQ 3: Saat buka halaman, seluruh data diinisialisasi KOSONG (0 dan '-')
     function createDefaultState() {
       return {
         header: {
@@ -1574,52 +1597,79 @@
             sec4: [true, true, true, true, true]
           }
         },
-        sec1: PRODUCT_TYPES.map((type, idx) => ({
+        sec1: PRODUCT_TYPES.map(type => ({
           type,
-          weeks: [
-            { order: 12500 - idx * 800, reject: 145 - idx * 8 },
-            { order: 13200 - idx * 750, reject: 138 - idx * 7 },
-            { order: 11800 - idx * 600, reject: 120 - idx * 6 },
-            { order: 14000 - idx * 850, reject: 152 - idx * 9 },
-            { order: 12900 - idx * 700, reject: 130 - idx * 7 }
-          ]
+          weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 }))
         })),
-        sec2: PRODUCT_TYPES.map((type, idx) => ({
+        sec2: PRODUCT_TYPES.map(type => ({
           type,
-          weeks: [
-            { order: 12500 - idx * 800, reject: 98 - idx * 6 },
-            { order: 13200 - idx * 750, reject: 112 - idx * 7 },
-            { order: 11800 - idx * 600, reject: 89 - idx * 5 },
-            { order: 14000 - idx * 850, reject: 105 - idx * 6 },
-            { order: 12900 - idx * 700, reject: 94 - idx * 5 }
-          ]
+          weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 }))
         })),
-        sec3: PRODUCT_TYPES.map((type, idx) => ({
+        sec3: PRODUCT_TYPES.map(type => ({
           type,
-          weeks: [
-            { name: type.slice(0, 4) + '-01A', order: 4200 - idx * 200, reject: 68 - idx * 4 },
-            { name: type.slice(0, 4) + '-02B', order: 4500 - idx * 210, reject: 64 - idx * 3 },
-            { name: type.slice(0, 4) + '-01A', order: 3900 - idx * 180, reject: 55 - idx * 3 },
-            { name: type.slice(0, 4) + '-03C', order: 4800 - idx * 220, reject: 72 - idx * 4 },
-            { name: type.slice(0, 4) + '-02B', order: 4300 - idx * 190, reject: 60 - idx * 3 }
-          ]
+          weeks: Array.from({ length: 5 }, () => ({ name: '-', order: 0, reject: 0 }))
         })),
-        sec4: PRODUCT_TYPES.map((type, idx) => ({
+        sec4: PRODUCT_TYPES.map(type => ({
           type,
-          weeks: [
-            { name: type.slice(0, 4) + '-PR1', order: 4200 - idx * 200, reject: 46 - idx * 3 },
-            { name: type.slice(0, 4) + '-PR2', order: 4500 - idx * 210, reject: 52 - idx * 3 },
-            { name: type.slice(0, 4) + '-PR1', order: 3900 - idx * 180, reject: 41 - idx * 2 },
-            { name: type.slice(0, 4) + '-PR3', order: 4800 - idx * 220, reject: 49 - idx * 3 },
-            { name: type.slice(0, 4) + '-PR2', order: 4300 - idx * 190, reject: 44 - idx * 2 }
-          ]
+          weeks: Array.from({ length: 5 }, () => ({ name: '-', order: 0, reject: 0 }))
         })),
-        sec6: MONTHS.map((month, mIdx) => ({
+        sec6: MONTHS.map(month => ({
           month,
-          order: mIdx <= 9 ? 385000 + (mIdx * 14500) : 0,
-          reject: mIdx <= 9 ? 6420 + (mIdx * 190) : 0
+          order: 0,
+          reject: 0
         }))
       };
+    }
+
+    // Fungsi khusus jika user menekan tombol "Muat Data Simulasi"
+    function createSimulationState() {
+      const sim = createDefaultState();
+      sim.sec1 = PRODUCT_TYPES.map((type, idx) => ({
+        type,
+        weeks: [
+          { order: 12500 - idx * 800, reject: 145 - idx * 8 },
+          { order: 13200 - idx * 750, reject: 138 - idx * 7 },
+          { order: 11800 - idx * 600, reject: 120 - idx * 6 },
+          { order: 14000 - idx * 850, reject: 152 - idx * 9 },
+          { order: 12900 - idx * 700, reject: 130 - idx * 7 }
+        ]
+      }));
+      sim.sec2 = PRODUCT_TYPES.map((type, idx) => ({
+        type,
+        weeks: [
+          { order: 12500 - idx * 800, reject: 98 - idx * 6 },
+          { order: 13200 - idx * 750, reject: 112 - idx * 7 },
+          { order: 11800 - idx * 600, reject: 89 - idx * 5 },
+          { order: 14000 - idx * 850, reject: 105 - idx * 6 },
+          { order: 12900 - idx * 700, reject: 94 - idx * 5 }
+        ]
+      }));
+      sim.sec3 = PRODUCT_TYPES.map((type, idx) => ({
+        type,
+        weeks: [
+          { name: type.slice(0, 4) + '-01A', order: 4200 - idx * 200, reject: 68 - idx * 4 },
+          { name: type.slice(0, 4) + '-02B', order: 4500 - idx * 210, reject: 64 - idx * 3 },
+          { name: type.slice(0, 4) + '-01A', order: 3900 - idx * 180, reject: 55 - idx * 3 },
+          { name: type.slice(0, 4) + '-03C', order: 4800 - idx * 220, reject: 72 - idx * 4 },
+          { name: type.slice(0, 4) + '-02B', order: 4300 - idx * 190, reject: 60 - idx * 3 }
+        ]
+      }));
+      sim.sec4 = PRODUCT_TYPES.map((type, idx) => ({
+        type,
+        weeks: [
+          { name: type.slice(0, 4) + '-PR1', order: 4200 - idx * 200, reject: 46 - idx * 3 },
+          { name: type.slice(0, 4) + '-PR2', order: 4500 - idx * 210, reject: 52 - idx * 3 },
+          { name: type.slice(0, 4) + '-PR1', order: 3900 - idx * 180, reject: 41 - idx * 2 },
+          { name: type.slice(0, 4) + '-PR3', order: 4800 - idx * 220, reject: 49 - idx * 3 },
+          { name: type.slice(0, 4) + '-PR2', order: 4300 - idx * 190, reject: 44 - idx * 2 }
+        ]
+      }));
+      sim.sec6 = MONTHS.map((month, mIdx) => ({
+        month,
+        order: mIdx <= 9 ? 385000 + (mIdx * 14500) : 0,
+        reject: mIdx <= 9 ? 6420 + (mIdx * 190) : 0
+      }));
+      return sim;
     }
 
     function ensureWeekVisibleStructure() {
@@ -1650,7 +1700,7 @@
     }
 
     /* =========================================================================
-       2. INISIALISASI GOOGLE CHARTS & EVENT KEYBOARD ESC
+       2. INISIALISASI GOOGLE CHARTS & EVENT SAAT BUKA HALAMAN (KOSONGKAN DATA)
        ========================================================================= */
     google.charts.load('current', { packages: ['corechart'] });
     google.charts.setOnLoadCallback(() => {
@@ -1659,7 +1709,9 @@
     });
 
     window.addEventListener('DOMContentLoaded', () => {
-      loadFromStorage();
+      // REQ 3: Saat buka halaman, langsung mulai dengan data kosong (0)
+      appState = createDefaultState();
+      localStorage.removeItem(STORAGE_KEY);
       ensureWeekVisibleStructure();
       syncControlsFromState();
       buildAllSidebarEditors();
@@ -1701,21 +1753,6 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       } catch (e) {
         console.warn('Storage limit reached:', e);
-      }
-    }
-
-    function loadFromStorage() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('REJECT_ASSY_SPA_STATE_V3') || localStorage.getItem('REJECT_ASSY_SPA_STATE_V2');
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') {
-          const def = createDefaultState();
-          appState = Object.assign(def, parsed);
-          appState.settings = Object.assign(def.settings, parsed.settings || {});
-        }
-      } catch (e) {
-        console.warn('Failed loading state:', e);
       }
     }
 
@@ -2268,7 +2305,7 @@
     }
 
     /* =========================================================================
-       7. RENDER TABEL LAPORAN: MENURUN PER WEEK (TANPA LABEL VERTIKAL KANAN)
+       7. RENDER TABEL LAPORAN: MENURUN PER WEEK & % MERAH DI SEC F
        ========================================================================= */
     function renderAll() {
       renderHeader();
@@ -2453,7 +2490,7 @@
             <th>MINGGU</th>
             <th>PARAMETER</th>
             ${PRODUCT_TYPES.map(t => `<th>${t}</th>`).join('')}
-            <th class="purple-head">SUBTOTAL /<br>TOP ITEM</th>
+            <th class="sky-head">SUBTOTAL /<br>TOP ITEM</th>
           </tr>
         </thead>
         <tbody>`;
@@ -2462,18 +2499,18 @@
         order: 0,
         reject: 0,
         peakName: '-',
-        peakRej: -1
+        peakRej: 0
       }));
       let grandOrderAll = 0;
       let grandRejectAll = 0;
       let overallPeakName = '-';
-      let overallPeakRej = -1;
+      let overallPeakRej = 0;
 
       activeWeeks.forEach(w => {
         let weekSumOrd = 0;
         let weekSumRej = 0;
         let weekPeakName = '-';
-        let weekPeakVal = -1;
+        let weekPeakVal = 0;
 
         let nameCells = '';
         let ordCells = '';
@@ -2492,15 +2529,15 @@
           prodTotals[pIdx].order += ord;
           prodTotals[pIdx].reject += rej;
 
-          if (rej > prodTotals[pIdx].peakRej) {
+          if (rej > prodTotals[pIdx].peakRej && name !== '-') {
             prodTotals[pIdx].peakRej = rej;
             prodTotals[pIdx].peakName = name;
           }
-          if (rej > weekPeakVal) {
+          if (rej > weekPeakVal && name !== '-') {
             weekPeakVal = rej;
             weekPeakName = name;
           }
-          if (rej > overallPeakRej) {
+          if (rej > overallPeakRej && name !== '-') {
             overallPeakRej = rej;
             overallPeakName = name;
           }
@@ -2556,7 +2593,7 @@
 
       html += `
         <tr class="row-total-prodname">
-          <td rowspan="4" class="total-week-group-cell" style="background:var(--purple-dark);">TOTAL<br>WEEK</td>
+          <td rowspan="4" class="total-week-group-cell" style="background:var(--sky-bright);">TOTAL<br>WEEK</td>
           <td class="metric-label-cell">TOP PRODUK</td>
           ${totNameCells}
           <td style="text-align:center;">${overallPeakName}</td>
@@ -2653,6 +2690,7 @@
       wrap.innerHTML = html;
     }
 
+    // REQ 2: Pada Section F, warna pada % diganti dengan MERAH
     function renderMonthlySection6() {
       const wrap = document.getElementById('tableWrapSec6');
       if (!wrap) return;
@@ -2666,7 +2704,7 @@
             <th style="width:26%;">BULAN</th>
             <th>TOTAL ORDER</th>
             <th>TOTAL REJECT<br>PILIHAN + PROSES</th>
-            <th style="width:18%;">%</th>
+            <th class="red-head" style="width:18%;">%</th>
           </tr>
         </thead>
         <tbody>`;
@@ -2683,7 +2721,7 @@
             <td class="col-type">${safeStr(r.month)}</td>
             <td>${fmtInt(ord)}</td>
             <td>${fmtInt(rej)}</td>
-            <td class="col-pct">${fmtPct(pct)}</td>
+            <td class="col-pct-red">${fmtPct(pct)}</td>
           </tr>
         `;
       });
@@ -2693,7 +2731,7 @@
           <th style="text-align:left; padding-left:4px;">TOTAL TAHUNAN</th>
           <td>${fmtInt(sumOrd)}</td>
           <td>${fmtInt(sumRej)}</td>
-          <td class="tfoot-pct">${fmtPct(calcPct(sumRej, sumOrd))}</td>
+          <td class="tfoot-pct-red">${fmtPct(calcPct(sumRej, sumOrd))}</td>
         </tr>
       </tfoot></table>`;
 
@@ -2701,12 +2739,12 @@
     }
 
     /* =========================================================================
-       8. GOOGLE CHARTS VISUALISASI INTERAKTIF (SENTUH/KLIK MUNCUL DETAIL)
+       8. GOOGLE CHARTS VISUALISASI INTERAKTIF (TANPA UNGU & % SEC F MERAH)
        ========================================================================= */
     function renderAllCharts() {
       if (!chartsReady || !window.google || !google.visualization) return;
       drawWeeklyComboChart('sec1', 'chartSec1', 'GRAFIK REJECT PILIHAN (TREN MINGGU AKTIF)', '#1a237e', '#2e7d32', '#d97706');
-      drawWeeklyComboChart('sec2', 'chartSec2', 'GRAFIK REJECT PROSES (TREN MINGGU AKTIF)', '#00695c', '#6a1b9a', '#dc2626');
+      drawWeeklyComboChart('sec2', 'chartSec2', 'GRAFIK REJECT PROSES (TREN MINGGU AKTIF)', '#00695c', '#0284c7', '#dc2626');
       drawTopProductComboChart('sec3', 'chartSec3', 'GRAFIK PRODUK REJECT PILIHAN TERTINGGI PER TYPE PRODUK');
       drawTopProductComboChart('sec4', 'chartSec4', 'GRAFIK PRODUK REJECT PROSES TERTINGGI PER TYPE PRODUK');
       drawSection5Charts();
@@ -2783,7 +2821,7 @@
         dataArr.push([safeStr(r.type), ...weekVals, Number(ratio.toFixed(4))]);
       });
 
-      const palette = ['#1a237e', '#2e7d32', '#6a1b9a', '#00695c', '#37474f'];
+      const palette = ['#1a237e', '#2e7d32', '#0284c7', '#00695c', '#f59e0b'];
       const activeColors = activeWeeks.map(w => palette[w % palette.length]);
       activeColors.push('#dc2626');
 
@@ -2841,7 +2879,7 @@
         tooltip: { isHtml: false, trigger: 'both' },
         focusTarget: 'datum',
         seriesType: 'bars',
-        colors: ['#1a237e', '#2e7d32', '#6a1b9a'],
+        colors: ['#1a237e', '#2e7d32', '#0284c7'],
         series: { 2: { type: 'line', lineWidth: 2.2, pointSize: 5 } }
       };
       new google.visualization.ComboChart(elType).draw(dataType, optsType);
@@ -2868,12 +2906,13 @@
         tooltip: { isHtml: false, trigger: 'both' },
         focusTarget: 'datum',
         seriesType: 'bars',
-        colors: ['#2e7d32', '#6a1b9a', '#dc2626'],
+        colors: ['#2e7d32', '#0284c7', '#dc2626'],
         series: { 2: { type: 'line', lineWidth: 2.2, pointSize: 5 } }
       };
       new google.visualization.ComboChart(elTrend).draw(dataTrend, optsTrend);
     }
 
+    // REQ 1 & REQ 2: Grafik Bulanan Section F (Ungu diganti Biru Cerah Sky #0284c7, dan % Reject berwarna MERAH #dc2626)
     function drawMonthlyComboChart() {
       const el = document.getElementById('chartSec6');
       if (!el || el.offsetParent === null) return;
@@ -2892,18 +2931,18 @@
         titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
         fontName: 'Montserrat',
         fontSize: 7.5,
-        chartArea: { left: 52, right: 46, top: 26, bottom: 28, width: '80%', height: '68%' },
+        chartArea: { left: 52, right: 48, top: 26, bottom: 28, width: '80%', height: '68%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
         tooltip: { isHtml: false, trigger: 'both' },
         focusTarget: 'datum',
         seriesType: 'bars',
-        colors: ['#1a237e', '#6a1b9a', '#2e7d32'],
+        colors: ['#1a237e', '#0284c7', '#dc2626'],
         vAxes: {
           0: { title: 'Kuantitas (Pcs)', textStyle: { fontSize: 7.5 } },
-          1: { title: '% Reject', textStyle: { fontSize: 7.5 }, format: '#.##%' }
+          1: { title: '% Reject', textStyle: { fontSize: 7.5, color: '#dc2626', bold: true }, titleTextStyle: { fontSize: 7.5, color: '#dc2626', bold: true, italic: false }, format: '#.##%' }
         },
         series: {
-          2: { type: 'line', targetAxisIndex: 1, lineWidth: 2.2, pointSize: 5 }
+          2: { type: 'line', targetAxisIndex: 1, lineWidth: 2.5, pointSize: 5, color: '#dc2626' }
         }
       };
 
@@ -2954,22 +2993,7 @@
     function clearAllData() {
       if (!confirm('Kosongkan semua angka pada tabel Section 1 s/d Section 6 menjadi 0?')) return;
 
-      ['sec1', 'sec2'].forEach(secKey => {
-        appState[secKey] = PRODUCT_TYPES.map(type => ({
-          type,
-          weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 }))
-        }));
-      });
-
-      ['sec3', 'sec4'].forEach(secKey => {
-        appState[secKey] = PRODUCT_TYPES.map(type => ({
-          type,
-          weeks: Array.from({ length: 5 }, () => ({ name: '-', order: 0, reject: 0 }))
-        }));
-      });
-
-      appState.sec6 = MONTHS.map(month => ({ month, order: 0, reject: 0 }));
-
+      appState = createDefaultState();
       saveToStorage();
       buildAllSidebarEditors();
       if (activeModalSection) renderModalBody(activeModalSection);
@@ -2978,7 +3002,7 @@
     }
 
     function loadDemoData() {
-      appState = createDefaultState();
+      appState = createSimulationState();
       saveToStorage();
       syncControlsFromState();
       buildAllSidebarEditors();
@@ -3016,7 +3040,6 @@
       }
     }
 
-    // REQ 1 & REQ 2: Simpan HTML dengan Grafik Interaktif (Sentuh/Klik muncul detail) & Tanpa Banner SNAPSHOT OFFLINE
     function exportOfflineHTML() {
       try {
         const title = `${safeStr(appState.header.title)} - ${safeStr(appState.header.plant)} (${safeStr(appState.header.week)})`;
