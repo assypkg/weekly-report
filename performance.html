@@ -55,9 +55,35 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.1); /* Efek freeze yang elegan */
         }
         .editor-header h2 { color: var(--navy-blue); font-size: 18px; font-weight: 800; margin-bottom: 5px; }
-        .editor-header p { font-size: 11px; color: #666; line-height: 1.4; font-weight: 600; }
+        .editor-header p { font-size: 11px; color: #666; line-height: 1.4; font-weight: 600; margin-bottom: 15px; }
+
+        /* Desain Grid Tombol Header */
+        .header-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .btn-header {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+        .btn-header:hover { opacity: 0.85; }
+        .btn-save-html { background: #0288d1; color: white; }
+        .btn-dl-png { background: var(--emerald-green); color: white; }
+        .btn-print-pdf { background: var(--navy-blue); color: white; }
+        .btn-clear-all { background: #b71c1c; color: white; }
 
         .editor-form { padding: 20px; }
         
@@ -238,6 +264,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             padding: 20px;
             transition: width 0.3s ease, background-color 0.3s ease;
+            box-sizing: border-box;
         }
 
         .dash-header {
@@ -346,8 +373,9 @@
             background: rgba(255, 255, 255, 0.7);
             border: 1px solid #ddd;
             border-radius: 6px;
-            padding: 20px;
+            padding: 15px; 
             margin-top: 10px;
+            box-sizing: border-box;
         }
         .histogram-layout {
             display: flex;
@@ -355,10 +383,14 @@
             align-items: center;
             position: relative;
             margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
         }
         .hist-column-box {
-            flex: 1;
+            flex: 1 1 0; 
+            min-width: 0;
             position: relative;
+            box-sizing: border-box;
         }
         .hist-column-box:not(:last-child)::after {
             content: '';
@@ -379,6 +411,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            box-sizing: border-box;
         }
         .empty-chart-msg {
             width: 100%;
@@ -469,9 +502,24 @@
 
     <!-- SIDEBAR EDITOR -->
     <div class="editor-sidebar">
+        <!-- HEADER FROZEN BUTTONS -->
         <div class="editor-header">
             <h2>PERFORMANCE ASSY EDITOR</h2>
             <p>Kelola data lengkap & visibilitas laporan performa assembly.</p>
+            <div class="header-actions">
+                <button onclick="saveHTML(this)" class="btn-header btn-save-html" title="Simpan sebagai HTML Interaktif">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/></svg> Simpan HTML
+                </button>
+                <button onclick="downloadAsImage(this)" class="btn-header btn-dl-png" title="Unduh gambar PNG">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg> Unduh PNG
+                </button>
+                <button onclick="window.print()" class="btn-header btn-print-pdf" title="Cetak halaman atau simpan PDF">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Cetak PDF
+                </button>
+                <button onclick="clearAllData()" class="btn-header btn-clear-all" title="Kosongkan seluruh form data">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Kosongkan
+                </button>
+            </div>
         </div>
         
         <div class="editor-form">
@@ -728,11 +776,6 @@
                     <button type="button" class="btn-action btn-add" onclick="addQualityIssueRow()">+ Tambah Masalah Kualitas</button>
                 </div>
             </fieldset>
-            
-            <button onclick="clearAllData()" style="width: 100%; padding: 12px; background: #b71c1c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px;">Kosongkan Semua Data</button>
-            <button onclick="window.print()" style="width: 100%; padding: 12px; background: var(--navy-blue); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px;">Cetak Laporan / PDF</button>
-            <button onclick="downloadAsImage(this)" style="width: 100%; padding: 12px; background: var(--emerald-green); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px;">Unduh Gambar (.PNG)</button>
-            <button onclick="saveHTML(this)" style="width: 100%; padding: 12px; background: #0288d1; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px; margin-bottom: 30px;">Simpan Halaman (.HTML)</button>
         </div>
     </div>
 
@@ -1187,6 +1230,14 @@
     </div>
 
     <script>
+        // --- DATA STATE ---
+        let leaders = [];
+        let analyses = [];
+        let prodLogs = [];
+        let spaChanges = [];
+        let machineIssues = [];
+        let qualityIssues = [];
+
         // --- FUNGSI ACCORDION FOLDER ---
         function toggleFolder(legendEl) {
             const fieldset = legendEl.parentElement;
@@ -1231,9 +1282,13 @@
         }
         
         const bindText = (inputId, outputId) => {
-            document.getElementById(inputId).addEventListener('input', (e) => {
+            const el = document.getElementById(inputId);
+            if (!el) return;
+            el.addEventListener('input', (e) => {
                 const val = e.target.value;
-                document.getElementById(outputId).innerText = val;
+                const outEl = document.getElementById(outputId);
+                if(outEl) outEl.innerText = val;
+                
                 if(outputId === 'out-plant') document.querySelectorAll('.out-plant-clone').forEach(el => el.innerText = val);
                 if(outputId === 'out-week') document.querySelectorAll('.out-week-clone').forEach(el => el.innerText = val);
                 if(outputId === 'out-periode') document.querySelectorAll('.out-periode-clone').forEach(el => el.innerText = val);
@@ -1244,8 +1299,10 @@
 
         // --- UPDATE PADDING & FONT SIZE TABEL DINAMIS ---
         function updateTableStyle() {
-            const paddingValue = document.getElementById('in-table-padding').value;
-            const fontSizeValue = document.getElementById('in-table-fontsize').value || 11;
+            const padEl = document.getElementById('in-table-padding');
+            const fontEl = document.getElementById('in-table-fontsize');
+            const paddingValue = padEl ? padEl.value : 8;
+            const fontSizeValue = fontEl ? (fontEl.value || 11) : 11;
             
             document.documentElement.style.setProperty('--table-pad-y', paddingValue + 'px');
             document.documentElement.style.setProperty('--table-font-size', fontSizeValue + 'px');
@@ -1253,19 +1310,23 @@
 
         // --- UPDATE ORIENTASI DAN WARNA ---
         function updatePrintSettings() {
-            const orientation = document.getElementById('in-print-orientation').value;
-            const bgColor = document.getElementById('in-print-bg').value;
+            const orientEl = document.getElementById('in-print-orientation');
+            const bgEl = document.getElementById('in-print-bg');
+            const orientation = orientEl ? orientEl.value : 'landscape';
+            const bgColor = bgEl ? bgEl.value : '#ffffff';
             
             const styleTag = document.getElementById('dynamic-print-style');
-            styleTag.innerHTML = `@page { size: A4 ${orientation}; margin: 0; }`;
+            if(styleTag) styleTag.innerHTML = `@page { size: A4 ${orientation}; margin: 0; }`;
             
             document.documentElement.style.setProperty('--print-bg', bgColor);
 
             const dashboard = document.getElementById('printable-dashboard');
-            if (orientation === 'portrait') {
-                dashboard.style.width = '880px'; 
-            } else {
-                dashboard.style.width = '1200px'; 
+            if(dashboard) {
+                if (orientation === 'portrait') {
+                    dashboard.style.width = '880px'; 
+                } else {
+                    dashboard.style.width = '1200px'; 
+                }
             }
 
             if (isGoogleChartsReady) {
@@ -1311,14 +1372,6 @@
                 }
             }
         }
-
-        // --- DATA STATE ---
-        let leaders = [];
-        let analyses = [];
-        let prodLogs = [];
-        let spaChanges = [];
-        let machineIssues = [];
-        let qualityIssues = [];
 
         // --- INISIALISASI GOOGLE CHARTS ---
         let isGoogleChartsReady = false;
@@ -1411,7 +1464,9 @@
 
         // --- EDITORS SECTION ---
         function renderLeaderEditor() {
-            const container = document.getElementById('leader-container'); container.innerHTML = '';
+            const container = document.getElementById('leader-container'); 
+            if(!container) return;
+            container.innerHTML = '';
             leaders.forEach((leader, index) => {
                 const editorDiv = document.createElement('div'); editorDiv.className = 'item-editor';
                 editorDiv.innerHTML = `
@@ -1432,7 +1487,9 @@
             renderLeaderTable();
         }
         function renderLeaderTable() {
-            const tbody = document.getElementById('out-leader-tbody'); tbody.innerHTML = '';
+            const tbody = document.getElementById('out-leader-tbody'); 
+            if(!tbody) return;
+            tbody.innerHTML = '';
             let totalPlanRaw = 0; let totalActRaw = 0;
             
             leaders.forEach((leader, index) => {
@@ -1445,8 +1502,10 @@
                 tbody.appendChild(tr);
             });
 
-            let overridePlan = parseFloat(document.getElementById('override-plan').value);
-            let overrideAct = parseFloat(document.getElementById('override-act').value);
+            const overPlanEl = document.getElementById('override-plan');
+            const overActEl = document.getElementById('override-act');
+            let overridePlan = overPlanEl ? parseFloat(overPlanEl.value) : NaN;
+            let overrideAct = overActEl ? parseFloat(overActEl.value) : NaN;
             
             let displayPlan = (!isNaN(overridePlan) && overridePlan > 0) ? overridePlan : totalPlanRaw;
             let displayAct = (!isNaN(overrideAct) && overrideAct > 0) ? overrideAct : totalActRaw;
@@ -1457,7 +1516,9 @@
         }
 
         function renderAnalysisEditor() {
-            const container = document.getElementById('analysis-container'); container.innerHTML = '';
+            const container = document.getElementById('analysis-container'); 
+            if(!container) return;
+            container.innerHTML = '';
             analyses.forEach((an, index) => {
                 const editorDiv = document.createElement('div'); editorDiv.className = 'item-editor';
                 editorDiv.innerHTML = `
@@ -1492,7 +1553,9 @@
             renderAnalysisTable();
         }
         function renderAnalysisTable() {
-            const tbody = document.getElementById('out-analysis-tbody'); tbody.innerHTML = '';
+            const tbody = document.getElementById('out-analysis-tbody'); 
+            if(!tbody) return;
+            tbody.innerHTML = '';
             analyses.forEach((an, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td>${index + 1}</td><td class="text-left" style="padding-left: 15px; font-weight: 700;">${an.item_code}</td><td class="text-left nama-produk-cell">${an.product_name}</td><td>${an.opr}</td><td>${an.fail}</td><td>${an.f_pct}</td><td>${an.avg_p}</td><td>${an.low_p}</td><td class="text-left fokus-masalah-cell">${an.focus}</td>`;
@@ -1501,7 +1564,9 @@
         }
 
         function renderProdLogEditor() {
-            const container = document.getElementById('prod-log-container'); container.innerHTML = '';
+            const container = document.getElementById('prod-log-container'); 
+            if(!container) return;
+            container.innerHTML = '';
             prodLogs.forEach((log, index) => {
                 const editorDiv = document.createElement('div'); editorDiv.className = 'item-editor';
                 editorDiv.innerHTML = `
@@ -1518,7 +1583,9 @@
             renderProdLogTable();
         }
         function renderProdLogTable() {
-            const tbody = document.getElementById('out-prod-log-tbody'); tbody.innerHTML = '';
+            const tbody = document.getElementById('out-prod-log-tbody'); 
+            if(!tbody) return;
+            tbody.innerHTML = '';
             prodLogs.forEach((log) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -1532,9 +1599,12 @@
         
         function renderProdLogChart() {
             if (!isGoogleChartsReady) return; 
+            const container = document.getElementById('kpi_google_chart');
+            if (!container) return;
+            
             const validLogs = prodLogs.map(log => ({ cat: log.cat, val: parseFloat(log.perfVal) || 0 })).filter(log => log.val > 0);
             if (validLogs.length === 0) {
-                document.getElementById('kpi_google_chart').innerHTML = '<div class="empty-chart-msg">Data kosong. Tambahkan data KPI untuk menampilkan grafik.</div>';
+                container.innerHTML = '<div class="empty-chart-msg">Data kosong. Tambahkan data KPI untuk menampilkan grafik.</div>';
                 return;
             }
             const data = new google.visualization.DataTable();
@@ -1552,12 +1622,14 @@
                 legend: { position: 'right', textStyle: { fontName: 'Montserrat', fontSize: 11, bold: true, color: '#333' }, alignment: 'center' },
                 pieSliceTextStyle: { fontName: 'Montserrat', fontSize: 12, bold: true }
             };
-            const chart = new google.visualization.PieChart(document.getElementById('kpi_google_chart'));
+            const chart = new google.visualization.PieChart(container);
             chart.draw(data, options);
         }
 
         function renderSpaChangeEditor() {
-            const container = document.getElementById('spa-change-container'); container.innerHTML = '';
+            const container = document.getElementById('spa-change-container'); 
+            if(!container) return;
+            container.innerHTML = '';
             spaChanges.forEach((sc, index) => {
                 const editorDiv = document.createElement('div'); editorDiv.className = 'item-editor';
                 editorDiv.innerHTML = `
@@ -1592,7 +1664,9 @@
             renderSpaChangeTable();
         }
         function renderSpaChangeTable() {
-            const tbody = document.getElementById('out-spa-tbody'); tbody.innerHTML = '';
+            const tbody = document.getElementById('out-spa-tbody'); 
+            if(!tbody) return;
+            tbody.innerHTML = '';
             spaChanges.forEach((sc) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -1610,7 +1684,9 @@
         }
 
         function renderMachineIssueEditor() {
-            const container = document.getElementById('machine-issue-container'); container.innerHTML = '';
+            const container = document.getElementById('machine-issue-container'); 
+            if(!container) return;
+            container.innerHTML = '';
             machineIssues.forEach((mi, index) => {
                 const editorDiv = document.createElement('div'); editorDiv.className = 'item-editor';
                 editorDiv.innerHTML = `
@@ -1639,7 +1715,9 @@
             renderMachineIssueTable();
         }
         function renderMachineIssueTable() {
-            const tbody = document.getElementById('out-machine-issue-tbody'); tbody.innerHTML = '';
+            const tbody = document.getElementById('out-machine-issue-tbody'); 
+            if(!tbody) return;
+            tbody.innerHTML = '';
             machineIssues.forEach((mi, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td>${index + 1}</td><td>${mi.date}</td><td class="text-left">${mi.leader}</td><td class="text-left">${mi.item_code}</td><td class="text-left nama-produk-cell">${mi.product}</td><td class="text-red" style="font-weight: 700;">${mi.pct}</td><td class="text-left" style="padding-left: 15px; font-weight: 700;">${mi.issue}</td>`;
@@ -1650,6 +1728,9 @@
 
         function renderMachineIssuesChart() {
             if (!isGoogleChartsReady) return;
+            const container = document.getElementById('machine_google_chart');
+            if(!container) return;
+
             const counts = {};
             machineIssues.forEach(item => {
                 const issueName = item.issue ? item.issue.trim() : 'Lainnya';
@@ -1657,7 +1738,7 @@
             });
             const keys = Object.keys(counts);
             if (keys.length === 0) {
-                document.getElementById('machine_google_chart').innerHTML = '<div class="empty-chart-msg">Data kosong. Tambahkan data Masalah Mesin untuk menampilkan grafik.</div>';
+                container.innerHTML = '<div class="empty-chart-msg">Data kosong. Tambahkan data Masalah Mesin untuk menampilkan grafik.</div>';
                 return;
             }
             const data = new google.visualization.DataTable();
@@ -1675,12 +1756,14 @@
                 legend: { position: 'right', textStyle: { fontName: 'Montserrat', fontSize: 12, bold: true, color: '#333' }, alignment: 'center' },
                 pieSliceTextStyle: { fontName: 'Montserrat', fontSize: 13, bold: true }
             };
-            const chart = new google.visualization.PieChart(document.getElementById('machine_google_chart'));
+            const chart = new google.visualization.PieChart(container);
             chart.draw(data, options);
         }
 
         function renderQualityIssueEditor() {
-            const container = document.getElementById('quality-issue-container'); container.innerHTML = '';
+            const container = document.getElementById('quality-issue-container'); 
+            if(!container) return;
+            container.innerHTML = '';
             qualityIssues.forEach((qi, index) => {
                 const editorDiv = document.createElement('div'); editorDiv.className = 'item-editor';
                 editorDiv.innerHTML = `
@@ -1709,7 +1792,9 @@
             renderQualityIssueTable();
         }
         function renderQualityIssueTable() {
-            const tbody = document.getElementById('out-quality-issue-tbody'); tbody.innerHTML = '';
+            const tbody = document.getElementById('out-quality-issue-tbody'); 
+            if(!tbody) return;
+            tbody.innerHTML = '';
             qualityIssues.forEach((qi, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td>${index + 1}</td><td>${qi.date}</td><td class="text-left">${qi.leader}</td><td class="text-left">${qi.item_code}</td><td class="text-left nama-produk-cell">${qi.product}</td><td class="text-red" style="font-weight: 700;">${qi.pct}</td><td class="text-left" style="padding-left: 15px; font-weight: 700;">${qi.issue}</td>`;
@@ -1737,7 +1822,10 @@
                     kpiData.c[`w${i}Act`] = document.getElementById(`in-c-w${i}-act`).value;
                 }
             }
-            kpiData.leaderOverride = { plan: document.getElementById('override-plan').value, act: document.getElementById('override-act').value };
+            
+            const overPlanEl = document.getElementById('override-plan');
+            const overActEl = document.getElementById('override-act');
+            kpiData.leaderOverride = { plan: overPlanEl ? overPlanEl.value : '', act: overActEl ? overActEl.value : '' };
             
             const payload = {
                 header: { plant: document.getElementById('in-plant').value, week: document.getElementById('in-week').value, periode: document.getElementById('in-periode').value },
@@ -1755,7 +1843,10 @@
                 try {
                     const parsed = JSON.parse(e.target.result);
                     if (parsed.header) {
-                        document.getElementById('in-plant').value = parsed.header.plant || ''; document.getElementById('out-plant').innerText = parsed.header.plant || '';
+                        const inPlant = document.getElementById('in-plant');
+                        const outPlant = document.getElementById('out-plant');
+                        if(inPlant) inPlant.value = parsed.header.plant || ''; 
+                        if(outPlant) outPlant.innerText = parsed.header.plant || '';
                         document.querySelectorAll('.out-plant-clone').forEach(el => el.innerText = parsed.header.plant || '');
                     }
                     if (parsed.kpi) {
@@ -1773,8 +1864,10 @@
                             }
                         }
                         if(parsed.kpi.leaderOverride) {
-                            document.getElementById('override-plan').value = parsed.kpi.leaderOverride.plan || '';
-                            document.getElementById('override-act').value = parsed.kpi.leaderOverride.act || '';
+                            const overPlanEl = document.getElementById('override-plan');
+                            const overActEl = document.getElementById('override-act');
+                            if(overPlanEl) overPlanEl.value = parsed.kpi.leaderOverride.plan || '';
+                            if(overActEl) overActEl.value = parsed.kpi.leaderOverride.act || '';
                         }
                         calcMatrixPerformance();
                     }
@@ -1793,7 +1886,12 @@
 
         function clearSection(sectionId) {
             if (confirm(`Apakah Anda yakin ingin mengosongkan data?`)) {
-                if (sectionId === 'header') { document.getElementById('in-plant').value = ''; document.getElementById('out-plant').innerText = ''; }
+                if (sectionId === 'header') { 
+                    const inPlant = document.getElementById('in-plant');
+                    if(inPlant) inPlant.value = ''; 
+                    const outPlant = document.getElementById('out-plant');
+                    if(outPlant) outPlant.innerText = ''; 
+                }
                 else if (sectionId === 1) {
                     for(let i=1; i<=5; i++) {
                         const planEl = document.getElementById(`in-a-w${i}-plan`);
@@ -1806,8 +1904,10 @@
                 }
                 else if (sectionId === 2) { 
                     leaders = []; 
-                    document.getElementById('override-plan').value = '';
-                    document.getElementById('override-act').value = '';
+                    const overPlanEl = document.getElementById('override-plan');
+                    if(overPlanEl) overPlanEl.value = '';
+                    const overActEl = document.getElementById('override-act');
+                    if(overActEl) overActEl.value = '';
                     renderLeaderEditor(); 
                 } 
                 else if (sectionId === 3) { analyses = []; renderAnalysisEditor(); }
@@ -1820,8 +1920,10 @@
         function clearAllData() { 
             if (confirm("Kosongkan semua data?")) { 
                 clearSection(1); leaders=[]; analyses=[]; prodLogs=[]; spaChanges=[]; machineIssues=[]; qualityIssues=[]; 
-                document.getElementById('override-plan').value = '';
-                document.getElementById('override-act').value = '';
+                const overPlanEl = document.getElementById('override-plan');
+                if(overPlanEl) overPlanEl.value = '';
+                const overActEl = document.getElementById('override-act');
+                if(overActEl) overActEl.value = '';
                 renderLeaderEditor(); renderAnalysisEditor(); renderProdLogEditor(); renderSpaChangeEditor(); renderMachineIssueEditor(); renderQualityIssueEditor(); 
             } 
         }
@@ -1856,7 +1958,10 @@
             }
 
             weeks.forEach(w => {
-                let aP = parseFloat(document.getElementById(`in-a-w${w}-plan`).value) || 0;
+                const inAPlan = document.getElementById(`in-a-w${w}-plan`);
+                if(!inAPlan) return;
+
+                let aP = parseFloat(inAPlan.value) || 0;
                 let aA = parseFloat(document.getElementById(`in-a-w${w}-act`).value) || 0;
                 let aAch = aP > 0 ? (aA/aP)*100 : 0;
                 let aGap = aA - aP;
@@ -1906,29 +2011,32 @@
 
             let totAAch = totAPlan > 0 ? (totAAct / totAPlan) * 100 : 0;
             let totAGap = totAAct - totAPlan;
-            document.getElementById('out-a-tot-plan').innerText = formatNumber(totAPlan, 0) + ' pcs';
-            document.getElementById('out-a-tot-act').innerText = formatNumber(totAAct, 0) + ' pcs';
-            document.getElementById('out-a-tot-ach').innerText = totAAch.toFixed(2) + '%';
-            document.getElementById('out-a-tot-ach').className = totAAch >= 100 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
-            document.getElementById('out-a-tot-gap').innerText = (totAGap > 0 ? '+' : '') + formatNumber(totAGap, 0) + ' pcs';
-            document.getElementById('out-a-tot-gap').className = totAGap >= 0 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
+            const totAPlanEl = document.getElementById('out-a-tot-plan');
+            if(totAPlanEl) {
+                totAPlanEl.innerText = formatNumber(totAPlan, 0) + ' pcs';
+                document.getElementById('out-a-tot-act').innerText = formatNumber(totAAct, 0) + ' pcs';
+                document.getElementById('out-a-tot-ach').innerText = totAAch.toFixed(2) + '%';
+                document.getElementById('out-a-tot-ach').className = totAAch >= 100 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
+                document.getElementById('out-a-tot-gap').innerText = (totAGap > 0 ? '+' : '') + formatNumber(totAGap, 0) + ' pcs';
+                document.getElementById('out-a-tot-gap').className = totAGap >= 0 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
 
-            let totBSave = totBPlan - totBAct;
-            let totBAch = totBPlan > 0 ? (totBSave / totBPlan) * 100 : 0;
-            document.getElementById('out-b-tot-plan').innerText = formatNumber(totBPlan, 2) + ' jam';
-            document.getElementById('out-b-tot-act').innerText = formatNumber(totBAct, 2) + ' jam';
-            document.getElementById('out-b-tot-save').innerText = formatNumber(totBSave, 2) + ' jam';
-            document.getElementById('out-b-tot-ach').innerText = totBAch.toFixed(2) + '%';
-            document.getElementById('out-b-tot-ach').className = totBAch >= 0 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
+                let totBSave = totBPlan - totBAct;
+                let totBAch = totBPlan > 0 ? (totBSave / totBPlan) * 100 : 0;
+                document.getElementById('out-b-tot-plan').innerText = formatNumber(totBPlan, 2) + ' jam';
+                document.getElementById('out-b-tot-act').innerText = formatNumber(totBAct, 2) + ' jam';
+                document.getElementById('out-b-tot-save').innerText = formatNumber(totBSave, 2) + ' jam';
+                document.getElementById('out-b-tot-ach').innerText = totBAch.toFixed(2) + '%';
+                document.getElementById('out-b-tot-ach').className = totBAch >= 0 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
 
-            let totCAch = totCAct > 0 ? (totCStd / totCAct) * 100 : 0;
-            let totCGap = totCStd - totCAct;
-            document.getElementById('out-c-tot-std').innerText = formatNumber(totCStd);
-            document.getElementById('out-c-tot-act').innerText = formatNumber(totCAct);
-            document.getElementById('out-c-tot-ach').innerText = totCAch.toFixed(2) + '%';
-            document.getElementById('out-c-tot-ach').className = totCAch >= 100 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
-            document.getElementById('out-c-tot-gap').innerText = formatNumber(Math.abs(totCGap)) + (totCGap >= 0 ? ' opr (hemat)' : ' opr (lebih)');
-            document.getElementById('out-c-tot-gap').className = totCGap >= 0 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
+                let totCAch = totCAct > 0 ? (totCStd / totCAct) * 100 : 0;
+                let totCGap = totCStd - totCAct;
+                document.getElementById('out-c-tot-std').innerText = formatNumber(totCStd);
+                document.getElementById('out-c-tot-act').innerText = formatNumber(totCAct);
+                document.getElementById('out-c-tot-ach').innerText = totCAch.toFixed(2) + '%';
+                document.getElementById('out-c-tot-ach').className = totCAch >= 100 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
+                document.getElementById('out-c-tot-gap').innerText = formatNumber(Math.abs(totCGap)) + (totCGap >= 0 ? ' opr (hemat)' : ' opr (lebih)');
+                document.getElementById('out-c-tot-gap').className = totCGap >= 0 ? 'col-total text-green text-bold' : 'col-total text-red text-bold';
+            }
 
             if (isGoogleChartsReady) {
                 drawWeeklyComboChart('chart_perf_3d', perfDataArray, 'PERFORMANCE (%)', '#0277bd');
@@ -1938,24 +2046,28 @@
         };
 
         function drawWeeklyComboChart(containerId, dataArray, titleText, barColor) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
             const data = google.visualization.arrayToDataTable(dataArray);
+            
+            // Pengaturan dimensi khusus agar tidak terpotong di mode Portrait
             const options = {
                 title: titleText,
-                titleTextStyle: { fontName: 'Montserrat', fontSize: 11, bold: true, color: '#444', alignment: 'center' },
-                bar: { groupWidth: '25%' }, 
+                titleTextStyle: { fontName: 'Montserrat', fontSize: 10, bold: true, color: '#444', alignment: 'center' },
+                bar: { groupWidth: '35%' }, 
                 seriesType: 'bars',
                 series: {
                     0: { color: barColor },
-                    1: { type: 'line', color: '#b71c1c', lineWidth: 2, pointSize: 5 }
+                    1: { type: 'line', color: '#b71c1c', lineWidth: 2, pointSize: 4 }
                 },
                 legend: { position: 'none' },
                 backgroundColor: 'transparent',
-                chartArea: { left: 25, top: 35, width: '85%', height: '65%' },
-                hAxis: { textStyle: { fontName: 'Montserrat', fontSize: 10, bold: true } },
+                chartArea: { left: 30, right: 10, top: 35, bottom: 25 },
+                hAxis: { textStyle: { fontName: 'Montserrat', fontSize: 9, bold: true } },
                 vAxis: { minValue: 0, maxValue: 130, textStyle: { fontName: 'Montserrat', fontSize: 9 } },
-                annotations: { textStyle: { fontName: 'Montserrat', fontSize: 9, bold: true, color: '#333' } }
+                annotations: { textStyle: { fontName: 'Montserrat', fontSize: 8, bold: true, color: '#333' } }
             };
-            const chart = new google.visualization.ComboChart(document.getElementById(containerId));
+            const chart = new google.visualization.ComboChart(container);
             chart.draw(data, options);
         }
 
@@ -1968,18 +2080,22 @@
             if(el) el.addEventListener('input', calcMatrixPerformance);
         });
 
-        document.getElementById('in-photo').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const bgUrl = `url('${event.target.result}')`;
-                    document.getElementById('out-header-bg').style.backgroundImage = bgUrl;
-                    document.querySelectorAll('.dash-header').forEach(el => el.style.backgroundImage = bgUrl);
-                }; reader.readAsDataURL(file);
-            }
-        });
+        const photoInput = document.getElementById('in-photo');
+        if(photoInput) {
+            photoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const bgUrl = `url('${event.target.result}')`;
+                        document.getElementById('out-header-bg').style.backgroundImage = bgUrl;
+                        document.querySelectorAll('.dash-header').forEach(el => el.style.backgroundImage = bgUrl);
+                    }; reader.readAsDataURL(file);
+                }
+            });
+        }
 
+        // --- FUNGSI UNDUH GAMBAR PNG ---
         function downloadAsImage(btn) {
             const originalText = btn.innerText;
             btn.innerText = "Memproses Gambar HD...";
@@ -1994,8 +2110,8 @@
                 useCORS: true, 
                 backgroundColor: currentBgColor
             }).then(canvas => {
-                const plantName = document.getElementById('in-plant').value || 'PLANT';
-                const weekName = document.getElementById('in-week').value || 'WEEK';
+                const plantName = document.getElementById('in-plant') ? document.getElementById('in-plant').value : 'PLANT';
+                const weekName = document.getElementById('in-week') ? document.getElementById('in-week').value : 'WEEK';
                 const safeFileName = `PERF_ASSY_${plantName}_${weekName}.png`.replace(/[^a-z0-9]/gi, '_').toUpperCase();
 
                 const link = document.createElement('a');
@@ -2018,7 +2134,7 @@
         // --- FUNGSI HIDE/UNHIDE SIDEBAR ---
         function toggleSidebar() {
             const sidebar = document.querySelector('.editor-sidebar');
-            sidebar.classList.toggle('hidden-sidebar');
+            if(sidebar) sidebar.classList.toggle('hidden-sidebar');
             
             // Trigger event resize agar Google Charts menyesuaikan lebar layar baru
             setTimeout(() => {
@@ -2026,69 +2142,81 @@
             }, 100);
         }
 
-        // --- FUNGSI SIMPAN HTML (FORMAT GAMBAR BASE64) ---
+        // --- FUNGSI SIMPAN HTML INTERAKTIF DENGAN STATE INJECTION ---
         function saveHTML(btn) {
             const originalText = btn.innerText;
-            btn.innerText = "Memproses HTML (Gambar)...";
+            btn.innerText = "Menyimpan Format HTML...";
             btn.disabled = true;
             btn.style.opacity = "0.7";
 
-            // Target area yang akan dijadikan gambar
-            const captureArea = document.getElementById('printable-dashboard');
-            const currentBgColor = getComputedStyle(document.documentElement).getPropertyValue('--print-bg').trim() || '#ffffff';
-            
-            // Render dashboard menjadi canvas gambar
-            html2canvas(captureArea, {
-                scale: 2, // Resolusi tinggi (HD)
-                useCORS: true, 
-                backgroundColor: currentBgColor
-            }).then(canvas => {
-                // Konversi canvas menjadi Base64 image URL
-                const base64Img = canvas.toDataURL('image/png');
-                
-                // Penamaan file otomatis
-                const plantName = document.getElementById('in-plant') ? document.getElementById('in-plant').value : 'PLANT';
-                const weekName = document.getElementById('in-week') ? document.getElementById('in-week').value : 'WEEK';
-                const safeFileName = `PERF_ASSY_${plantName}_${weekName}.html`.replace(/[^a-z0-9_.]/gi, '_').toUpperCase();
-
-                // Susun template HTML gambar persis seperti permintaan Anda
-                const htmlContent = `<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${safeFileName.replace('.html', '')}</title>
-<style>
-html,body { margin:0; width:100%; min-height:100%; background:#111; }
-body { display:flex; justify-content:center; align-items:center; min-height:100vh; overflow:auto; }
-img { display:block; max-width:100%; height:auto; }
-</style>
-</head>
-<body>
-<img src="${base64Img}">
-</body>
-</html>`;
-
-                // Eksekusi pengunduhan Blob HTML
-                const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = safeFileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                // Kembalikan status tombol
-                btn.innerText = originalText;
-                btn.disabled = false;
-                btn.style.opacity = "1";
-            }).catch(err => {
-                console.error("Gagal membuat HTML:", err);
-                alert("Terjadi kesalahan saat memproses gambar ke HTML.");
-                btn.innerText = originalText;
-                btn.disabled = false;
-                btn.style.opacity = "1";
+            // 1. Sinkronisasi atribut 'value' & 'checked'
+            document.querySelectorAll('input').forEach(el => {
+                if (el.type === 'checkbox' || el.type === 'radio') {
+                    if (el.checked) el.setAttribute('checked', 'checked');
+                    else el.removeAttribute('checked');
+                } else if (el.type !== 'file') {
+                    el.setAttribute('value', el.value);
+                }
             });
+            document.querySelectorAll('textarea').forEach(el => { el.innerHTML = el.value; });
+            document.querySelectorAll('select').forEach(el => {
+                Array.from(el.options).forEach(opt => {
+                    if (opt.selected) opt.setAttribute('selected', 'selected');
+                    else opt.removeAttribute('selected');
+                });
+            });
+
+            // 2. Injeksi State Array (Data Aplikasi) ke dalam DOM
+            const stateDiv = document.createElement('div');
+            stateDiv.id = 'app-saved-state';
+            stateDiv.style.display = 'none';
+            stateDiv.setAttribute('data-state', JSON.stringify({ leaders, analyses, prodLogs, spaChanges, machineIssues, qualityIssues }));
+            document.body.appendChild(stateDiv);
+
+            // 3. Sembunyikan sidebar otomatis di file hasil unduhan
+            const sidebar = document.querySelector('.editor-sidebar');
+            let wasHidden = true;
+            if(sidebar) {
+                wasHidden = sidebar.classList.contains('hidden-sidebar');
+                if (!wasHidden) sidebar.classList.add('hidden-sidebar');
+            }
+
+            // --- TAMBAHAN BARU: Sembunyikan Topbar ---
+            const topbar = document.querySelector('.preview-topbar');
+            let topbarWasHidden = true;
+            if(topbar) {
+                topbarWasHidden = topbar.style.display === 'none';
+                if (!topbarWasHidden) topbar.style.display = 'none';
+            }
+            // ----------------------------------------
+
+            // 4. Kloning HTML Keseluruhan
+            const htmlContent = "<!DOCTYPE html>\n<html lang=\"id\">\n" + document.documentElement.outerHTML + "\n</html>";
+            
+            // 5. Kembalikan State UI Editor (Cleanup)
+            if(sidebar && !wasHidden) sidebar.classList.remove('hidden-sidebar');
+            // --- Restore Topbar ---
+            if(topbar && !topbarWasHidden) topbar.style.display = '';
+            // ----------------------
+            document.body.removeChild(stateDiv);
+
+            // 6. Proses Unduh
+            const plantName = document.getElementById('in-plant') ? document.getElementById('in-plant').value : 'PLANT';
+            const weekName = document.getElementById('in-week') ? document.getElementById('in-week').value : 'WEEK';
+            const safeFileName = `PERF_ASSY_${plantName}_${weekName}.html`.replace(/[^a-z0-9_.]/gi, '_').toUpperCase();
+
+            const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = safeFileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // 7. Kembalikan tombol
+            btn.innerText = originalText;
+            btn.disabled = false;
+            btn.style.opacity = "1";
         }
 
         window.addEventListener('resize', () => {
@@ -2099,7 +2227,27 @@ img { display:block; max-width:100%; height:auto; }
             }
         });
 
-        // Init
+        // ==========================================
+        // --- PROSES AWAL LOAD (AUTO-RESTORE STATE) ---
+        // ==========================================
+        const savedStateEl = document.getElementById('app-saved-state');
+        if (savedStateEl) {
+            try {
+                // Jika file HTML adalah hasil simpanan, muat ulang semua array
+                const savedState = JSON.parse(savedStateEl.getAttribute('data-state'));
+                if(savedState.leaders) leaders = savedState.leaders;
+                if(savedState.analyses) analyses = savedState.analyses;
+                if(savedState.prodLogs) prodLogs = savedState.prodLogs;
+                if(savedState.spaChanges) spaChanges = savedState.spaChanges;
+                if(savedState.machineIssues) machineIssues = savedState.machineIssues;
+                if(savedState.qualityIssues) qualityIssues = savedState.qualityIssues;
+            } catch(e) { console.error("Gagal memuat state aplikasi", e); }
+        } else {
+            // Jika file ini adalah template baru (belum disave), uncheck Week 5
+            const w5Toggle = document.getElementById('toggle-w5');
+            if (w5Toggle) w5Toggle.checked = false;
+        }
+
         toggleSections();
         renderLeaderEditor(); 
         renderAnalysisEditor(); 
@@ -2108,7 +2256,6 @@ img { display:block; max-width:100%; height:auto; }
         renderMachineIssueEditor(); 
         renderQualityIssueEditor();
         
-        document.getElementById('toggle-w5').checked = false;
         calcMatrixPerformance();
         updatePrintSettings(); 
     </script>
