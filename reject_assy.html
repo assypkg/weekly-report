@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Laporan REJECT ASSY - ver.5</title>
-   <!-- Favicon Standar & Favicon Khusus HP -->
+  <title>Dashboard & Laporan REJECT ASSY - Executive Manufacturing System v9</title>
+  <!-- Favicon Standar & Favicon Khusus HP -->
     <link rel="icon" type="image/png" href="97799.png">
     <link rel="apple-touch-icon" href="97799.png">
-
+  
   <!-- Google Fonts: Montserrat -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,9 +35,7 @@
       --paper-bg-color: #ffffff;
     }
 
-    @page {
-      margin: 0mm !important;
-    }
+    @page { margin: 0mm !important; }
 
     * {
       box-sizing: border-box;
@@ -56,7 +54,7 @@
       overflow: hidden;
     }
 
-    /* ================= SIDEBAR EDITOR (KIRI - 480px) ================= */
+    /* ================= SIDEBAR EDITOR ================= */
     #sidebar {
       width: var(--sidebar-width);
       min-width: var(--sidebar-width);
@@ -72,9 +70,7 @@
       position: relative;
     }
 
-    #sidebar.collapsed {
-      margin-left: calc(var(--sidebar-width) * -1);
-    }
+    #sidebar.collapsed { margin-left: calc(var(--sidebar-width) * -1); }
 
     #toggleSidebarBtn {
       position: fixed;
@@ -96,13 +92,8 @@
       gap: 6px;
     }
 
-    #toggleSidebarBtn:hover {
-      background: var(--emerald);
-    }
-
-    body.sidebar-hidden #toggleSidebarBtn {
-      left: 10px;
-    }
+    #toggleSidebarBtn:hover { background: var(--emerald); }
+    body.sidebar-hidden #toggleSidebarBtn { left: 10px; }
 
     .sidebar-header {
       padding: 14px 16px;
@@ -134,13 +125,8 @@
       color: #ffffff;
     }
 
-    .sidebar-header p {
-      font-size: 10px;
-      color: #cbd5e1;
-      margin-top: 2px;
-    }
+    .sidebar-header p { font-size: 10px; color: #cbd5e1; margin-top: 2px; }
 
-    /* Action Toolbar */
     .action-bar {
       padding: 9px 12px;
       background: #1e293b;
@@ -177,16 +163,10 @@
     .btn-danger { background: #b91c1c; }
     .btn-amber { background: #d97706; }
 
-    .sidebar-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px;
-    }
-
+    .sidebar-body { flex: 1; overflow-y: auto; padding: 10px; }
     .sidebar-body::-webkit-scrollbar { width: 6px; }
     .sidebar-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
 
-    /* Accordion System */
     .accordion-item {
       background: #1e293b;
       border: 1px solid #334155;
@@ -213,40 +193,14 @@
     }
 
     .accordion-header:hover { background: #334155; }
-    .accordion-header.active {
-      background: var(--navy);
-      border-left-color: #4ade80;
-    }
-
-    .acc-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .accordion-content {
-      display: none;
-      padding: 10px;
-      background: #0f172a;
-      border-top: 1px solid #334155;
-    }
-
+    .accordion-header.active { background: var(--navy); border-left-color: #4ade80; }
+    .acc-title-wrap { display: flex; align-items: center; gap: 8px; }
+    .accordion-content { display: none; padding: 10px; background: #0f172a; border-top: 1px solid #334155; }
     .accordion-content.open { display: block; }
+    .sec-control-bar { display: flex; gap: 6px; margin-bottom: 8px; }
+    .sec-control-bar .btn { flex: 1; padding: 8px; font-size: 10px; }
 
-    .sec-control-bar {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 8px;
-    }
-
-    .sec-control-bar .btn {
-      flex: 1;
-      padding: 8px;
-      font-size: 10px;
-    }
-
-    /* Week Toggle Bar (W1 - W5 Hide/Unhide) */
-    .week-toggle-bar {
+    .week-toggle-bar, .prod-toggle-bar {
       background: #1e293b;
       border: 1px solid #334155;
       border-radius: 4px;
@@ -259,17 +213,17 @@
       gap: 4px;
     }
 
-    .week-toggle-bar span.wt-title {
+    .prod-toggle-bar { flex-direction: column; align-items: flex-start; }
+
+    .week-toggle-bar span.wt-title, .prod-toggle-bar span.wt-title {
       font-size: 9.5px;
       font-weight: 700;
       color: #38bdf8;
       text-transform: uppercase;
+      margin-bottom: 4px;
     }
 
-    .week-toggle-group {
-      display: flex;
-      gap: 6px;
-    }
+    .week-toggle-group { display: flex; gap: 6px; flex-wrap: wrap; }
 
     .week-chip {
       display: inline-flex;
@@ -285,760 +239,156 @@
       cursor: pointer;
       user-select: none;
     }
+    .week-chip input { cursor: pointer; accent-color: var(--emerald-light); }
 
-    .week-chip input {
-      cursor: pointer;
-      accent-color: var(--emerald-light);
-    }
-
-    /* Form Controls */
     .form-group { margin-bottom: 8px; }
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .form-label { display: block; font-size: 10px; font-weight: 600; color: #94a3b8; margin-bottom: 3px; text-transform: uppercase; }
+    .form-control { width: 100%; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; border-radius: 4px; color: #f8fafc; font-size: 11px; }
+    .form-control:focus { outline: none; border-color: #38bdf8; }
 
-    .form-label {
-      display: block;
-      font-size: 10px;
-      font-weight: 600;
-      color: #94a3b8;
-      margin-bottom: 3px;
-      text-transform: uppercase;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 6px 8px;
-      background: #1e293b;
-      border: 1px solid #475569;
-      border-radius: 4px;
-      color: #f8fafc;
-      font-size: 11px;
-    }
-
-    .form-control:focus {
-      outline: none;
-      border-color: #38bdf8;
-    }
-
-    .checkbox-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 5px;
-      margin-top: 4px;
-    }
-
+    .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 4px; }
     .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      color: #e2e8f0;
-      cursor: pointer;
-      background: #1e293b;
-      padding: 5px 7px;
-      border-radius: 4px;
-      border: 1px solid #334155;
+      display: flex; align-items: center; gap: 6px; font-size: 10px; color: #e2e8f0;
+      cursor: pointer; background: #1e293b; padding: 5px 7px; border-radius: 4px; border: 1px solid #334155;
     }
 
-    /* Smart Excel Paste Box */
-    .excel-paste-box {
-      background: #172554;
-      border: 1px dashed #60a5fa;
-      padding: 8px;
-      border-radius: 4px;
-      margin-bottom: 8px;
-    }
-
-    .excel-paste-box textarea {
-      width: 100%;
-      height: 52px;
-      background: #0f172a;
-      color: #38bdf8;
-      border: 1px solid #3b82f6;
-      border-radius: 4px;
-      padding: 5px;
-      font-size: 9.5px;
-      font-family: monospace;
-      resize: vertical;
-      margin-top: 4px;
-    }
-
-    .helper-text {
-      font-size: 9px;
-      color: #93c5fd;
-      line-height: 1.3;
-    }
+    .excel-paste-box { background: #172554; border: 1px dashed #60a5fa; padding: 8px; border-radius: 4px; margin-bottom: 8px; }
+    .excel-paste-box textarea { width: 100%; height: 52px; background: #0f172a; color: #38bdf8; border: 1px solid #3b82f6; border-radius: 4px; padding: 5px; font-size: 9.5px; font-family: monospace; resize: vertical; margin-top: 4px; }
+    .helper-text { font-size: 9px; color: #93c5fd; line-height: 1.3; }
 
     /* Editor Mini Table inside Sidebar */
-    .editor-table-wrap {
-      overflow-x: auto;
-      border: 1px solid #334155;
-      border-radius: 4px;
-      max-height: 250px;
-    }
+    .editor-table-wrap { overflow-x: auto; border: 1px solid #334155; border-radius: 4px; max-height: 250px; }
+    .editor-table { width: 100%; border-collapse: collapse; font-size: 9.5px; }
+    .editor-table th { background: #1e293b; color: #cbd5e1; padding: 4px 3px; border: 1px solid #334155; position: sticky; top: 0; z-index: 2; white-space: nowrap; }
+    .editor-table td { border: 1px solid #334155; padding: 2px; background: #0f172a; }
+    .editor-table td.prod-label { padding: 4px 5px; font-weight: 700; color: #38bdf8; white-space: nowrap; background: #162032; }
+    .editor-table input { width: 62px; background: transparent; border: none; color: #f8fafc; font-size: 9.5px; padding: 2px 3px; text-align: right; }
+    .editor-table input.text-input { width: 100%; text-align: left; color: #fde047; }
+    .editor-table input:focus { background: #1e293b; outline: 1px solid #38bdf8; }
 
-    .editor-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 9.5px;
-    }
-
-    .editor-table th {
-      background: #1e293b;
-      color: #cbd5e1;
-      padding: 4px 3px;
-      border: 1px solid #334155;
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      white-space: nowrap;
-    }
-
-    .editor-table td {
-      border: 1px solid #334155;
-      padding: 2px;
-      background: #0f172a;
-    }
-
-    .editor-table td.prod-label {
-      padding: 4px 5px;
-      font-weight: 700;
-      color: #38bdf8;
-      white-space: nowrap;
-      background: #162032;
-    }
-
-    .editor-table input {
-      width: 58px;
-      background: transparent;
-      border: none;
-      color: #f8fafc;
-      font-size: 9.5px;
-      padding: 2px 3px;
-      text-align: right;
-    }
-
-    .editor-table input.text-input {
-      width: 78px;
-      text-align: left;
-      color: #fde047;
-    }
-
-    .editor-table input:focus {
-      background: #1e293b;
-      outline: 1px solid #38bdf8;
-    }
-
-    /* ================= POP-UP MODAL EDITOR (KLIK LUAR / ESC) ================= */
+    /* ================= POP-UP MODAL EDITOR ================= */
     .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 6, 23, 0.82);
-      backdrop-filter: blur(3px);
-      z-index: 500;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-      cursor: pointer;
+      position: fixed; inset: 0; background: rgba(2, 6, 23, 0.82); backdrop-filter: blur(3px);
+      z-index: 500; display: none; justify-content: center; align-items: center; padding: 16px; cursor: pointer;
     }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
+    .modal-backdrop.open { display: flex; }
     .modal-window {
-      width: 95vw;
-      max-width: 1440px;
-      max-height: 92vh;
-      background: #0f172a;
-      color: #f8fafc;
-      border: 2px solid #38bdf8;
-      border-radius: 8px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.75);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      cursor: default;
+      width: 95vw; max-width: 1440px; max-height: 92vh; background: #0f172a; color: #f8fafc;
+      border: 2px solid #38bdf8; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.75);
+      display: flex; flex-direction: column; overflow: hidden; cursor: default;
     }
+    .modal-header { padding: 12px 18px; background: linear-gradient(135deg, var(--navy) 0%, #0f172a 100%); border-bottom: 2px solid var(--emerald); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h2 { font-size: 14px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+    .modal-body { padding: 16px; overflow-y: auto; flex: 1; }
+    .modal-body .editor-table-wrap { max-height: 55vh; }
+    .modal-body .editor-table th { font-size: 11px; padding: 7px 6px; }
+    .modal-body .editor-table td.prod-label { font-size: 11px; padding: 6px 10px; }
+    .modal-body .editor-table input { width: 100%; min-width: 72px; font-size: 11.5px; padding: 6px 5px; background: #1e293b; border: 1px solid #334155; border-radius: 3px; }
+    .modal-body .editor-table input.text-input { min-width: 110px; }
+    .modal-footer { padding: 10px 18px; background: #1e293b; border-top: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+    .kbd-badge { background: #334155; color: #fde047; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; border: 1px solid #64748b; }
 
-    .modal-header {
-      padding: 12px 18px;
-      background: linear-gradient(135deg, var(--navy) 0%, #0f172a 100%);
-      border-bottom: 2px solid var(--emerald);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    /* ================= LIVE PREVIEW AREA ================= */
+    #previewContainer { flex: 1; height: 100vh; overflow: auto; padding: 12px; background: #334155; display: flex; justify-content: center; align-items: flex-start; }
+    #reportPaper { background-color: var(--paper-bg-color); color: #0f172a; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden; margin: 0 !important; padding: 0 !important; }
+    #reportPaper.a4-landscape { width: 297mm; min-height: 210mm; }
+    #reportPaper.a4-portrait { width: 210mm; min-height: 297mm; }
+    #paperBgOverlay { position: absolute; inset: 0; background-size: cover; background-position: center; background-repeat: no-repeat; pointer-events: none; z-index: 0; opacity: 0.12; }
+    #reportContent { position: relative; z-index: 1; margin: 0 !important; padding: 0 !important; width: 100%; }
 
-    .modal-header h2 {
-      font-size: 14px;
-      font-weight: 800;
-      color: #fff;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .report-header { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, var(--navy) 0%, #0d1b3e 65%, var(--emerald) 100%); color: #ffffff; padding: 8px 14px; margin: 0; border-bottom: 3px solid #4ade80; }
+    .report-title-wrap { display: flex; align-items: center; gap: 10px; }
+    .report-header-icon { width: 34px; height: 34px; border-radius: 6px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; color: #fde047; }
+    .report-title-block h1 { font-size: 15px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; }
+    .report-title-block h2 { font-size: 11.5px; font-weight: 700; color: #86efac; margin-top: 1px; text-transform: uppercase; }
+    .report-meta-block { text-align: right; background: rgba(255, 255, 255, 0.12); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.25); }
+    .report-meta-block .week-badge { font-size: 11.5px; font-weight: 800; color: #fde047; text-transform: uppercase; }
+    .report-meta-block .period-text { font-size: 9.5px; font-weight: 600; color: #f1f5f9; }
 
-    .modal-body {
-      padding: 16px;
-      overflow-y: auto;
-      flex: 1;
-    }
-
-    .modal-body .editor-table-wrap {
-      max-height: 55vh;
-    }
-
-    .modal-body .editor-table th {
-      font-size: 11px;
-      padding: 7px 6px;
-    }
-
-    .modal-body .editor-table td.prod-label {
-      font-size: 11px;
-      padding: 6px 10px;
-    }
-
-    .modal-body .editor-table input {
-      width: 100%;
-      min-width: 72px;
-      font-size: 11.5px;
-      padding: 6px 5px;
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 3px;
-    }
-
-    .modal-body .editor-table input.text-input {
-      min-width: 110px;
-    }
-
-    .modal-footer {
-      padding: 10px 18px;
-      background: #1e293b;
-      border-top: 1px solid #334155;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .kbd-badge {
-      background: #334155;
-      color: #fde047;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 700;
-      border: 1px solid #64748b;
-    }
-
-    /* ================= LIVE PREVIEW AREA (KANAN - MARGIN NONE) ================= */
-    #previewContainer {
-      flex: 1;
-      height: 100vh;
-      overflow: auto;
-      padding: 12px;
-      background: #334155;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
-
-    #reportPaper {
-      background-color: var(--paper-bg-color);
-      color: #0f172a;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
-      position: relative;
-      overflow: hidden;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-    #reportPaper.a4-landscape {
-      width: 297mm;
-      min-height: 210mm;
-    }
-
-    #reportPaper.a4-portrait {
-      width: 210mm;
-      min-height: 297mm;
-    }
-
-    #paperBgOverlay {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.12;
-    }
-
-    #reportContent {
-      position: relative;
-      z-index: 1;
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 100%;
-    }
-
-    /* Report Header Banner Flush */
-    .report-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(135deg, var(--navy) 0%, #0d1b3e 65%, var(--emerald) 100%);
-      color: #ffffff;
-      padding: 8px 14px;
-      margin: 0;
-      border-bottom: 3px solid #4ade80;
-    }
-
-    .report-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .report-header-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fde047;
-    }
-
-    .report-title-block h1 {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-    }
-
-    .report-title-block h2 {
-      font-size: 11.5px;
-      font-weight: 700;
-      color: #86efac;
-      margin-top: 1px;
-      text-transform: uppercase;
-    }
-
-    .report-meta-block {
-      text-align: right;
-      background: rgba(255, 255, 255, 0.12);
-      padding: 4px 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-    }
-
-    .report-meta-block .week-badge {
-      font-size: 11.5px;
-      font-weight: 800;
-      color: #fde047;
-      text-transform: uppercase;
-    }
-
-    .report-meta-block .period-text {
-      font-size: 9.5px;
-      font-weight: 600;
-      color: #f1f5f9;
-    }
-
-    /* Executive KPI Summary Strip with Icons (Warna Ungu Diganti Biru Cerah Sky) */
-    .kpi-strip {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      padding: 6px;
-      background: #e2e8f0;
-    }
-
-    .kpi-card {
-      padding: 7px 10px;
-      border-radius: 5px;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.12);
-    }
-
-    .kpi-icon-box {
-      width: 34px;
-      height: 34px;
-      border-radius: 7px;
-      background: rgba(255, 255, 255, 0.18);
-      border: 1px solid rgba(255, 255, 255, 0.32);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .kpi-info {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-width: 0;
-    }
-
+    .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 6px; background: #e2e8f0; }
+    .kpi-card { padding: 7px 10px; border-radius: 5px; color: #fff; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.12); }
+    .kpi-icon-box { width: 34px; height: 34px; border-radius: 7px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.32); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .kpi-info { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
     .kpi-navy { background: linear-gradient(135deg, var(--navy) 0%, #283593 100%); border-left: 4px solid #38bdf8; }
     .kpi-emerald { background: linear-gradient(135deg, var(--emerald) 0%, #1b5e20 100%); border-left: 4px solid #fde047; }
     .kpi-sky { background: linear-gradient(135deg, var(--sky-bright) 0%, var(--sky-light) 100%); border-left: 4px solid #fde047; }
     .kpi-teal { background: linear-gradient(135deg, var(--teal) 0%, #004d40 100%); border-left: 4px solid #2dd4bf; }
+    .kpi-card .kpi-title { font-size: 7.5px; font-weight: 700; text-transform: uppercase; opacity: 0.95; letter-spacing: 0.3px; }
+    .kpi-card .kpi-val { font-size: 13px; font-weight: 800; margin-top: 1px; white-space: nowrap; }
+    .kpi-card .kpi-sub { font-size: 7px; opacity: 0.9; margin-top: 1px; }
 
-    .kpi-card .kpi-title {
-      font-size: 7.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      opacity: 0.95;
-      letter-spacing: 0.3px;
-    }
-
-    .kpi-card .kpi-val {
-      font-size: 13px;
-      font-weight: 800;
-      margin-top: 1px;
-      white-space: nowrap;
-    }
-
-    .kpi-card .kpi-sub {
-      font-size: 7px;
-      opacity: 0.9;
-      margin-top: 1px;
-    }
-
-    /* Section Styling with Icon Banner */
-    .report-section {
-      margin: 0 0 6px 0;
-      background: rgba(255, 255, 255, 0.98);
-      border-bottom: 2px solid #cbd5e1;
-      padding: 0;
-      width: 100%;
-      page-break-inside: avoid;
-    }
-
-    .section-banner {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      padding: 5px 10px;
-      color: #ffffff;
-      font-size: 9.5px;
-      font-weight: 800;
-      letter-spacing: 0.35px;
-      text-transform: uppercase;
-    }
-
-    .section-banner-left {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .section-banner-icon {
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.2);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
+    .report-section { margin: 0 0 6px 0; background: rgba(255, 255, 255, 0.98); border-bottom: 2px solid #cbd5e1; padding: 0; width: 100%; page-break-inside: avoid; }
+    .section-banner { display: flex; justify-content: flex-start; align-items: center; padding: 5px 10px; color: #ffffff; font-size: 9.5px; font-weight: 800; letter-spacing: 0.35px; text-transform: uppercase; }
+    .section-banner-left { display: flex; align-items: center; gap: 7px; }
+    .section-banner-icon { width: 20px; height: 20px; border-radius: 4px; background: rgba(255, 255, 255, 0.2); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .banner-navy { background: linear-gradient(90deg, var(--navy) 0%, #283593 100%); }
     .banner-emerald { background: linear-gradient(90deg, var(--emerald) 0%, #388e3c 100%); }
     .banner-sky { background: linear-gradient(90deg, var(--sky-bright) 0%, var(--sky-light) 100%); }
     .banner-teal { background: linear-gradient(90deg, var(--teal) 0%, #00796b 100%); }
     .banner-bluegrey { background: linear-gradient(90deg, var(--blue-grey) 0%, #455a64 100%); }
 
-    /* Report Matrix Table - VERTICAL STACKED PER WEEK */
-    .table-responsive {
-      width: 100%;
-      overflow-x: hidden;
-    }
+    /* Report Matrix Table */
+    .table-responsive { width: 100%; overflow-x: hidden; }
+    .data-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: var(--table-font-size); }
+    .data-table th, .data-table td { border: 1px solid #94a3b8; padding: var(--table-cell-padding) 2px; text-align: right; overflow: hidden; text-overflow: ellipsis; word-wrap: break-word; line-height: 1.15; }
+    .data-table thead th { background: var(--navy); color: #ffffff; font-weight: 800; text-align: center; vertical-align: middle; padding: calc(var(--table-cell-padding) + 1px) 2px; }
+    .data-table thead tr.sub-header th { background: var(--blue-grey); font-size: calc(var(--table-font-size) - 0.5px); }
+    .data-table thead th.total-week-head { background: var(--emerald); }
+    .data-table thead th.sky-head { background: var(--sky-bright); }
+    .data-table thead th.red-head { background: var(--red-alert); color: #ffffff; }
 
-    .data-table {
-      width: 100%;
-      table-layout: fixed;
-      border-collapse: collapse;
-      font-size: var(--table-font-size);
-    }
+    /* SECTION C COLORED HEADERS (REQ 2) */
+    .bg-pilihan-head { background: #166534 !important; color: #ffffff !important; border-color: #14532d !important; }
+    .bg-pilihan-cell { background: #f0fdf4 !important; color: #14532d !important; font-weight: 700; }
+    .bg-pilihan-foot { background: #14532d !important; color: #4ade80 !important; }
 
-    .data-table th,
-    .data-table td {
-      border: 1px solid #94a3b8;
-      padding: var(--table-cell-padding) 3px;
-      text-align: right;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      word-wrap: break-word;
-      line-height: 1.18;
-    }
+    .bg-proses-head { background: #075985 !important; color: #ffffff !important; border-color: #0c4a6e !important; }
+    .bg-proses-cell { background: #e0f2fe !important; color: #0c4a6e !important; font-weight: 700; }
+    .bg-proses-foot { background: #0c4a6e !important; color: #38bdf8 !important; }
 
-    .data-table thead th {
-      background: var(--navy);
-      color: #ffffff;
-      font-weight: 800;
-      text-align: center;
-      vertical-align: middle;
-      padding: calc(var(--table-cell-padding) + 1.5px) 3px;
-    }
+    .data-table tbody tr:nth-child(even) { background-color: #f8fafc; }
+    .data-table tbody td.col-type { text-align: left; font-weight: 800; color: var(--navy); background: #e2e8f0; white-space: nowrap; padding-left: 4px; }
+    .data-table tbody td.col-pct { font-weight: 700; color: var(--sky-bright); background: #e0f2fe; }
+    .data-table tbody td.col-pct-red { font-weight: 800; color: var(--red-alert) !important; background: #fef2f2 !important; }
+    .data-table tfoot td.tfoot-pct-red { background: var(--red-alert) !important; color: #ffffff !important; font-weight: 800; }
+    .data-table tbody td.col-total { font-weight: 800; background: rgba(46, 125, 50, 0.1); color: #0f172a; }
+    .data-table tfoot th, .data-table tfoot td { background: #1e293b; color: #ffffff; font-weight: 800; }
+    .data-table tfoot td.tfoot-pct { color: #fde047; }
 
-    .data-table thead th.total-week-head {
-      background: var(--emerald);
-    }
+    /* Helper Class untuk Teks Merah Alert (>2.5%) */
+    .text-red-alert { color: var(--red-alert) !important; font-weight: 800 !important; }
+    .bg-red-alert { background: #fef2f2 !important; }
 
-    .data-table thead th.sky-head {
-      background: var(--sky-bright);
-    }
+    /* Chart Container & Others */
+    .chart-box { width: 100%; height: 165px; border-top: 1px solid #cbd5e1; background: #ffffff; }
+    .vertical-stack { display: flex; flex-direction: column; width: 100%; }
+    .vertical-stack .chart-box { height: 170px; width: 100%; }
+    .monthly-grid { display: grid; grid-template-columns: 38% 62%; width: 100%; align-items: stretch; }
+    .monthly-grid .chart-box { height: 100%; min-height: 210px; border-top: none; border-left: 1px solid #cbd5e1; }
 
-    .data-table thead th.red-head {
-      background: var(--red-alert);
-      color: #ffffff;
-    }
-
-    .data-table tbody td.week-group-cell {
-      background: #1e293b;
-      color: #ffffff;
-      font-weight: 800;
-      text-align: center;
-      vertical-align: middle;
-      letter-spacing: 0.4px;
-      border-right: 2px solid var(--navy);
-    }
-
-    .data-table tbody td.total-week-group-cell {
-      background: var(--emerald);
-      color: #ffffff;
-      font-weight: 800;
-      text-align: center;
-      vertical-align: middle;
-      letter-spacing: 0.4px;
-      border-right: 2px solid #1b5e20;
-    }
-
-    .data-table tbody td.metric-label-cell {
-      text-align: left;
-      font-weight: 700;
-      color: #1e293b;
-      background: #f1f5f9;
-      padding-left: 5px;
-      white-space: nowrap;
-    }
-
-    .data-table tbody tr.row-metric-order td {
-      background: #ffffff;
-      color: #0f172a;
-      font-weight: 600;
-    }
-
-    .data-table tbody tr.row-metric-reject td {
-      background: #f8fafc;
-      color: #b91c1c;
-      font-weight: 700;
-    }
-
-    .data-table tbody tr.row-metric-prodname td {
-      background: #fefce8;
-      color: var(--navy);
-      font-weight: 700;
-      text-align: center;
-    }
-
-    /* Baris % Cerah (Pengganti Ungu Muda -> Biru Cerah Sky) */
-    .data-table tbody tr.row-metric-pct td {
-      background: #e0f2fe;
-      color: #0369a1;
-      font-weight: 800;
-      border-bottom: 2px solid #64748b;
-    }
-
-    .data-table tbody tr.row-total-order td {
-      background: #ecfdf5;
-      color: #065f46;
-      font-weight: 800;
-    }
-
-    .data-table tbody tr.row-total-reject td {
-      background: #d1fae5;
-      color: #991b1b;
-      font-weight: 800;
-    }
-
-    .data-table tbody tr.row-total-prodname td {
-      background: #fef08a;
-      color: var(--navy);
-      font-weight: 800;
-      text-align: center;
-    }
-
-    .data-table tbody tr.row-total-pct td {
-      background: var(--navy);
-      color: #fde047;
-      font-weight: 800;
-      border-bottom: 2px solid #0f172a;
-    }
-
-    .data-table tbody tr.row-total-pct td.metric-label-cell {
-      background: #0f172a;
-      color: #fde047;
-    }
-
-    .data-table tbody td.col-type {
-      text-align: left;
-      font-weight: 800;
-      color: var(--navy);
-      background: #e2e8f0;
-      white-space: nowrap;
-      padding-left: 4px;
-    }
-
-    /* Kolom % Standar (Biru Cerah Sky) */
-    .data-table tbody td.col-pct {
-      font-weight: 700;
-      color: var(--sky-bright);
-      background: #e0f2fe;
-    }
-
-    /* REQ 2: Kolom % Khusus Section F berwarna MERAH */
-    .data-table tbody td.col-pct-red {
-      font-weight: 800;
-      color: var(--red-alert) !important;
-      background: #fef2f2 !important;
-    }
-
-    .data-table tfoot td.tfoot-pct-red {
-      background: var(--red-alert) !important;
-      color: #ffffff !important;
-      font-weight: 800;
-    }
-
-    .data-table tbody td.col-total {
-      font-weight: 800;
-      background: rgba(46, 125, 50, 0.1);
-      color: #0f172a;
-    }
-
-    .data-table tfoot th,
-    .data-table tfoot td {
-      background: #1e293b;
-      color: #ffffff;
-      font-weight: 800;
-    }
-
-    .data-table tfoot td.tfoot-pct {
-      color: #fde047;
-    }
-
-    /* Chart Container */
-    .chart-box {
-      width: 100%;
-      height: 165px;
-      border-top: 1px solid #cbd5e1;
-      background: #ffffff;
-    }
-
-    /* Stacked Vertical Flow for Section E */
-    .vertical-stack {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-    }
-
-    .vertical-stack .chart-box {
-      height: 170px;
-      width: 100%;
-    }
-
-    /* Section F (Bulanan) Layout */
-    .monthly-grid {
-      display: grid;
-      grid-template-columns: 38% 62%;
-      width: 100%;
-      align-items: stretch;
-    }
-
-    .monthly-grid .chart-box {
-      height: 100%;
-      min-height: 210px;
-      border-top: none;
-      border-left: 1px solid #cbd5e1;
-    }
+    /* Sub-Tabel per Minggu di Section D dan E */
+    .week-subtable-wrap { margin-bottom: 8px; }
+    .sub-table-header { color: #fff; padding: 5px 8px; font-weight: 800; font-size: 9px; border-radius: 4px 4px 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* Status Toast */
-    #toast {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      background: var(--emerald);
-      color: #fff;
-      padding: 9px 15px;
-      border-radius: 5px;
-      font-size: 11px;
-      font-weight: 700;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s;
-      z-index: 9999;
-    }
-
+    #toast { position: fixed; bottom: 16px; right: 16px; background: var(--emerald); color: #fff; padding: 9px 15px; border-radius: 5px; font-size: 11px; font-weight: 700; box-shadow: 0 6px 20px rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 9999; }
     #toast.show { opacity: 1; }
 
-    /* Print Media Query - Margin None */
     @media print {
-      html, body {
-        background: #ffffff !important;
-        overflow: visible !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      #sidebar,
-      #toggleSidebarBtn,
-      #editorModal,
-      #toast {
-        display: none !important;
-      }
-      #previewContainer {
-        padding: 0 !important;
-        margin: 0 !important;
-        background: #ffffff !important;
-        overflow: visible !important;
-        height: auto !important;
-        display: block !important;
-      }
-      #reportPaper {
-        box-shadow: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 100% !important;
-      }
+      html, body { background: #ffffff !important; overflow: visible !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
+      #sidebar, #toggleSidebarBtn, #editorModal, #toast { display: none !important; }
+      #previewContainer { padding: 0 !important; margin: 0 !important; background: #ffffff !important; overflow: visible !important; height: auto !important; display: block !important; }
+      #reportPaper { box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Floating Toggle Sidebar Button -->
   <button id="toggleSidebarBtn" onclick="toggleSidebar()" title="Sembunyikan/Tampilkan Panel Editor">
     <span>&#9776;</span> <span id="toggleSidebarText">Sembunyikan Editor</span>
   </button>
 
-  <!-- ================= POP-UP MODAL JENDELA INPUT LEBAR (KLIK LUAR / ESC TUTUP) ================= -->
   <div id="editorModal" class="modal-backdrop" onclick="handleBackdropClick(event)">
     <div class="modal-window" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -1051,13 +401,12 @@
       </div>
       <div class="modal-body" id="modalBodyContent"></div>
       <div class="modal-footer">
-        <span style="font-size:11px; color:#94a3b8;">Perubahan otomatis tersimpan. Tekan tombol <strong style="color:#fde047;">ESC</strong> atau klik di luar area jendela ini kapan saja untuk menutup.</span>
+        <span style="font-size:11px; color:#94a3b8;">Sistem akan mengidentifikasi nama produk dan memetakannya otomatis. Tekan <strong style="color:#fde047;">ESC</strong> untuk menutup.</span>
         <button class="btn btn-navy" onclick="closePopupModal()">Tutup Jendela (ESC)</button>
       </div>
     </div>
   </div>
 
-  <!-- ================= LEFT SIDEBAR EDITOR ================= -->
   <aside id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-header-icon">
@@ -1065,23 +414,22 @@
       </div>
       <div>
         <h1>DASHBOARD &amp; LAPORAN REJECT ASSY</h1>
-        <p>Manufacturing System Analyst &bull; Interactive Suite v5</p>
+        <p>Manufacturing System Analyst &bull; Smart Map v9</p>
       </div>
     </div>
 
-    <!-- Core Action Buttons -->
     <div class="action-bar">
       <button class="btn btn-navy" onclick="window.print()">&#128424; Cetak A4</button>
       <button class="btn btn-emerald" onclick="exportHighResPNG()">&#128247; Unduh PNG</button>
       <button class="btn btn-sky" onclick="exportOfflineHTML()">&#128190; Simpan HTML</button>
       <button class="btn btn-teal" onclick="backupJSON()">&#11015; Backup JSON</button>
       <button class="btn btn-bluegrey" onclick="document.getElementById('restoreInput').click()">&#11014; Restore JSON</button>
-      <button class="btn btn-danger" onclick="clearAllData()">&#128465; Kosongkan Data</button>
+      <button class="btn btn-danger" onclick="clearAllData()">&#128465; Kosongkan</button>
       <input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restoreJSON(event)" />
     </div>
 
     <div class="sidebar-body">
-      <!-- BAGIAN 1 DARI 7: HEADER LAPORAN & PENGATURAN TAMPILAN -->
+      <!-- ACCORDION 1: HEADER & SETTINGS -->
       <div class="accordion-item">
         <button class="accordion-header active" onclick="toggleAccordion(this)">
           <span class="acc-title-wrap">
@@ -1100,87 +448,50 @@
             <input type="text" class="form-control" id="inpReportTitle" oninput="updateHeaderState()" />
           </div>
           <div class="form-row">
-            <div>
-              <label class="form-label">Nama Plant</label>
-              <input type="text" class="form-control" id="inpPlant" oninput="updateHeaderState()" />
-            </div>
-            <div>
-              <label class="form-label">Minggu Aktif (Week)</label>
-              <input type="text" class="form-control" id="inpWeek" oninput="updateHeaderState()" />
-            </div>
+            <div><label class="form-label">Nama Plant</label><input type="text" class="form-control" id="inpPlant" oninput="updateHeaderState()" /></div>
+            <div><label class="form-label">Minggu Aktif (Week)</label><input type="text" class="form-control" id="inpWeek" oninput="updateHeaderState()" /></div>
           </div>
           <div class="form-row">
-            <div>
-              <label class="form-label">Periode Bulan/Tahun</label>
-              <input type="text" class="form-control" id="inpPeriod" oninput="updateHeaderState()" />
-            </div>
+            <div><label class="form-label">Periode Bulan/Tahun</label><input type="text" class="form-control" id="inpPeriod" oninput="updateHeaderState()" /></div>
             <div>
               <label class="form-label">Orientasi Kertas A4</label>
-              <select class="form-control" id="selOrientation" onchange="updateDisplaySettings()">
-                <option value="landscape">A4 Landscape (Ideal)</option>
-                <option value="portrait">A4 Portrait</option>
-              </select>
+              <select class="form-control" id="selOrientation" onchange="updateDisplaySettings()"><option value="landscape">A4 Landscape (Ideal)</option><option value="portrait">A4 Portrait</option></select>
             </div>
           </div>
 
           <div class="form-row">
             <div>
               <label class="form-label">Warna Kertas A4</label>
-              <select class="form-control" id="selPaperColor" onchange="updateDisplaySettings()">
-                <option value="#ffffff">Putih Eksekutif (#FFFFFF)</option>
-                <option value="#f8fafc">Cool Slate (#F8FAFC)</option>
-                <option value="#fefce8">Warm Ivory (#FEFCE8)</option>
-                <option value="#f0fdf4">Soft Emerald (#F0FDF4)</option>
-                <option value="#eff6ff">Soft Navy (#EFF6FF)</option>
-              </select>
+              <select class="form-control" id="selPaperColor" onchange="updateDisplaySettings()"><option value="#ffffff">Putih Eksekutif</option><option value="#f8fafc">Cool Slate</option><option value="#fefce8">Warm Ivory</option><option value="#f0fdf4">Soft Emerald</option><option value="#eff6ff">Soft Navy</option></select>
             </div>
-            <div>
-              <label class="form-label">Upload Background Lokal</label>
-              <input type="file" class="form-control" accept="image/*" onchange="handleBgUpload(event)" />
-            </div>
+            <div><label class="form-label">Upload Background Lokal</label><input type="file" class="form-control" accept="image/*" onchange="handleBgUpload(event)" /></div>
           </div>
 
           <div class="form-row">
             <div>
               <label class="form-label">Ukuran Font Tabel (Pilihan Angka)</label>
-              <select class="form-control" id="selFontSize" onchange="updateDisplaySettings()">
-                <option value="6">6 px</option>
-                <option value="6.5">6.5 px</option>
-                <option value="7">7 px</option>
-                <option value="7.5">7.5 px</option>
-                <option value="8" selected>8 px (Rekomendasi Estetik)</option>
-                <option value="8.5">8.5 px</option>
-                <option value="9">9 px</option>
-                <option value="9.5">9.5 px</option>
-                <option value="10">10 px</option>
-                <option value="11">11 px</option>
-                <option value="12">12 px</option>
-              </select>
+              <select class="form-control" id="selFontSize" onchange="updateDisplaySettings()"><option value="6">6 px</option><option value="6.5">6.5 px</option><option value="7">7 px</option><option value="7.5" selected>7.5 px (Estetik)</option><option value="8">8 px</option><option value="8.5">8.5 px</option><option value="9">9 px</option><option value="9.5">9.5 px</option><option value="10">10 px</option></select>
             </div>
             <div>
               <label class="form-label">Jarak Baris / Padding (Angka)</label>
-              <select class="form-control" id="selPadding" onchange="updateDisplaySettings()">
-                <option value="1.5">1.5 px</option>
-                <option value="2">2 px</option>
-                <option value="2.5">2.5 px</option>
-                <option value="3" selected>3 px (Ideal)</option>
-                <option value="3.5">3.5 px</option>
-                <option value="4">4 px</option>
-                <option value="5">5 px</option>
-                <option value="6">6 px</option>
-              </select>
+              <select class="form-control" id="selPadding" onchange="updateDisplaySettings()"><option value="1.5">1.5 px</option><option value="2">2 px</option><option value="2.5">2.5 px</option><option value="3" selected>3 px (Ideal)</option><option value="3.5">3.5 px</option><option value="4">4 px</option></select>
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" style="border-top:1px dashed #475569; padding-top:8px; margin-top:8px;">
+            <label class="form-label" style="color:#fde047;">Tampilkan / Sembunyikan Type Produk (Sec A - E)</label>
+            <div class="prod-toggle-bar" id="productToggleBar"></div>
+          </div>
+
+          <div class="form-group" style="border-top:1px dashed #475569; padding-top:8px;">
             <label class="form-label">Tampilkan / Sembunyikan Section Laporan</label>
             <div class="checkbox-grid">
-              <label class="checkbox-label"><input type="checkbox" id="chkSec1" checked onchange="updateDisplaySettings()"> Sec 1 (A): R. Pilihan</label>
-              <label class="checkbox-label"><input type="checkbox" id="chkSec2" checked onchange="updateDisplaySettings()"> Sec 2 (B): R. Proses</label>
-              <label class="checkbox-label"><input type="checkbox" id="chkSec3" checked onchange="updateDisplaySettings()"> Sec 3 (C): Top Pilihan</label>
-              <label class="checkbox-label"><input type="checkbox" id="chkSec4" checked onchange="updateDisplaySettings()"> Sec 4 (D): Top Proses</label>
-              <label class="checkbox-label"><input type="checkbox" id="chkSec5" checked onchange="updateDisplaySettings()"> Sec 5 (E): Komparasi</label>
-              <label class="checkbox-label"><input type="checkbox" id="chkSec6" checked onchange="updateDisplaySettings()"> Sec 6 (F): Bulanan</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec1" checked onchange="updateDisplaySettings()"> Sec A: R. Pilihan</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec2" checked onchange="updateDisplaySettings()"> Sec B: R. Proses</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec5" checked onchange="updateDisplaySettings()"> Sec C: Komparasi</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec3" checked onchange="updateDisplaySettings()"> Sec D: Top Pilihan</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec4" checked onchange="updateDisplaySettings()"> Sec E: Top Proses</label>
+              <label class="checkbox-label"><input type="checkbox" id="chkSec6" checked onchange="updateDisplaySettings()"> Sec F: Bulanan</label>
             </div>
           </div>
 
@@ -1191,138 +502,136 @@
         </div>
       </div>
 
-      <!-- BAGIAN 2 DARI 7: SEC 1 (REKAP REJECT PILIHAN) -->
+      <!-- ACCORDION 2: SEC A REKAP REJECT PILIHAN -->
       <div class="accordion-item">
         <button class="accordion-header" onclick="toggleAccordion(this)">
           <span class="acc-title-wrap">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            <span>SEC 1 (A): REKAP ORDER &amp; REJECT PILIHAN</span>
+            <span>SEC A: REKAP ORDER &amp; REJECT PILIHAN</span>
           </span>
           <span>&#9662;</span>
         </button>
         <div class="accordion-content">
           <div class="sec-control-bar">
             <button class="btn btn-amber" onclick="openPopupModal('sec1')">&#10530; Pop-Up Input Data</button>
-            <button class="btn btn-danger" onclick="clearSectionData('sec1')">&#128465; Hapus Data Sec 1</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec1')">&#128465; Hapus Data</button>
           </div>
           <div class="week-toggle-bar" id="weekToggleBar_sec1"></div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Excel Paste (Sec 1):</strong> Tempel blok tabel W1–W5 dari Excel:</div>
-            <textarea id="pasteSec1" placeholder="Paste data Excel Section 1 di sini..." oninput="handleExcelPasteMatrix('sec1', this.value)"></textarea>
+            <div class="helper-text"><strong>Smart Mapping (Sec A):</strong> Centang minggu yang dituju. Copy baris tabel dari Excel, sistem akan mencocokkan otomatis berdasarkan Type Produk:</div>
+            <textarea id="pasteSec1" placeholder="Paste data Excel Section A di sini..." oninput="handleExcelPasteMatrix('sec1', this.value)"></textarea>
           </div>
           <div class="editor-table-wrap" id="editorSec1"></div>
         </div>
       </div>
 
-      <!-- BAGIAN 3 DARI 7: SEC 2 (REKAP REJECT PROSES) -->
+      <!-- ACCORDION 3: SEC B REKAP REJECT PROSES -->
       <div class="accordion-item">
         <button class="accordion-header" onclick="toggleAccordion(this)">
           <span class="acc-title-wrap">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.2"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
-            <span>SEC 2 (B): REKAP ORDER &amp; REJECT PROSES</span>
+            <span>SEC B: REKAP ORDER &amp; REJECT PROSES</span>
           </span>
           <span>&#9662;</span>
         </button>
         <div class="accordion-content">
           <div class="sec-control-bar">
             <button class="btn btn-amber" onclick="openPopupModal('sec2')">&#10530; Pop-Up Input Data</button>
-            <button class="btn btn-danger" onclick="clearSectionData('sec2')">&#128465; Hapus Data Sec 2</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec2')">&#128465; Hapus Data</button>
           </div>
           <div class="week-toggle-bar" id="weekToggleBar_sec2"></div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Excel Paste (Sec 2):</strong> Tempel blok tabel W1–W5 dari Excel:</div>
-            <textarea id="pasteSec2" placeholder="Paste data Excel Section 2 di sini..." oninput="handleExcelPasteMatrix('sec2', this.value)"></textarea>
+            <div class="helper-text"><strong>Smart Mapping (Sec B):</strong> Centang minggu yang dituju. Copy baris tabel dari Excel, sistem akan mencocokkan otomatis berdasarkan Type Produk:</div>
+            <textarea id="pasteSec2" placeholder="Paste data Excel Section B di sini..." oninput="handleExcelPasteMatrix('sec2', this.value)"></textarea>
           </div>
           <div style="margin-bottom:6px;">
-            <button class="btn btn-navy" style="width:100%" onclick="syncOrderFromSec1()">&#128260; Salin Total Order W1-W5 dari Sec 1</button>
+            <button class="btn btn-navy" style="width:100%" onclick="syncOrderFromSec1()">&#128260; Salin Total Order W1-W5 dari Sec A</button>
           </div>
           <div class="editor-table-wrap" id="editorSec2"></div>
         </div>
       </div>
 
-      <!-- BAGIAN 4 DARI 7: SEC 3 (PRODUK REJECT PILIHAN TERTINGGI) -->
+      <!-- ACCORDION 4: SEC C KOMPARASI PILIHAN VS PROSES -->
       <div class="accordion-item">
         <button class="accordion-header" onclick="toggleAccordion(this)">
           <span class="acc-title-wrap">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-            <span>SEC 3 (C): PRODUK REJECT PILIHAN TERTINGGI</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>SEC C: KOMPARASI PILIHAN VS PROSES</span>
+          </span>
+          <span>&#9662;</span>
+        </button>
+        <div class="accordion-content">
+          <div class="sec-control-bar">
+            <button class="btn btn-amber" onclick="openPopupModal('sec5')">&#10530; Pop-Up Editor Sec C</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec5')">&#128465; Hapus Data</button>
+          </div>
+          <p class="helper-text" style="color:#cbd5e1; margin-bottom:6px;">Section C otomatis mensinkronkan perbandingan Reject Pilihan (Sec A) &amp; Reject Proses (Sec B).</p>
+        </div>
+      </div>
+
+      <!-- ACCORDION 5: SEC D PRODUK REJECT PILIHAN TERTINGGI -->
+      <div class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="acc-title-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <span>SEC D: PRODUK REJECT PILIHAN TERTINGGI</span>
           </span>
           <span>&#9662;</span>
         </button>
         <div class="accordion-content">
           <div class="sec-control-bar">
             <button class="btn btn-amber" onclick="openPopupModal('sec3')">&#10530; Pop-Up Input Data</button>
-            <button class="btn btn-danger" onclick="clearSectionData('sec3')">&#128465; Hapus Data Sec 3</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec3')">&#128465; Hapus Data</button>
           </div>
           <div class="week-toggle-bar" id="weekToggleBar_sec3"></div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Excel Paste (Sec 3):</strong> Tempel <code>Nama Produk | Order | Qty R.Pilihan</code> atau <code>Nama Produk | Qty R.Pilihan | %</code>:</div>
-            <textarea id="pasteSec3" placeholder="Paste data Excel Section 3 di sini..." oninput="handleExcelPasteTopProduct('sec3', this.value)"></textarea>
+            <div class="helper-text"><strong>Smart Mapping (Sec D):</strong> Centang minggu yang dituju. Copy tabel dari Excel ke sini:</div>
+            <textarea id="pasteSec3" placeholder="Paste data Excel Section D di sini..." oninput="handleExcelPasteTopProduct('sec3', this.value)"></textarea>
           </div>
           <div class="editor-table-wrap" id="editorSec3"></div>
         </div>
       </div>
 
-      <!-- BAGIAN 5 DARI 7: SEC 4 (PRODUK REJECT PROSES TERTINGGI) -->
+      <!-- ACCORDION 6: SEC E PRODUK REJECT PROSES TERTINGGI -->
       <div class="accordion-item">
         <button class="accordion-header" onclick="toggleAccordion(this)">
           <span class="acc-title-wrap">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span>SEC 4 (D): PRODUK REJECT PROSES TERTINGGI</span>
+            <span>SEC E: PRODUK REJECT PROSES TERTINGGI</span>
           </span>
           <span>&#9662;</span>
         </button>
         <div class="accordion-content">
           <div class="sec-control-bar">
             <button class="btn btn-amber" onclick="openPopupModal('sec4')">&#10530; Pop-Up Input Data</button>
-            <button class="btn btn-danger" onclick="clearSectionData('sec4')">&#128465; Hapus Data Sec 4</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec4')">&#128465; Hapus Data</button>
           </div>
           <div class="week-toggle-bar" id="weekToggleBar_sec4"></div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Excel Paste (Sec 4):</strong> Tempel <code>Nama Produk | Order | Qty R.Proses</code> atau <code>Nama Produk | Qty R.Proses | %</code>:</div>
-            <textarea id="pasteSec4" placeholder="Paste data Excel Section 4 di sini..." oninput="handleExcelPasteTopProduct('sec4', this.value)"></textarea>
+            <div class="helper-text"><strong>Smart Mapping (Sec E):</strong> Centang minggu yang dituju. Copy tabel dari Excel ke sini:</div>
+            <textarea id="pasteSec4" placeholder="Paste data Excel Section E di sini..." oninput="handleExcelPasteTopProduct('sec4', this.value)"></textarea>
           </div>
           <div class="editor-table-wrap" id="editorSec4"></div>
         </div>
       </div>
 
-      <!-- BAGIAN 6 DARI 7: SEC 5 (PERBANDINGAN REJECT PILIHAN VS PROSES) -->
-      <div class="accordion-item">
-        <button class="accordion-header" onclick="toggleAccordion(this)">
-          <span class="acc-title-wrap">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            <span>SEC 5 (E): KOMPARASI PILIHAN VS PROSES</span>
-          </span>
-          <span>&#9662;</span>
-        </button>
-        <div class="accordion-content">
-          <div class="sec-control-bar">
-            <button class="btn btn-amber" onclick="openPopupModal('sec5')">&#10530; Pop-Up Editor Sec 5</button>
-            <button class="btn btn-danger" onclick="clearSectionData('sec5')">&#128465; Hapus Data Sec 5</button>
-          </div>
-          <p class="helper-text" style="color:#cbd5e1; margin-bottom:6px;">
-            Section 5 (Bagian E) otomatis mensinkronkan perbandingan Reject Pilihan (Sec 1) &amp; Reject Proses (Sec 2) secara vertikal menurun.
-          </p>
-        </div>
-      </div>
-
-      <!-- BAGIAN 7 DARI 7: SEC 6 (DATA & GRAFIK REJECT BULANAN) -->
+      <!-- ACCORDION 7: SEC F DATA & GRAFIK REJECT BULANAN -->
       <div class="accordion-item">
         <button class="accordion-header" onclick="toggleAccordion(this)">
           <span class="acc-title-wrap">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>SEC 6 (F): DATA &amp; GRAFIK REJECT BULANAN</span>
+            <span>SEC F: DATA &amp; GRAFIK REJECT BULANAN</span>
           </span>
           <span>&#9662;</span>
         </button>
         <div class="accordion-content">
           <div class="sec-control-bar">
             <button class="btn btn-amber" onclick="openPopupModal('sec6')">&#10530; Pop-Up Input Data</button>
-            <button class="btn btn-danger" onclick="clearSectionData('sec6')">&#128465; Hapus Data Sec 6</button>
+            <button class="btn btn-danger" onclick="clearSectionData('sec6')">&#128465; Hapus Data</button>
           </div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Excel Paste (Sec 6):</strong> Tempel <code>Bulan | Total Order | Total Reject Pilihan+Proses</code>:</div>
-            <textarea id="pasteSec6" placeholder="Paste data Excel Bulanan (Januari - Desember) di sini..." oninput="handleExcelPasteMonthly(this.value)"></textarea>
+            <div class="helper-text"><strong>Smart Excel Paste (Sec F):</strong> Tempel <code>Bulan | Total Order | Total Reject</code>:</div>
+            <textarea id="pasteSec6" placeholder="Paste data Excel Bulanan di sini..." oninput="handleExcelPasteMonthly(this.value)"></textarea>
           </div>
           <div class="editor-table-wrap" id="editorSec6"></div>
         </div>
@@ -1353,60 +662,31 @@
           </div>
         </header>
 
-        <!-- EXECUTIVE KPI SUMMARY STRIP WITH ICONS (WARNA UNGU DIGANTI BIRU CERAH SKY) -->
+        <!-- EXECUTIVE KPI SUMMARY STRIP -->
         <div class="kpi-strip">
           <div class="kpi-card kpi-navy">
-            <div class="kpi-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-            </div>
-            <div class="kpi-info">
-              <span class="kpi-title">Total Order (Minggu Aktif)</span>
-              <span class="kpi-val" id="kpiTotalOrder">0</span>
-              <span class="kpi-sub">Akumulasi Output Produksi</span>
-            </div>
+            <div class="kpi-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+            <div class="kpi-info"><span class="kpi-title">Total Order (Minggu Aktif)</span><span class="kpi-val" id="kpiTotalOrder">0</span><span class="kpi-sub">Akumulasi Output Produksi</span></div>
           </div>
-
           <div class="kpi-card kpi-emerald">
-            <div class="kpi-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-            </div>
-            <div class="kpi-info">
-              <span class="kpi-title">Total Reject Pilihan</span>
-              <span class="kpi-val" id="kpiTotalPilihan">0 (0.00%)</span>
-              <span class="kpi-sub">Terhadap Total Order Sec A</span>
-            </div>
+            <div class="kpi-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <div class="kpi-info"><span class="kpi-title">Total Reject Pilihan</span><span class="kpi-val" id="kpiTotalPilihan">0 (0.00%)</span><span class="kpi-sub">Terhadap Total Order Sec A</span></div>
           </div>
-
           <div class="kpi-card kpi-sky">
-            <div class="kpi-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </div>
-            <div class="kpi-info">
-              <span class="kpi-title">Total Reject Proses</span>
-              <span class="kpi-val" id="kpiTotalProses">0 (0.00%)</span>
-              <span class="kpi-sub">Terhadap Total Order Sec B</span>
-            </div>
+            <div class="kpi-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+            <div class="kpi-info"><span class="kpi-title">Total Reject Proses</span><span class="kpi-val" id="kpiTotalProses">0 (0.00%)</span><span class="kpi-sub">Terhadap Total Order Sec B</span></div>
           </div>
-
           <div class="kpi-card kpi-teal">
-            <div class="kpi-icon-box">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
-            </div>
-            <div class="kpi-info">
-              <span class="kpi-title">Kumulatif Reject Tahunan</span>
-              <span class="kpi-val" id="kpiYearlyReject">0 (0.00%)</span>
-              <span class="kpi-sub">Rekapitulasi Bulanan (Jan-Des)</span>
-            </div>
+            <div class="kpi-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg></div>
+            <div class="kpi-info"><span class="kpi-title">Kumulatif Reject Tahunan</span><span class="kpi-val" id="kpiYearlyReject">0 (0.00%)</span><span class="kpi-sub">Rekapitulasi Bulanan (Jan-Des)</span></div>
           </div>
         </div>
 
-        <!-- SECTION 1 (A): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PILIHAN -->
+        <!-- SECTION A: HORIZONTAL -->
         <section class="report-section" id="viewSec1">
           <div class="section-banner banner-navy">
             <div class="section-banner-left">
-              <span class="section-banner-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-              </span>
+              <span class="section-banner-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
               <span>A. REKAPITULASI JUMLAH ORDER &amp; PERSENTASE REJECT PILIHAN</span>
             </div>
           </div>
@@ -1414,13 +694,11 @@
           <div class="chart-box" id="chartSec1"></div>
         </section>
 
-        <!-- SECTION 2 (B): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PROSES -->
+        <!-- SECTION B: HORIZONTAL -->
         <section class="report-section" id="viewSec2">
           <div class="section-banner banner-emerald">
             <div class="section-banner-left">
-              <span class="section-banner-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="m4.9 4.9 2.1 2.1"/><path d="m17 17 2.1 2.1"/><path d="m4.9 19.1 2.1-2.1"/><path d="m17 7 2.1-2.1"/></svg>
-              </span>
+              <span class="section-banner-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="m4.9 4.9 2.1 2.1"/><path d="m17 17 2.1 2.1"/><path d="m4.9 19.1 2.1-2.1"/><path d="m17 7 2.1-2.1"/></svg></span>
               <span>B. REKAPITULASI JUMLAH ORDER &amp; PERSENTASE REJECT PROSES</span>
             </div>
           </div>
@@ -1428,42 +706,12 @@
           <div class="chart-box" id="chartSec2"></div>
         </section>
 
-        <!-- SECTION 3 (C): PRODUK REJECT PILIHAN TERTINGGI (WARNA UNGU DIGANTI BIRU CERAH SKY) -->
-        <section class="report-section" id="viewSec3">
-          <div class="section-banner banner-sky">
-            <div class="section-banner-left">
-              <span class="section-banner-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              </span>
-              <span>C. PRODUK REJECT PILIHAN TERTINGGI</span>
-            </div>
-          </div>
-          <div class="table-responsive" id="tableWrapSec3"></div>
-          <div class="chart-box" id="chartSec3"></div>
-        </section>
-
-        <!-- SECTION 4 (D): PRODUK REJECT PROSES TERTINGGI -->
-        <section class="report-section" id="viewSec4">
-          <div class="section-banner banner-teal">
-            <div class="section-banner-left">
-              <span class="section-banner-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              </span>
-              <span>D. PRODUK REJECT PROSES TERTINGGI</span>
-            </div>
-          </div>
-          <div class="table-responsive" id="tableWrapSec4"></div>
-          <div class="chart-box" id="chartSec4"></div>
-        </section>
-
-        <!-- SECTION 5 (E): URUTAN MENURUN: TABEL -> GRAFIK KOMPARASI TYPE PRODUK -> GRAFIK TREN W1-W5 -->
+        <!-- SECTION C: KOMPARASI (KOLOM WARNA DIBEDAKAN) -->
         <section class="report-section" id="viewSec5">
           <div class="section-banner banner-bluegrey">
             <div class="section-banner-left">
-              <span class="section-banner-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              </span>
-              <span>E. PERBANDINGAN REJECT PILIHAN DAN REJECT PROSES PER TYPE PRODUK &amp; TREN W1-W5</span>
+              <span class="section-banner-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+              <span>C. PERBANDINGAN REJECT PILIHAN DAN REJECT PROSES PER TYPE PRODUK &amp; TREN W1-W5</span>
             </div>
           </div>
           <div class="vertical-stack">
@@ -1473,13 +721,35 @@
           </div>
         </section>
 
-        <!-- SECTION 6 (F): DATA DAN GRAFIK REJECT BULANAN (% BERWARNA MERAH) -->
+        <!-- SECTION D: PDF VERTICAL FORMAT (TANPA TABEL GRAND TOTAL BAWAH) -->
+        <section class="report-section" id="viewSec3">
+          <div class="section-banner banner-sky">
+            <div class="section-banner-left">
+              <span class="section-banner-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fde047" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+              <span>D. PRODUK REJECT PILIHAN TERTINGGI</span>
+            </div>
+          </div>
+          <div class="table-responsive" id="tableWrapSec3"></div>
+          <div class="chart-box" id="chartSec3"></div>
+        </section>
+
+        <!-- SECTION E: PDF VERTICAL FORMAT (TANPA TABEL GRAND TOTAL BAWAH) -->
+        <section class="report-section" id="viewSec4">
+          <div class="section-banner banner-teal">
+            <div class="section-banner-left">
+              <span class="section-banner-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+              <span>E. PRODUK REJECT PROSES TERTINGGI</span>
+            </div>
+          </div>
+          <div class="table-responsive" id="tableWrapSec4"></div>
+          <div class="chart-box" id="chartSec4"></div>
+        </section>
+
+        <!-- SECTION F: DATA BULANAN -->
         <section class="report-section" id="viewSec6">
           <div class="section-banner banner-navy">
             <div class="section-banner-left">
-              <span class="section-banner-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </span>
+              <span class="section-banner-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
               <span>F. DATA DAN GRAFIK REJECT BULANAN (HASIL, TOTAL NG PILIHAN + PROSES, %)</span>
             </div>
           </div>
@@ -1493,22 +763,15 @@
     </div>
   </main>
 
-  <!-- Notification Toast -->
   <div id="toast">Status OK</div>
 
   <script>
     /* =========================================================================
-       1. KONSTANTA & STRUKTUR STATE UTAMA (DEFAULT KOSONG SAAT BUKA HALAMAN)
+       1. KONSTANTA
        ========================================================================= */
     const PRODUCT_TYPES = [
-      'LIPSTICK',
-      'LIPGLOSS',
-      'COMPACT',
-      'EYELINER',
-      'MASCARA',
-      'LIPBALM',
-      'COVER TANPA BS',
-      'JAR'
+      'LIPSTICK', 'COMPACT', 'POWDER', 'JAR', 'PENCIL UNIT',
+      'MASCARA/EYELINER', 'LIPGLOSS', 'LIPBALM', 'COVER'
     ];
 
     const MONTHS = [
@@ -1516,31 +779,35 @@
       'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'
     ];
 
-    const STORAGE_KEY = 'REJECT_ASSY_SPA_STATE_V5';
+    const STORAGE_KEY = 'REJECT_ASSY_SPA_STATE_V11';
     let chartsReady = false;
     let activeModalSection = null;
     let appState = createDefaultState();
 
     function safeNum(val) {
-      if (typeof val === 'number') return Number.isFinite(val) ? val : 0;
+      if (typeof val === 'number') return Number.isFinite(val) ? Math.round(val) : 0;
       if (val === null || val === undefined) return 0;
-      let cleaned = String(val).trim().replace(/%/g, '').replace(/\s+/g, '');
-      if (cleaned.includes(',') && cleaned.includes('.')) {
-        if (cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')) {
-          cleaned = cleaned.replace(/\./g, '').replace(',', '.');
-        } else {
-          cleaned = cleaned.replace(/,/g, '');
-        }
-      } else if (cleaned.includes(',')) {
+      let cleaned = String(val).trim().replace(/%/g, '').replace(/[^\d.,\-]/g, '');
+      if (!cleaned || cleaned === '-') return 0;
+      const hasComma = cleaned.includes(',');
+      const hasDot = cleaned.includes('.');
+      if (hasComma && hasDot) {
+        if (cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')) { cleaned = cleaned.replace(/\./g, '').replace(',', '.'); } 
+        else { cleaned = cleaned.replace(/,/g, ''); }
+      } else if (hasDot) {
+        const parts = cleaned.split('.');
+        if (parts.length > 2) { cleaned = cleaned.replace(/\./g, ''); } 
+        else if (parts.length === 2 && parts[1].length === 3) { cleaned = cleaned.replace(/\./g, ''); }
+      } else if (hasComma) {
         const parts = cleaned.split(',');
-        if (parts.length === 2 && parts[1].length <= 2) {
-          cleaned = cleaned.replace(',', '.');
-        } else {
-          cleaned = cleaned.replace(/,/g, '');
+        if (parts.length > 2) { cleaned = cleaned.replace(/,/g, ''); } 
+        else if (parts.length === 2) {
+          if (parts[1].length === 3) { cleaned = cleaned.replace(/,/g, ''); } 
+          else { cleaned = cleaned.replace(',', '.'); }
         }
       }
       const parsed = parseFloat(cleaned);
-      return Number.isFinite(parsed) ? parsed : 0;
+      return Number.isFinite(parsed) ? Math.round(parsed) : 0;
     }
 
     function safeStr(val, fallback = '-') {
@@ -1549,125 +816,65 @@
       return s.length > 0 ? s : fallback;
     }
 
-    function safeArr(arr) {
-      return Array.isArray(arr) ? arr : [];
-    }
+    function safeArr(arr) { return Array.isArray(arr) ? arr : []; }
+    function fmtInt(num) { return Math.round(safeNum(num)).toLocaleString('id-ID'); }
+    function fmtPct(num) { const n = typeof num === 'number' && Number.isFinite(num) ? num : 0; return n.toFixed(2) + '%'; }
+    function calcPct(rejectQty, orderQty) { const r = safeNum(rejectQty); const o = safeNum(orderQty); return o > 0 ? (r / o) * 100 : 0; }
 
-    function fmtInt(num) {
-      return Math.round(safeNum(num)).toLocaleString('id-ID');
-    }
-
-    function fmtPct(num) {
-      return safeNum(num).toFixed(2) + '%';
-    }
-
-    function calcPct(rejectQty, orderQty) {
-      const r = safeNum(rejectQty);
-      const o = safeNum(orderQty);
-      return o > 0 ? (r / o) * 100 : 0;
-    }
-
-    // REQ 3: Saat buka halaman, seluruh data diinisialisasi KOSONG (0 dan '-')
     function createDefaultState() {
       return {
-        header: {
-          title: 'LAPORAN REJECT ASSEMBLING',
-          plant: 'PLANT ALPHA',
-          week: 'WEEK 2',
-          period: 'OKTOBER 2026',
-          bgImage: ''
-        },
+        header: { title: 'LAPORAN REJECT ASSEMBLING', plant: 'PLANT ALPHA', week: 'WEEK 2', period: 'OKTOBER 2026', bgImage: '' },
         settings: {
-          orientation: 'landscape',
-          paperColor: '#ffffff',
-          fontSize: 8,
-          padding: 3,
-          visible: {
-            sec1: true,
-            sec2: true,
-            sec3: true,
-            sec4: true,
-            sec5: true,
-            sec6: true
-          },
+          orientation: 'landscape', paperColor: '#ffffff', fontSize: 7.5, padding: 3,
+          visible: { sec1: true, sec2: true, sec3: true, sec4: true, sec5: true, sec6: true },
           weekVisible: {
-            sec1: [true, true, true, true, true],
-            sec2: [true, true, true, true, true],
-            sec3: [true, true, true, true, true],
-            sec4: [true, true, true, true, true]
-          }
+            sec1: [true, true, true, true, true], sec2: [true, true, true, true, true],
+            sec3: [true, true, true, true, true], sec4: [true, true, true, true, true]
+          },
+          prodVisible: [true, true, true, true, true, true, true, true, true]
         },
-        sec1: PRODUCT_TYPES.map(type => ({
-          type,
-          weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 }))
-        })),
-        sec2: PRODUCT_TYPES.map(type => ({
-          type,
-          weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 }))
-        })),
-        sec3: PRODUCT_TYPES.map(type => ({
-          type,
-          weeks: Array.from({ length: 5 }, () => ({ name: '-', order: 0, reject: 0 }))
-        })),
-        sec4: PRODUCT_TYPES.map(type => ({
-          type,
-          weeks: Array.from({ length: 5 }, () => ({ name: '-', order: 0, reject: 0 }))
-        })),
-        sec6: MONTHS.map(month => ({
-          month,
-          order: 0,
-          reject: 0
-        }))
+        sec1: PRODUCT_TYPES.map(type => ({ type, weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 })) })),
+        sec2: PRODUCT_TYPES.map(type => ({ type, weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 })) })),
+        sec3: [[], [], [], [], []],
+        sec4: [[], [], [], [], []],
+        sec6: MONTHS.map(month => ({ month, order: 0, reject: 0 }))
       };
     }
 
-    // Fungsi khusus jika user menekan tombol "Muat Data Simulasi"
     function createSimulationState() {
       const sim = createDefaultState();
       sim.sec1 = PRODUCT_TYPES.map((type, idx) => ({
-        type,
-        weeks: [
-          { order: 12500 - idx * 800, reject: 145 - idx * 8 },
-          { order: 13200 - idx * 750, reject: 138 - idx * 7 },
-          { order: 11800 - idx * 600, reject: 120 - idx * 6 },
-          { order: 14000 - idx * 850, reject: 152 - idx * 9 },
-          { order: 12900 - idx * 700, reject: 130 - idx * 7 }
+        type, weeks: [
+          { order: 12500 - idx * 500, reject: 145 - idx * 5 }, { order: 13200 - idx * 450, reject: 138 - idx * 4 },
+          { order: 11800 - idx * 300, reject: 120 - idx * 3 }, { order: 14000 - idx * 550, reject: 152 - idx * 6 },
+          { order: 12900 - idx * 400, reject: 130 - idx * 4 }
         ]
       }));
       sim.sec2 = PRODUCT_TYPES.map((type, idx) => ({
-        type,
-        weeks: [
-          { order: 12500 - idx * 800, reject: 98 - idx * 6 },
-          { order: 13200 - idx * 750, reject: 112 - idx * 7 },
-          { order: 11800 - idx * 600, reject: 89 - idx * 5 },
-          { order: 14000 - idx * 850, reject: 105 - idx * 6 },
-          { order: 12900 - idx * 700, reject: 94 - idx * 5 }
+        type, weeks: [
+          { order: 12500 - idx * 500, reject: 98 - idx * 4 }, { order: 13200 - idx * 450, reject: 112 - idx * 4 },
+          { order: 11800 - idx * 300, reject: 89 - idx * 3 }, { order: 14000 - idx * 550, reject: 105 - idx * 4 },
+          { order: 12900 - idx * 400, reject: 94 - idx * 3 }
         ]
       }));
-      sim.sec3 = PRODUCT_TYPES.map((type, idx) => ({
-        type,
-        weeks: [
-          { name: type.slice(0, 4) + '-01A', order: 4200 - idx * 200, reject: 68 - idx * 4 },
-          { name: type.slice(0, 4) + '-02B', order: 4500 - idx * 210, reject: 64 - idx * 3 },
-          { name: type.slice(0, 4) + '-01A', order: 3900 - idx * 180, reject: 55 - idx * 3 },
-          { name: type.slice(0, 4) + '-03C', order: 4800 - idx * 220, reject: 72 - idx * 4 },
-          { name: type.slice(0, 4) + '-02B', order: 4300 - idx * 190, reject: 60 - idx * 3 }
-        ]
-      }));
-      sim.sec4 = PRODUCT_TYPES.map((type, idx) => ({
-        type,
-        weeks: [
-          { name: type.slice(0, 4) + '-PR1', order: 4200 - idx * 200, reject: 46 - idx * 3 },
-          { name: type.slice(0, 4) + '-PR2', order: 4500 - idx * 210, reject: 52 - idx * 3 },
-          { name: type.slice(0, 4) + '-PR1', order: 3900 - idx * 180, reject: 41 - idx * 2 },
-          { name: type.slice(0, 4) + '-PR3', order: 4800 - idx * 220, reject: 49 - idx * 3 },
-          { name: type.slice(0, 4) + '-PR2', order: 4300 - idx * 190, reject: 44 - idx * 2 }
-        ]
-      }));
+      for(let w=0; w<5; w++) {
+          sim.sec3[w] = [
+              {type: 'LIPSTICK', name: 'LIPSTICK 101', order: 5000, reject: 150},
+              {type: 'LIPSTICK', name: 'LIPSTICK 102', order: 4500, reject: 120},
+              {type: 'COMPACT', name: 'COMPACT PRO', order: 8000, reject: 250},
+              {type: 'COMPACT', name: 'COMPACT LITE', order: 6000, reject: 180},
+              {type: 'JAR', name: 'JAR 15ML', order: 10000, reject: 110}
+          ];
+          sim.sec4[w] = [
+              {type: 'LIPSTICK', name: 'LIPSTICK 101', order: 5000, reject: 95},
+              {type: 'LIPSTICK', name: 'LIPSTICK 102', order: 4500, reject: 85},
+              {type: 'COMPACT', name: 'COMPACT PRO', order: 8000, reject: 140},
+              {type: 'COMPACT', name: 'COMPACT LITE', order: 6000, reject: 110},
+              {type: 'JAR', name: 'JAR 15ML', order: 10000, reject: 80}
+          ];
+      }
       sim.sec6 = MONTHS.map((month, mIdx) => ({
-        month,
-        order: mIdx <= 9 ? 385000 + (mIdx * 14500) : 0,
-        reject: mIdx <= 9 ? 6420 + (mIdx * 190) : 0
+        month, order: mIdx <= 9 ? 385000 + (mIdx * 14500) : 0, reject: mIdx <= 9 ? 6420 + (mIdx * 190) : 0
       }));
       return sim;
     }
@@ -1676,11 +883,12 @@
       if (!appState.settings) appState.settings = {};
       if (!appState.settings.weekVisible) {
         appState.settings.weekVisible = {
-          sec1: [true, true, true, true, true],
-          sec2: [true, true, true, true, true],
-          sec3: [true, true, true, true, true],
-          sec4: [true, true, true, true, true]
+          sec1: [true, true, true, true, true], sec2: [true, true, true, true, true],
+          sec3: [true, true, true, true, true], sec4: [true, true, true, true, true]
         };
+      }
+      if (!appState.settings.prodVisible || appState.settings.prodVisible.length !== 9) {
+        appState.settings.prodVisible = [true, true, true, true, true, true, true, true, true];
       }
       ['sec1', 'sec2', 'sec3', 'sec4'].forEach(k => {
         if (!Array.isArray(appState.settings.weekVisible[k]) || appState.settings.weekVisible[k].length !== 5) {
@@ -1693,23 +901,25 @@
       ensureWeekVisibleStructure();
       const flags = appState.settings.weekVisible[secKey] || [true, true, true, true, true];
       const indices = [];
-      for (let w = 0; w < 5; w++) {
-        if (flags[w] !== false) indices.push(w);
-      }
+      for (let w = 0; w < 5; w++) { if (flags[w] !== false) indices.push(w); }
+      return indices;
+    }
+
+    function getActiveProductIndices() {
+      ensureWeekVisibleStructure();
+      const flags = appState.settings.prodVisible;
+      const indices = [];
+      for (let p = 0; p < 9; p++) { if (flags[p] !== false) indices.push(p); }
       return indices;
     }
 
     /* =========================================================================
-       2. INISIALISASI GOOGLE CHARTS & EVENT SAAT BUKA HALAMAN (KOSONGKAN DATA)
+       2. INISIALISASI GOOGLE CHARTS & BUKA HALAMAN
        ========================================================================= */
     google.charts.load('current', { packages: ['corechart'] });
-    google.charts.setOnLoadCallback(() => {
-      chartsReady = true;
-      renderAllCharts();
-    });
+    google.charts.setOnLoadCallback(() => { chartsReady = true; renderAllCharts(); });
 
     window.addEventListener('DOMContentLoaded', () => {
-      // REQ 3: Saat buka halaman, langsung mulai dengan data kosong (0)
       appState = createDefaultState();
       localStorage.removeItem(STORAGE_KEY);
       ensureWeekVisibleStructure();
@@ -1722,60 +932,43 @@
       if (e.key === 'Escape' || e.key === 'Esc') {
         const modal = document.getElementById('editorModal');
         if (modal && modal.classList.contains('open')) {
-          e.preventDefault();
-          closePopupModal();
-          showToast('Jendela Pop-Up ditutup (ESC)');
+          e.preventDefault(); closePopupModal(); showToast('Jendela Pop-Up ditutup (ESC)');
         }
       }
     });
 
     function handleBackdropClick(event) {
       if (event.target && event.target.id === 'editorModal') {
-        closePopupModal();
-        showToast('Jendela Pop-Up ditutup');
+        closePopupModal(); showToast('Jendela Pop-Up ditutup');
       }
     }
 
-    window.addEventListener('resize', () => {
-      if (chartsReady) renderAllCharts();
-    });
+    window.addEventListener('resize', () => { if (chartsReady) renderAllCharts(); });
 
     function showToast(msg) {
       const t = document.getElementById('toast');
       if (!t) return;
-      t.textContent = msg;
-      t.classList.add('show');
+      t.textContent = msg; t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 2400);
     }
 
-    function saveToStorage() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-      } catch (e) {
-        console.warn('Storage limit reached:', e);
-      }
-    }
+    function saveToStorage() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch (e) { console.warn('Storage limit reached:', e); } }
 
     /* =========================================================================
-       3. UI INTERAKSI SIDEBAR, ACCORDION & HIDE/UNHIDE W1-W5
+       3. UI INTERAKSI SIDEBAR, ACCORDION & HIDE/UNHIDE
        ========================================================================= */
     function toggleSidebar() {
       const sb = document.getElementById('sidebar');
       const txt = document.getElementById('toggleSidebarText');
-      sb.classList.toggle('collapsed');
-      document.body.classList.toggle('sidebar-hidden');
-      const isHidden = sb.classList.contains('collapsed');
-      txt.textContent = isHidden ? 'Tampilkan Editor' : 'Sembunyikan Editor';
-      setTimeout(() => {
-        if (chartsReady) renderAllCharts();
-      }, 320);
+      sb.classList.toggle('collapsed'); document.body.classList.toggle('sidebar-hidden');
+      txt.textContent = sb.classList.contains('collapsed') ? 'Tampilkan Editor' : 'Sembunyikan Editor';
+      setTimeout(() => { if (chartsReady) renderAllCharts(); }, 320);
     }
 
     function toggleAccordion(btn) {
       const content = btn.nextElementSibling;
       const isOpen = content.classList.contains('open');
-      btn.classList.toggle('active', !isOpen);
-      content.classList.toggle('open', !isOpen);
+      btn.classList.toggle('active', !isOpen); content.classList.toggle('open', !isOpen);
     }
 
     function syncControlsFromState() {
@@ -1783,18 +976,17 @@
       document.getElementById('inpPlant').value = safeStr(appState.header.plant, 'PLANT ALPHA');
       document.getElementById('inpWeek').value = safeStr(appState.header.week, 'WEEK 2');
       document.getElementById('inpPeriod').value = safeStr(appState.header.period, 'OKTOBER 2026');
-
       document.getElementById('selOrientation').value = appState.settings.orientation || 'landscape';
       document.getElementById('selPaperColor').value = appState.settings.paperColor || '#ffffff';
-      document.getElementById('selFontSize').value = String(safeNum(appState.settings.fontSize) || 8);
-      document.getElementById('selPadding').value = String(safeNum(appState.settings.padding) || 3);
+      document.getElementById('selFontSize').value = String( parseFloat(appState.settings.fontSize) || 7.5 );
+      document.getElementById('selPadding').value = String( parseFloat(appState.settings.padding) || 3 );
 
       const vis = appState.settings.visible || {};
-      ['Sec1', 'Sec2', 'Sec3', 'Sec4', 'Sec5', 'Sec6'].forEach((s, idx) => {
-        const key = 'sec' + (idx + 1);
+      ['Sec1', 'Sec2', 'Sec3', 'Sec4', 'Sec5', 'Sec6'].forEach(s => {
         const chk = document.getElementById('chk' + s);
-        if (chk) chk.checked = vis[key] !== false;
+        if (chk) chk.checked = vis[s.toLowerCase()] !== false;
       });
+      buildProductToggleBar();
     }
 
     function updateHeaderState() {
@@ -1802,37 +994,62 @@
       appState.header.plant = document.getElementById('inpPlant').value;
       appState.header.week = document.getElementById('inpWeek').value;
       appState.header.period = document.getElementById('inpPeriod').value;
-      saveToStorage();
-      renderHeader();
+      saveToStorage(); renderHeader();
     }
 
     function updateDisplaySettings() {
-      const orient = document.getElementById('selOrientation').value;
-      const paperColor = document.getElementById('selPaperColor').value;
-      const fontSize = safeNum(document.getElementById('selFontSize').value) || 8;
-      const padding = safeNum(document.getElementById('selPadding').value) || 3;
-
-      appState.settings.orientation = orient;
-      appState.settings.paperColor = paperColor;
-      appState.settings.fontSize = fontSize;
-      appState.settings.padding = padding;
+      appState.settings.orientation = document.getElementById('selOrientation').value;
+      appState.settings.paperColor = document.getElementById('selPaperColor').value;
+      appState.settings.fontSize = parseFloat(document.getElementById('selFontSize').value) || 7.5;
+      appState.settings.padding = parseFloat(document.getElementById('selPadding').value) || 3;
 
       const paper = document.getElementById('reportPaper');
-      paper.className = orient === 'portrait' ? 'a4-portrait' : 'a4-landscape';
-      document.documentElement.style.setProperty('--paper-bg-color', paperColor);
-      document.documentElement.style.setProperty('--table-font-size', fontSize + 'px');
-      document.documentElement.style.setProperty('--table-cell-padding', padding + 'px');
+      paper.className = appState.settings.orientation === 'portrait' ? 'a4-portrait' : 'a4-landscape';
+      document.documentElement.style.setProperty('--paper-bg-color', appState.settings.paperColor);
+      document.documentElement.style.setProperty('--table-font-size', appState.settings.fontSize + 'px');
+      document.documentElement.style.setProperty('--table-cell-padding', appState.settings.padding + 'px');
 
-      ['sec1', 'sec2', 'sec3', 'sec4', 'sec5', 'sec6'].forEach((key, idx) => {
-        const chk = document.getElementById('chkSec' + (idx + 1));
+      ['sec1', 'sec2', 'sec3', 'sec4', 'sec5', 'sec6'].forEach(key => {
+        const chk = document.getElementById('chk' + key.charAt(0).toUpperCase() + key.slice(1));
         const isVis = chk ? chk.checked : true;
         appState.settings.visible[key] = isVis;
-        const secEl = document.getElementById('viewSec' + (idx + 1));
+        const secEl = document.getElementById('view' + key.charAt(0).toUpperCase() + key.slice(1));
         if (secEl) secEl.style.display = isVis ? 'block' : 'none';
       });
-
       saveToStorage();
       if (chartsReady) setTimeout(renderAllCharts, 60);
+    }
+
+    function buildProductToggleBar() {
+      ensureWeekVisibleStructure();
+      const container = document.getElementById('productToggleBar');
+      if (!container) return;
+      const flags = appState.settings.prodVisible;
+      let html = `<div class="week-toggle-group">`;
+      PRODUCT_TYPES.forEach((type, pIdx) => {
+        const checked = flags[pIdx] !== false ? 'checked' : '';
+        html += `<label class="week-chip" style="font-size:8.5px; padding:4px 6px;">
+            <input type="checkbox" ${checked} onchange="toggleProductVisibility(${pIdx}, this.checked)" />
+            ${type}
+          </label>`;
+      });
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function toggleProductVisibility(pIdx, isChecked) {
+      ensureWeekVisibleStructure();
+      const activeCount = appState.settings.prodVisible.filter(Boolean).length;
+      if (!isChecked && activeCount <= 1) {
+        showToast('Minimal 1 Type Produk harus ditampilkan!');
+        buildProductToggleBar();
+        return;
+      }
+      appState.settings.prodVisible[pIdx] = Boolean(isChecked);
+      saveToStorage();
+      buildProductToggleBar(); buildAllSidebarEditors();
+      if (activeModalSection) renderModalBody(activeModalSection);
+      renderAll();
     }
 
     function buildWeekToggleBars() {
@@ -1845,15 +1062,10 @@
 
     function generateWeekToggleHTML(secKey) {
       const flags = appState.settings.weekVisible[secKey];
-      let html = `<span class="wt-title">Tampilan Minggu:</span><div class="week-toggle-group">`;
+      let html = `<span class="wt-title">Pilih Minggu Aktif (Untuk Input Paste & Tampilan):</span><div class="week-toggle-group">`;
       for (let w = 0; w < 5; w++) {
         const checked = flags[w] !== false ? 'checked' : '';
-        html += `
-          <label class="week-chip">
-            <input type="checkbox" ${checked} onchange="toggleWeekVisibility('${secKey}', ${w}, this.checked)" />
-            W${w + 1}
-          </label>
-        `;
+        html += `<label class="week-chip"><input type="checkbox" ${checked} onchange="toggleWeekVisibility('${secKey}', ${w}, this.checked)" /> W${w + 1}</label>`;
       }
       html += `</div>`;
       return html;
@@ -1863,15 +1075,12 @@
       ensureWeekVisibleStructure();
       const activeCount = appState.settings.weekVisible[secKey].filter(Boolean).length;
       if (!isChecked && activeCount <= 1) {
-        showToast('Minimal 1 minggu harus ditampilkan pada tabel!');
-        buildWeekToggleBars();
-        if (activeModalSection === secKey) openPopupModal(secKey);
+        showToast('Minimal 1 minggu harus ditampilkan!');
+        buildWeekToggleBars(); if (activeModalSection === secKey) openPopupModal(secKey);
         return;
       }
       appState.settings.weekVisible[secKey][wIdx] = Boolean(isChecked);
-      saveToStorage();
-      buildWeekToggleBars();
-      buildAllSidebarEditors();
+      saveToStorage(); buildWeekToggleBars(); buildAllSidebarEditors();
       if (activeModalSection === secKey) renderModalBody(secKey);
       renderAll();
     }
@@ -1881,20 +1090,11 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
-        appState.header.bgImage = e.target.result;
-        saveToStorage();
-        renderHeader();
-        showToast('Background kertas berhasil diperbarui');
+        appState.header.bgImage = e.target.result; saveToStorage(); renderHeader(); showToast('Background kertas diperbarui');
       };
       reader.readAsDataURL(file);
     }
-
-    function clearBgImage() {
-      appState.header.bgImage = '';
-      saveToStorage();
-      renderHeader();
-      showToast('Background gambar dihapus');
-    }
+    function clearBgImage() { appState.header.bgImage = ''; saveToStorage(); renderHeader(); showToast('Background dihapus'); }
 
     /* =========================================================================
        4. PEMBANGUN FORM EDITOR SIDEBAR & POP-UP MODAL
@@ -1903,126 +1103,101 @@
       buildWeekToggleBars();
       document.getElementById('editorSec1').innerHTML = generateMatrixEditorHTML('sec1', 'R.Pilihan');
       document.getElementById('editorSec2').innerHTML = generateMatrixEditorHTML('sec2', 'R.Proses');
-      document.getElementById('editorSec3').innerHTML = generateTopProductEditorHTML('sec3', 'Qty Pilihan');
-      document.getElementById('editorSec4').innerHTML = generateTopProductEditorHTML('sec4', 'Qty Proses');
+      document.getElementById('editorSec3').innerHTML = generateDynamicTopProductEditorHTML('sec3', 'Qty Pilihan');
+      document.getElementById('editorSec4').innerHTML = generateDynamicTopProductEditorHTML('sec4', 'Qty Proses');
       document.getElementById('editorSec6').innerHTML = generateMonthlyEditorHTML();
     }
 
     function generateMatrixEditorHTML(secKey, rejectLabel) {
       const rows = safeArr(appState[secKey]);
       const activeWeeks = getActiveWeekIndices(secKey);
+      const activeProds = getActiveProductIndices();
 
-      let html = `<table class="editor-table">
-        <thead>
-          <tr>
-            <th>TYPE PRODUK</th>`;
-      activeWeeks.forEach(w => {
-        html += `<th>W${w + 1} Order</th><th>W${w + 1} ${rejectLabel}</th>`;
-      });
+      let html = `<table class="editor-table"><thead><tr><th>TYPE PRODUK</th>`;
+      activeWeeks.forEach(w => { html += `<th>W${w + 1} Order</th><th>W${w + 1} ${rejectLabel}</th>`; });
       html += `</tr></thead><tbody>`;
 
-      rows.forEach((row, rIdx) => {
-        const weeks = safeArr(row.weeks);
-        html += `<tr><td class="prod-label">${safeStr(row.type)}</td>`;
+      activeProds.forEach(pIdx => {
+        const type = PRODUCT_TYPES[pIdx];
+        const row = rows[pIdx] || { weeks: [] };
+        html += `<tr><td class="prod-label">${type}</td>`;
         activeWeeks.forEach(w => {
-          const wk = weeks[w] || { order: 0, reject: 0 };
+          const wk = row.weeks[w] || { order: 0, reject: 0 };
           html += `
-            <td><input type="number" value="${safeNum(wk.order)}" oninput="onEditMatrix('${secKey}', ${rIdx}, ${w}, 'order', this.value)" /></td>
-            <td><input type="number" value="${safeNum(wk.reject)}" oninput="onEditMatrix('${secKey}', ${rIdx}, ${w}, 'reject', this.value)" /></td>
+            <td><input type="text" inputmode="numeric" value="${safeNum(wk.order)}" oninput="onEditMatrix('${secKey}', ${pIdx}, ${w}, 'order', this.value)" /></td>
+            <td><input type="text" inputmode="numeric" value="${safeNum(wk.reject)}" oninput="onEditMatrix('${secKey}', ${pIdx}, ${w}, 'reject', this.value)" /></td>
           `;
         });
         html += `</tr>`;
       });
-
       html += `</tbody></table>`;
       return html;
     }
 
-    function generateTopProductEditorHTML(secKey, qtyLabel) {
-      const rows = safeArr(appState[secKey]);
+    function generateDynamicTopProductEditorHTML(secKey, qtyLabel) {
       const activeWeeks = getActiveWeekIndices(secKey);
+      let html = '';
 
-      let html = `<table class="editor-table">
-        <thead>
-          <tr>
-            <th>TYPE PRODUK</th>`;
       activeWeeks.forEach(w => {
-        html += `<th>W${w + 1} Nama Produk</th><th>W${w + 1} Order</th><th>W${w + 1} ${qtyLabel}</th>`;
-      });
-      html += `</tr></thead><tbody>`;
+        html += `<h4 style="color:#38bdf8; margin-top:10px; margin-bottom:4px; font-size:11px;">MINGGU KE-${w + 1}</h4>`;
+        html += `<table class="editor-table" style="margin-bottom:8px;">
+          <thead><tr><th>TYPE PRODUK</th><th>NAMA PRODUK</th><th>ORDER</th><th>${qtyLabel}</th><th>HAPUS</th></tr></thead><tbody>`;
+        
+        safeArr(appState[secKey][w]).forEach((item, rIdx) => {
+          const pIdx = PRODUCT_TYPES.indexOf(item.type);
+          if (pIdx !== -1 && !appState.settings.prodVisible[pIdx]) return;
 
-      rows.forEach((row, rIdx) => {
-        const weeks = safeArr(row.weeks);
-        html += `<tr><td class="prod-label">${safeStr(row.type)}</td>`;
-        activeWeeks.forEach(w => {
-          const wk = weeks[w] || { name: '-', order: 0, reject: 0 };
-          html += `
-            <td><input type="text" class="text-input" value="${safeStr(wk.name, '-')}" oninput="onEditTopProd('${secKey}', ${rIdx}, ${w}, 'name', this.value)" /></td>
-            <td><input type="number" value="${safeNum(wk.order)}" oninput="onEditTopProd('${secKey}', ${rIdx}, ${w}, 'order', this.value)" /></td>
-            <td><input type="number" value="${safeNum(wk.reject)}" oninput="onEditTopProd('${secKey}', ${rIdx}, ${w}, 'reject', this.value)" /></td>
-          `;
+          html += `<tr>
+            <td class="prod-label"><input type="text" style="width:90px; text-align:left; color:#38bdf8;" value="${safeStr(item.type)}" oninput="onEditDynamic('${secKey}', ${w}, ${rIdx}, 'type', this.value)"></td>
+            <td><input type="text" class="text-input" value="${safeStr(item.name, '-')}" oninput="onEditDynamic('${secKey}', ${w}, ${rIdx}, 'name', this.value)" /></td>
+            <td><input type="text" inputmode="numeric" style="width:50px;" value="${safeNum(item.order)}" oninput="onEditDynamic('${secKey}', ${w}, ${rIdx}, 'order', this.value)" /></td>
+            <td><input type="text" inputmode="numeric" style="width:50px;" value="${safeNum(item.reject)}" oninput="onEditDynamic('${secKey}', ${w}, ${rIdx}, 'reject', this.value)" /></td>
+            <td style="text-align:center;"><button onclick="deleteDynamicRow('${secKey}', ${w}, ${rIdx})" style="background:#dc2626; color:#fff; border:none; border-radius:3px; cursor:pointer; padding:2px 5px; font-weight:bold;">X</button></td>
+          </tr>`;
         });
-        html += `</tr>`;
+        html += `</tbody></table>`;
       });
-
-      html += `</tbody></table>`;
       return html;
     }
 
     function generateSec5CombinedEditorHTML() {
       const activeWeeks = getActiveWeekIndices('sec1');
-      let html = `<table class="editor-table">
-        <thead>
-          <tr>
-            <th>TYPE PRODUK</th>`;
-      activeWeeks.forEach(w => {
-        html += `<th>W${w + 1} Order</th><th>W${w + 1} R.Pilihan</th><th>W${w + 1} R.Proses</th>`;
-      });
+      const activeProds = getActiveProductIndices();
+      let html = `<table class="editor-table"><thead><tr><th>TYPE PRODUK</th>`;
+      activeWeeks.forEach(w => { html += `<th>W${w + 1} Order</th><th>W${w + 1} R.Pilihan</th><th>W${w + 1} R.Proses</th>`; });
       html += `</tr></thead><tbody>`;
 
-      PRODUCT_TYPES.forEach((type, rIdx) => {
-        const w1 = safeArr(appState.sec1[rIdx] && appState.sec1[rIdx].weeks);
-        const w2 = safeArr(appState.sec2[rIdx] && appState.sec2[rIdx].weeks);
+      activeProds.forEach(pIdx => {
+        const type = PRODUCT_TYPES[pIdx];
+        const w1 = safeArr(appState.sec1[pIdx] && appState.sec1[pIdx].weeks);
+        const w2 = safeArr(appState.sec2[pIdx] && appState.sec2[pIdx].weeks);
         html += `<tr><td class="prod-label">${type}</td>`;
         activeWeeks.forEach(w => {
           const ord = safeNum(w1[w] && w1[w].order);
           const pil = safeNum(w1[w] && w1[w].reject);
           const pro = safeNum(w2[w] && w2[w].reject);
           html += `
-            <td><input type="number" value="${ord}" oninput="onEditSec5Combined(${rIdx}, ${w}, 'order', this.value)" /></td>
-            <td><input type="number" value="${pil}" oninput="onEditSec5Combined(${rIdx}, ${w}, 'pilihan', this.value)" /></td>
-            <td><input type="number" value="${pro}" oninput="onEditSec5Combined(${rIdx}, ${w}, 'proses', this.value)" /></td>
+            <td><input type="text" inputmode="numeric" value="${ord}" oninput="onEditSec5Combined(${pIdx}, ${w}, 'order', this.value)" /></td>
+            <td><input type="text" inputmode="numeric" value="${pil}" oninput="onEditSec5Combined(${pIdx}, ${w}, 'pilihan', this.value)" /></td>
+            <td><input type="text" inputmode="numeric" value="${pro}" oninput="onEditSec5Combined(${pIdx}, ${w}, 'proses', this.value)" /></td>
           `;
         });
         html += `</tr>`;
       });
-
       html += `</tbody></table>`;
       return html;
     }
 
     function generateMonthlyEditorHTML() {
       const rows = safeArr(appState.sec6);
-      let html = `<table class="editor-table">
-        <thead>
-          <tr>
-            <th>BULAN</th>
-            <th>TOTAL ORDER</th>
-            <th>TOTAL REJECT (PILIHAN + PROSES)</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
+      let html = `<table class="editor-table"><thead><tr><th>BULAN</th><th>TOTAL ORDER</th><th>TOTAL REJECT (PILIHAN + PROSES)</th></tr></thead><tbody>`;
       rows.forEach((row, mIdx) => {
-        html += `
-          <tr>
+        html += `<tr>
             <td class="prod-label">${safeStr(row.month)}</td>
-            <td><input type="number" style="width:100%" value="${safeNum(row.order)}" oninput="onEditMonthly(${mIdx}, 'order', this.value)" /></td>
-            <td><input type="number" style="width:100%" value="${safeNum(row.reject)}" oninput="onEditMonthly(${mIdx}, 'reject', this.value)" /></td>
-          </tr>
-        `;
+            <td><input type="text" inputmode="numeric" style="width:100%" value="${safeNum(row.order)}" oninput="onEditMonthly(${mIdx}, 'order', this.value)" /></td>
+            <td><input type="text" inputmode="numeric" style="width:100%" value="${safeNum(row.reject)}" oninput="onEditMonthly(${mIdx}, 'reject', this.value)" /></td>
+          </tr>`;
       });
-
       html += `</tbody></table>`;
       return html;
     }
@@ -2030,82 +1205,57 @@
     function onEditMatrix(secKey, rIdx, wIdx, field, val) {
       if (!appState[secKey] || !appState[secKey][rIdx]) return;
       appState[secKey][rIdx].weeks[wIdx][field] = safeNum(val);
-      saveToStorage();
-      if (activeModalSection) buildAllSidebarEditors();
-      renderAll();
+      saveToStorage(); if (activeModalSection) buildAllSidebarEditors(); renderAll();
     }
 
-    function onEditTopProd(secKey, rIdx, wIdx, field, val) {
-      if (!appState[secKey] || !appState[secKey][rIdx]) return;
-      appState[secKey][rIdx].weeks[wIdx][field] = field === 'name' ? String(val) : safeNum(val);
-      saveToStorage();
-      if (activeModalSection) buildAllSidebarEditors();
-      renderAll();
+    function onEditDynamic(secKey, wIdx, rIdx, field, val) {
+      if (field === 'order' || field === 'reject') val = safeNum(val);
+      appState[secKey][wIdx][rIdx][field] = val;
+      saveToStorage(); renderAll();
+    }
+
+    function deleteDynamicRow(secKey, wIdx, rIdx) {
+      appState[secKey][wIdx].splice(rIdx, 1);
+      saveToStorage(); buildAllSidebarEditors();
+      if (activeModalSection) renderModalBody(activeModalSection);
+      renderAll(); showToast('Baris dihapus');
     }
 
     function onEditSec5Combined(rIdx, wIdx, field, val) {
       const v = safeNum(val);
-      if (field === 'order') {
-        appState.sec1[rIdx].weeks[wIdx].order = v;
-        appState.sec2[rIdx].weeks[wIdx].order = v;
-      } else if (field === 'pilihan') {
-        appState.sec1[rIdx].weeks[wIdx].reject = v;
-      } else if (field === 'proses') {
-        appState.sec2[rIdx].weeks[wIdx].reject = v;
-      }
-      saveToStorage();
-      buildAllSidebarEditors();
-      renderAll();
+      if (field === 'order') { appState.sec1[rIdx].weeks[wIdx].order = v; appState.sec2[rIdx].weeks[wIdx].order = v; } 
+      else if (field === 'pilihan') { appState.sec1[rIdx].weeks[wIdx].reject = v; } 
+      else if (field === 'proses') { appState.sec2[rIdx].weeks[wIdx].reject = v; }
+      saveToStorage(); buildAllSidebarEditors(); renderAll();
     }
 
     function onEditMonthly(mIdx, field, val) {
       if (!appState.sec6 || !appState.sec6[mIdx]) return;
       appState.sec6[mIdx][field] = safeNum(val);
-      saveToStorage();
-      if (activeModalSection) buildAllSidebarEditors();
-      renderAll();
+      saveToStorage(); if (activeModalSection) buildAllSidebarEditors(); renderAll();
     }
 
     function syncOrderFromSec1() {
-      safeArr(appState.sec1).forEach((row1, rIdx) => {
+      const activeProds = getActiveProductIndices();
+      activeProds.forEach(rIdx => {
         if (appState.sec2[rIdx]) {
-          safeArr(row1.weeks).forEach((w1, wIdx) => {
+          safeArr(appState.sec1[rIdx].weeks).forEach((w1, wIdx) => {
             appState.sec2[rIdx].weeks[wIdx].order = safeNum(w1.order);
           });
         }
       });
-      buildAllSidebarEditors();
-      if (activeModalSection === 'sec2') renderModalBody('sec2');
-      saveToStorage();
-      renderAll();
-      showToast('Total Order W1-W5 berhasil disalin dari Sec 1 ke Sec 2');
+      buildAllSidebarEditors(); if (activeModalSection === 'sec2') renderModalBody('sec2');
+      saveToStorage(); renderAll(); showToast('Total Order W1-W5 disalin dari Sec A ke Sec B');
     }
 
-    /* =========================================================================
-       5. POP-UP JENDELA EDITOR LELUASA UNTUK KETUJUH BAGIAN
-       ========================================================================= */
     function openPopupModal(secKey) {
       activeModalSection = secKey;
       const modal = document.getElementById('editorModal');
-      const clearBtn = document.getElementById('modalClearBtn');
-      clearBtn.style.display = secKey === 'header' ? 'none' : 'inline-flex';
-      renderModalBody(secKey);
-      modal.classList.add('open');
+      document.getElementById('modalClearBtn').style.display = secKey === 'header' ? 'none' : 'inline-flex';
+      renderModalBody(secKey); modal.classList.add('open');
     }
-
-    function closePopupModal() {
-      activeModalSection = null;
-      document.getElementById('editorModal').classList.remove('open');
-      syncControlsFromState();
-      buildAllSidebarEditors();
-      renderAll();
-    }
-
-    function handleModalClear() {
-      if (activeModalSection && activeModalSection !== 'header') {
-        clearSectionData(activeModalSection);
-      }
-    }
+    function closePopupModal() { activeModalSection = null; document.getElementById('editorModal').classList.remove('open'); syncControlsFromState(); buildAllSidebarEditors(); renderAll(); }
+    function handleModalClear() { if (activeModalSection && activeModalSection !== 'header') { clearSectionData(activeModalSection); } }
 
     function renderModalBody(secKey) {
       const titleEl = document.getElementById('modalTitle');
@@ -2115,38 +1265,12 @@
         titleEl.textContent = 'POP-UP BAGIAN 1: HEADER LAPORAN & PENGATURAN KERTAS A4';
         bodyEl.innerHTML = `
           <div class="form-row">
-            <div>
-              <label class="form-label">Judul Utama Laporan</label>
-              <input type="text" class="form-control" value="${safeStr(appState.header.title)}" oninput="appState.header.title=this.value; syncControlsFromState(); updateHeaderState();" />
-            </div>
-            <div>
-              <label class="form-label">Nama Plant</label>
-              <input type="text" class="form-control" value="${safeStr(appState.header.plant)}" oninput="appState.header.plant=this.value; syncControlsFromState(); updateHeaderState();" />
-            </div>
+            <div><label class="form-label">Judul Utama Laporan</label><input type="text" class="form-control" value="${safeStr(appState.header.title)}" oninput="appState.header.title=this.value; syncControlsFromState(); updateHeaderState();" /></div>
+            <div><label class="form-label">Nama Plant</label><input type="text" class="form-control" value="${safeStr(appState.header.plant)}" oninput="appState.header.plant=this.value; syncControlsFromState(); updateHeaderState();" /></div>
           </div>
           <div class="form-row">
-            <div>
-              <label class="form-label">Minggu Aktif (Week)</label>
-              <input type="text" class="form-control" value="${safeStr(appState.header.week)}" oninput="appState.header.week=this.value; syncControlsFromState(); updateHeaderState();" />
-            </div>
-            <div>
-              <label class="form-label">Periode Bulan/Tahun</label>
-              <input type="text" class="form-control" value="${safeStr(appState.header.period)}" oninput="appState.header.period=this.value; syncControlsFromState(); updateHeaderState();" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div>
-              <label class="form-label">Ukuran Font Tabel (Pilihan Angka)</label>
-              <select class="form-control" onchange="document.getElementById('selFontSize').value=this.value; updateDisplaySettings();">
-                ${[6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12].map(n => `<option value="${n}" ${safeNum(appState.settings.fontSize) === n ? 'selected' : ''}>${n} px</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="form-label">Padding Baris Tabel (Pilihan Angka)</label>
-              <select class="form-control" onchange="document.getElementById('selPadding').value=this.value; updateDisplaySettings();">
-                ${[1.5, 2, 2.5, 3, 3.5, 4, 5, 6].map(n => `<option value="${n}" ${safeNum(appState.settings.padding) === n ? 'selected' : ''}>${n} px</option>`).join('')}
-              </select>
-            </div>
+            <div><label class="form-label">Minggu Aktif (Week)</label><input type="text" class="form-control" value="${safeStr(appState.header.week)}" oninput="appState.header.week=this.value; syncControlsFromState(); updateHeaderState();" /></div>
+            <div><label class="form-label">Periode Bulan/Tahun</label><input type="text" class="form-control" value="${safeStr(appState.header.period)}" oninput="appState.header.period=this.value; syncControlsFromState(); updateHeaderState();" /></div>
           </div>
         `;
         return;
@@ -2154,13 +1278,11 @@
 
       if (secKey === 'sec1' || secKey === 'sec2') {
         const isSec1 = secKey === 'sec1';
-        titleEl.textContent = isSec1
-          ? 'POP-UP SEC 1 (A): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PILIHAN'
-          : 'POP-UP SEC 2 (B): REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PROSES';
+        titleEl.textContent = isSec1 ? 'POP-UP SEC A: REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PILIHAN' : 'POP-UP SEC B: REKAPITULASI JUMLAH ORDER & PERSENTASE REJECT PROSES';
         bodyEl.innerHTML = `
           <div class="week-toggle-bar">${generateWeekToggleHTML(secKey)}</div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Excel Paste (${secKey.toUpperCase()}):</strong> Copy &amp; Paste langsung baris tabel dari Excel di bawah ini:</div>
+            <div class="helper-text"><strong>Smart Mapping Paste (${isSec1 ? 'Sec A' : 'Sec B'}):</strong> Pastikan W1 diceklis. Paste baris tabel dari Excel di bawah ini, sistem otomatis memetakan sesuai nama produk:</div>
             <textarea placeholder="Paste data Excel di sini..." oninput="handleExcelPasteMatrix('${secKey}', this.value); renderModalBody('${secKey}');"></textarea>
           </div>
           <div class="editor-table-wrap">${generateMatrixEditorHTML(secKey, isSec1 ? 'R.Pilihan' : 'R.Proses')}</div>
@@ -2170,33 +1292,29 @@
 
       if (secKey === 'sec3' || secKey === 'sec4') {
         const isSec3 = secKey === 'sec3';
-        titleEl.textContent = isSec3
-          ? 'POP-UP SEC 3 (C): PRODUK REJECT PILIHAN TERTINGGI (W1 - W5)'
-          : 'POP-UP SEC 4 (D): PRODUK REJECT PROSES TERTINGGI (W1 - W5)';
+        titleEl.textContent = isSec3 ? 'POP-UP SEC D: PRODUK REJECT PILIHAN TERTINGGI' : 'POP-UP SEC E: PRODUK REJECT PROSES TERTINGGI';
         bodyEl.innerHTML = `
           <div class="week-toggle-bar">${generateWeekToggleHTML(secKey)}</div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Excel Paste (${secKey.toUpperCase()}):</strong> Copy &amp; Paste blok tabel dari Excel di bawah ini:</div>
+            <div class="helper-text"><strong>Smart Mapping Paste (${isSec3 ? 'Sec D' : 'Sec E'}):</strong> Centang minggu yang dituju. Tabel akan membentuk baris secara dinamis sesuai data yang dipaste.</div>
             <textarea placeholder="Paste data Excel di sini..." oninput="handleExcelPasteTopProduct('${secKey}', this.value); renderModalBody('${secKey}');"></textarea>
           </div>
-          <div class="editor-table-wrap">${generateTopProductEditorHTML(secKey, isSec3 ? 'Qty Pilihan' : 'Qty Proses')}</div>
+          <div class="editor-table-wrap">${generateDynamicTopProductEditorHTML(secKey, isSec3 ? 'Qty Pilihan' : 'Qty Proses')}</div>
         `;
         return;
       }
 
       if (secKey === 'sec5') {
-        titleEl.textContent = 'POP-UP SEC 5 (E): EDITOR KOMPARASI REJECT PILIHAN VS REJECT PROSES (W1 - W5)';
+        titleEl.textContent = 'POP-UP SEC C: EDITOR KOMPARASI REJECT PILIHAN VS REJECT PROSES (W1 - W5)';
         bodyEl.innerHTML = `
-          <p class="helper-text" style="margin-bottom:10px; font-size:11px;">
-            Edit langsung nilai Order, Reject Pilihan, dan Reject Proses secara berdampingan di bawah ini:
-          </p>
+          <p class="helper-text" style="margin-bottom:10px; font-size:11px;">Edit langsung nilai Order, Reject Pilihan, dan Reject Proses secara berdampingan di bawah ini:</p>
           <div class="editor-table-wrap">${generateSec5CombinedEditorHTML()}</div>
         `;
         return;
       }
 
       if (secKey === 'sec6') {
-        titleEl.textContent = 'POP-UP SEC 6 (F): DATA DAN GRAFIK REJECT BULANAN (JANUARI - DESEMBER)';
+        titleEl.textContent = 'POP-UP SEC F: DATA DAN GRAFIK REJECT BULANAN (JANUARI - DESEMBER)';
         bodyEl.innerHTML = `
           <div class="excel-paste-box">
             <div class="helper-text"><strong>Smart Excel Paste Bulanan:</strong> Copy &amp; Paste 12 baris bulan dari Excel di bawah ini:</div>
@@ -2208,113 +1326,181 @@
     }
 
     /* =========================================================================
-       6. SMART EXCEL PASTE PARSER (\t dan \n)
+       6. SMART EXCEL PASTE PARSER (MAPPING BY PRODUCT NAME)
        ========================================================================= */
+    function isPercentageToken(str) { return str && String(str).trim().includes('%'); }
+
     function handleExcelPasteMatrix(secKey, rawText) {
       if (!rawText || !rawText.trim()) return;
-      const lines = rawText.trim().split(/\r?\n/);
+      const lines = rawText.trim().split(/\r?\n/).filter(l => l.trim().length > 0);
+      if (lines.length === 0) return;
 
-      lines.forEach((line, idx) => {
-        if (idx >= appState[secKey].length) return;
+      const activeWeeks = getActiveWeekIndices(secKey);
+      const activeProds = getActiveProductIndices();
+      if(activeWeeks.length === 0) return;
+
+      let sequentialIdx = 0;
+      let parsedDataCount = 0;
+
+      lines.forEach(line => {
+        if (sequentialIdx >= activeProds.length) return;
         let cols = line.split('\t').map(c => c.trim());
         if (cols.length === 0) return;
 
-        if (isNaN(parseFloat(cols[0].replace(/[.,]/g, '')))) {
-          cols = cols.slice(1);
+        const firstCellUp = cols[0].toUpperCase();
+        if (firstCellUp.includes('TYPE PRODUK') || firstCellUp.includes('TIPE PRODUK') || firstCellUp.includes('WEEK') || firstCellUp.includes('TOTAL ORDER') || firstCellUp.includes('GRAND TOTAL')) { return; }
+
+        let targetPIdx = -1;
+        
+        let matchedIdx = PRODUCT_TYPES.findIndex(p => firstCellUp === p);
+        if (matchedIdx === -1) {
+          matchedIdx = PRODUCT_TYPES.findIndex(p => {
+            if (p === 'MASCARA/EYELINER') return firstCellUp.includes('MASCARA') || firstCellUp.includes('EYELINER');
+            return firstCellUp.includes(p) || p.includes(firstCellUp);
+          });
         }
 
-        const step = cols.length >= 15 ? 3 : 2;
-        for (let w = 0; w < 5; w++) {
-          const base = w * step;
-          if (base + 1 < cols.length) {
-            appState[secKey][idx].weeks[w].order = safeNum(cols[base]);
-            appState[secKey][idx].weeks[w].reject = safeNum(cols[base + 1]);
+        if (matchedIdx !== -1) {
+            targetPIdx = matchedIdx;
+            cols = cols.slice(1);
+            if (!appState.settings.prodVisible[targetPIdx]) appState.settings.prodVisible[targetPIdx] = true;
+        } else {
+            if (isNaN(parseFloat(cols[0].replace(/[.,]/g, '')))) cols = cols.slice(1);
+            if (sequentialIdx < activeProds.length) {
+                targetPIdx = activeProds[sequentialIdx];
+                sequentialIdx++;
+            } else { return; }
+        }
+
+        const hasPctSign = cols.some(c => isPercentageToken(c));
+        let cleanPairs = [];
+
+        if (hasPctSign) {
+          cleanPairs = cols.filter(c => !isPercentageToken(c));
+        } else if (cols.length >= 15 || (cols.length % 3 === 0 && cols.length >= 3)) {
+          const looksLikeTriplets = (() => {
+            let tripletScore = 0;
+            const groups = Math.floor(cols.length / 3);
+            for (let g = 0; g < groups; g++) {
+              const c2 = cols[g * 3 + 2] || '';
+              if (c2.includes('%') || (c2.includes(',') && c2.split(',')[1].length <= 2 && safeNum(cols[g * 3]) >= 100)) { tripletScore++; }
+            }
+            return cols.length >= 15 || tripletScore > 0;
+          })();
+          if (looksLikeTriplets) {
+            for (let i = 0; i < cols.length; i++) { if (i % 3 !== 2) cleanPairs.push(cols[i]); }
+          } else { cleanPairs = cols; }
+        } else { cleanPairs = cols; }
+
+        for (let w = 0; w < activeWeeks.length; w++) {
+          const targetWeek = activeWeeks[w];
+          const base = w * 2;
+          if (base + 1 < cleanPairs.length) {
+            appState[secKey][targetPIdx].weeks[targetWeek].order = safeNum(cleanPairs[base]);
+            appState[secKey][targetPIdx].weeks[targetWeek].reject = safeNum(cleanPairs[base + 1]);
+            parsedDataCount++;
           }
         }
       });
 
-      buildAllSidebarEditors();
-      saveToStorage();
-      renderAll();
-      showToast('Data Excel berhasil di-parse ke ' + secKey.toUpperCase());
+      buildProductToggleBar(); buildAllSidebarEditors(); saveToStorage(); renderAll();
+      if(parsedDataCount > 0) showToast('Smart Map: Data di-paste sesuai Type Produk!');
     }
 
     function handleExcelPasteTopProduct(secKey, rawText) {
       if (!rawText || !rawText.trim()) return;
-      const lines = rawText.trim().split(/\r?\n/);
-      const refSec = secKey === 'sec3' ? 'sec1' : 'sec2';
+      const lines = rawText.trim().split(/\r?\n/).filter(l => l.trim().length > 0);
+      
+      const activeWeeks = getActiveWeekIndices(secKey);
+      if(activeWeeks.length === 0) return;
 
-      lines.forEach((line, idx) => {
-        if (idx >= appState[secKey].length) return;
+      let activeWeekParse = activeWeeks[0]; 
+      let newWeekData = [];
+
+      lines.forEach(line => {
         let cols = line.split('\t').map(c => c.trim());
         if (cols.length === 0) return;
 
         const firstUp = cols[0].toUpperCase();
-        if (PRODUCT_TYPES.some(p => firstUp.includes(p.slice(0, 5)))) {
-          cols = cols.slice(1);
+        
+        const wkMatch = firstUp.match(/WEEK\s*(\d)/);
+        if (wkMatch) {
+            const wkNum = Math.max(0, Math.min(4, parseInt(wkMatch[1], 10) - 1));
+            if (activeWeeks.includes(wkNum)) activeWeekParse = wkNum;
+            return;
         }
 
-        for (let w = 0; w < 5; w++) {
-          const base = w * 3;
-          if (base + 1 < cols.length) {
-            const c0 = cols[base];
-            const c1 = cols[base + 1];
-            const c2 = cols[base + 2] || '';
-
-            appState[secKey][idx].weeks[w].name = safeStr(c0, '-');
-            if (c2.includes('%') || (safeNum(c1) >= safeNum(c2) && safeNum(c2) <= 100)) {
-              const fallbackOrder = appState[refSec][idx].weeks[w].order;
-              appState[secKey][idx].weeks[w].order = safeNum(fallbackOrder);
-              appState[secKey][idx].weeks[w].reject = safeNum(c1);
-            } else {
-              appState[secKey][idx].weeks[w].order = safeNum(c1);
-              appState[secKey][idx].weeks[w].reject = safeNum(c2);
-            }
-          }
+        if (firstUp.includes('TYPE PRODUK') || firstUp.includes('TIPE PRODUK') || firstUp.includes('WEEK') || firstUp.includes('NAMA PRODUK') || firstUp.includes('TOTAL ORDER') || firstUp.includes('SUBTOTAL')) {
+          return;
         }
+
+        if (cols.length < 3) return;
+
+        let typeStr = cols[0];
+        let name = cols[1];
+        let orderStr = cols[2];
+        let rejectStr = cols[3];
+
+        let matchedType = typeStr;
+        const foundType = PRODUCT_TYPES.find(p => typeStr.toUpperCase().includes(p) || p.includes(typeStr.toUpperCase()));
+        if (foundType) matchedType = foundType;
+
+        let order = safeNum(orderStr);
+        let reject = safeNum(rejectStr);
+
+        newWeekData.push({ type: matchedType, name: safeStr(name, '-'), order, reject });
       });
 
-      buildAllSidebarEditors();
-      saveToStorage();
-      renderAll();
-      showToast('Data Excel Top Reject berhasil di-parse ke ' + secKey.toUpperCase());
+      if (newWeekData.length > 0) {
+         appState[secKey][activeWeekParse] = newWeekData;
+         newWeekData.forEach(item => {
+             const pIdx = PRODUCT_TYPES.indexOf(item.type);
+             if (pIdx !== -1 && !appState.settings.prodVisible[pIdx]) {
+                 appState.settings.prodVisible[pIdx] = true;
+             }
+         });
+         saveToStorage(); buildProductToggleBar(); buildAllSidebarEditors(); renderAll();
+         showToast('Data Top Reject dinamis di-paste ke W' + (activeWeekParse + 1));
+      }
     }
 
     function handleExcelPasteMonthly(rawText) {
       if (!rawText || !rawText.trim()) return;
-      const lines = rawText.trim().split(/\r?\n/);
+      const lines = rawText.trim().split(/\r?\n/).filter(l => l.trim().length > 0);
 
-      lines.forEach((line, idx) => {
-        if (idx >= appState.sec6.length) return;
+      let rowIdx = 0;
+      lines.forEach(line => {
+        if (rowIdx >= appState.sec6.length) return;
         let cols = line.split('\t').map(c => c.trim());
         if (cols.length === 0) return;
 
-        if (isNaN(parseFloat(cols[0].replace(/[.,]/g, '')))) {
-          cols = cols.slice(1);
-        }
+        const firstUp = cols[0].toUpperCase();
+        if (firstUp.includes('BULAN') || firstUp.includes('TOTAL ORDER') || firstUp.includes('TOTAL TAHUNAN')) return;
+
+        if (isNaN(parseFloat(cols[0].replace(/[.,]/g, '')))) cols = cols.slice(1);
         if (cols.length >= 2) {
-          appState.sec6[idx].order = safeNum(cols[0]);
-          appState.sec6[idx].reject = safeNum(cols[1]);
+          appState.sec6[rowIdx].order = safeNum(cols[0]);
+          appState.sec6[rowIdx].reject = safeNum(cols[1]);
+          rowIdx++;
         }
       });
 
-      buildAllSidebarEditors();
-      saveToStorage();
-      renderAll();
-      showToast('Data Bulanan Excel berhasil di-parse ke Section 6');
+      buildAllSidebarEditors(); saveToStorage(); renderAll();
+      showToast('Data Bulanan Excel berhasil di-parse ke Section F');
     }
 
     /* =========================================================================
-       7. RENDER TABEL LAPORAN: MENURUN PER WEEK & % MERAH DI SEC F
+       7. RENDER TABEL LAPORAN
        ========================================================================= */
     function renderAll() {
       renderHeader();
       updateDisplaySettings();
-      renderMatrixSectionVertical('sec1', 'tableWrapSec1', 'TOTAL R. PILIHAN');
-      renderMatrixSectionVertical('sec2', 'tableWrapSec2', 'TOTAL R. PROSES');
-      renderTopProductSectionVertical('sec3', 'tableWrapSec3', 'QTY R. PILIHAN');
-      renderTopProductSectionVertical('sec4', 'tableWrapSec4', 'QTY R. PROSES');
+      renderMatrixSectionHorizontal('sec1', 'tableWrapSec1', 'TOTAL R. PILIHAN');
+      renderMatrixSectionHorizontal('sec2', 'tableWrapSec2', 'TOTAL R. PROSES');
       renderComparisonSection5();
+      // REQ 1 & 4: Tabel PDF Stacked D & E (Tanpa Grand Total)
+      renderTopProductSectionDynamic('sec3', 'tableWrapSec3', 'PILIHAN', 'QTY REJECT');
+      renderTopProductSectionDynamic('sec4', 'tableWrapSec4', 'PROSES', 'QTY REJECT');
       renderMonthlySection6();
       renderKPIStrip();
       if (chartsReady) renderAllCharts();
@@ -2325,37 +1511,28 @@
       document.getElementById('outPlant').textContent = safeStr(appState.header.plant, 'PLANT ALPHA');
       document.getElementById('outWeek').textContent = safeStr(appState.header.week, 'WEEK 2');
       document.getElementById('outPeriod').textContent = safeStr(appState.header.period, 'OKTOBER 2026');
-
       const bgEl = document.getElementById('paperBgOverlay');
       bgEl.style.backgroundImage = appState.header.bgImage ? `url(${appState.header.bgImage})` : 'none';
     }
 
     function renderKPIStrip() {
       const wSec1 = getActiveWeekIndices('sec1');
+      const activeProds = getActiveProductIndices();
       let totOrder1 = 0, totPilihan = 0;
-      safeArr(appState.sec1).forEach(r => {
-        const wks = safeArr(r.weeks);
-        wSec1.forEach(w => {
-          totOrder1 += safeNum(wks[w] && wks[w].order);
-          totPilihan += safeNum(wks[w] && wks[w].reject);
-        });
+      activeProds.forEach(pIdx => {
+        const wks = safeArr(appState.sec1[pIdx].weeks);
+        wSec1.forEach(w => { totOrder1 += safeNum(wks[w].order); totPilihan += safeNum(wks[w].reject); });
       });
 
       const wSec2 = getActiveWeekIndices('sec2');
       let totOrder2 = 0, totProses = 0;
-      safeArr(appState.sec2).forEach(r => {
-        const wks = safeArr(r.weeks);
-        wSec2.forEach(w => {
-          totOrder2 += safeNum(wks[w] && wks[w].order);
-          totProses += safeNum(wks[w] && wks[w].reject);
-        });
+      activeProds.forEach(pIdx => {
+        const wks = safeArr(appState.sec2[pIdx].weeks);
+        wSec2.forEach(w => { totOrder2 += safeNum(wks[w].order); totProses += safeNum(wks[w].reject); });
       });
 
       let yrOrder = 0, yrReject = 0;
-      safeArr(appState.sec6).forEach(m => {
-        yrOrder += safeNum(m.order);
-        yrReject += safeNum(m.reject);
-      });
+      safeArr(appState.sec6).forEach(m => { yrOrder += safeNum(m.order); yrReject += safeNum(m.reject); });
 
       document.getElementById('kpiTotalOrder').textContent = fmtInt(totOrder1);
       document.getElementById('kpiTotalPilihan').textContent = `${fmtInt(totPilihan)} (${fmtPct(calcPct(totPilihan, totOrder1))})`;
@@ -2363,310 +1540,156 @@
       document.getElementById('kpiYearlyReject').textContent = `${fmtInt(yrReject)} (${fmtPct(calcPct(yrReject, yrOrder))})`;
     }
 
-    function renderMatrixSectionVertical(secKey, wrapId, rejectLabel) {
+    function renderMatrixSectionHorizontal(secKey, wrapId, rejectLabel) {
       const wrap = document.getElementById(wrapId);
       if (!wrap) return;
       const rows = safeArr(appState[secKey]);
       const activeWeeks = getActiveWeekIndices(secKey);
+      const activeProds = getActiveProductIndices();
 
-      let html = `<table class="data-table">
-        <colgroup>
-          <col style="width:7.5%">
-          <col style="width:11.5%">
-          ${PRODUCT_TYPES.map(() => `<col style="width:9.0%">`).join('')}
-          <col style="width:9.0%">
-        </colgroup>
+      let html = `<table class="data-table" style="margin-bottom:0;">
         <thead>
-          <tr>
-            <th>MINGGU</th>
-            <th>PARAMETER</th>
-            ${PRODUCT_TYPES.map(t => `<th>${t}</th>`).join('')}
-            <th class="total-week-head">SUBTOTAL<br>ALL TYPE</th>
-          </tr>
-        </thead>
-        <tbody>`;
+          <tr><th rowspan="2" style="width:11.5%;">TYPE PRODUK</th>`;
+      activeWeeks.forEach(w => { html += `<th colspan="3">WEEK ${w + 1}</th>`; });
+      html += `<th colspan="3" class="total-week-head">TOTAL WEEK</th></tr><tr class="sub-header">`;
+      for (let i = 0; i <= activeWeeks.length; i++) { html += `<th>TOTAL<br>ORDER</th><th>${rejectLabel}</th><th>%</th>`; }
+      html += `</tr></thead><tbody>`;
 
-      const prodTotals = PRODUCT_TYPES.map(() => ({ order: 0, reject: 0 }));
-      let grandOrderAll = 0;
-      let grandRejectAll = 0;
+      const weekTotals = {};
+      activeWeeks.forEach(w => { weekTotals[w] = { order: 0, reject: 0 }; });
+      let grandOrder = 0, grandReject = 0;
 
-      activeWeeks.forEach(w => {
-        let weekSumOrd = 0;
-        let weekSumRej = 0;
-
-        let ordCells = '';
-        let rejCells = '';
-        let pctCells = '';
-
-        PRODUCT_TYPES.forEach((_, pIdx) => {
-          const wkData = (rows[pIdx] && safeArr(rows[pIdx].weeks)[w]) || { order: 0, reject: 0 };
-          const ord = safeNum(wkData.order);
-          const rej = safeNum(wkData.reject);
-          const pct = calcPct(rej, ord);
-
-          weekSumOrd += ord;
-          weekSumRej += rej;
-          prodTotals[pIdx].order += ord;
-          prodTotals[pIdx].reject += rej;
-
-          ordCells += `<td>${fmtInt(ord)}</td>`;
-          rejCells += `<td>${fmtInt(rej)}</td>`;
-          pctCells += `<td>${fmtPct(pct)}</td>`;
+      activeProds.forEach(pIdx => {
+        const type = PRODUCT_TYPES[pIdx];
+        const row = rows[pIdx] || { weeks: [] };
+        let rOrd = 0, rRej = 0;
+        
+        html += `<tr><td class="col-type">${type}</td>`;
+        activeWeeks.forEach(w => {
+          const wk = row.weeks[w] || { order: 0, reject: 0 };
+          const ord = safeNum(wk.order); const rej = safeNum(wk.reject);
+          rOrd += ord; rRej += rej;
+          weekTotals[w].order += ord; weekTotals[w].reject += rej;
+          html += `<td>${fmtInt(ord)}</td><td>${fmtInt(rej)}</td><td class="col-pct">${fmtPct(calcPct(rej, ord))}</td>`;
         });
-
-        grandOrderAll += weekSumOrd;
-        grandRejectAll += weekSumRej;
-        const weekPct = calcPct(weekSumRej, weekSumOrd);
-
-        html += `
-          <tr class="row-metric-order">
-            <td rowspan="3" class="week-group-cell">WEEK ${w + 1}</td>
-            <td class="metric-label-cell">TOTAL ORDER</td>
-            ${ordCells}
-            <td class="col-total">${fmtInt(weekSumOrd)}</td>
-          </tr>
-          <tr class="row-metric-reject">
-            <td class="metric-label-cell">${rejectLabel}</td>
-            ${rejCells}
-            <td class="col-total">${fmtInt(weekSumRej)}</td>
-          </tr>
-          <tr class="row-metric-pct">
-            <td class="metric-label-cell">PERSENTASE (%)</td>
-            ${pctCells}
-            <td class="col-total">${fmtPct(weekPct)}</td>
-          </tr>
-        `;
+        grandOrder += rOrd; grandReject += rRej;
+        html += `<td class="col-total">${fmtInt(rOrd)}</td><td class="col-total">${fmtInt(rRej)}</td><td class="col-total col-pct">${fmtPct(calcPct(rRej, rOrd))}</td></tr>`;
       });
 
-      let totOrdCells = '';
-      let totRejCells = '';
-      let totPctCells = '';
-
-      prodTotals.forEach(pt => {
-        totOrdCells += `<td>${fmtInt(pt.order)}</td>`;
-        totRejCells += `<td>${fmtInt(pt.reject)}</td>`;
-        totPctCells += `<td>${fmtPct(calcPct(pt.reject, pt.order))}</td>`;
+      html += `</tbody><tfoot><tr><th style="text-align:left; padding-left:4px;">GRAND TOTAL</th>`;
+      activeWeeks.forEach(w => {
+        html += `<td>${fmtInt(weekTotals[w].order)}</td><td>${fmtInt(weekTotals[w].reject)}</td><td class="tfoot-pct">${fmtPct(calcPct(weekTotals[w].reject, weekTotals[w].order))}</td>`;
       });
-
-      const grandPctAll = calcPct(grandRejectAll, grandOrderAll);
-
-      html += `
-        <tr class="row-total-order">
-          <td rowspan="3" class="total-week-group-cell">TOTAL<br>WEEK</td>
-          <td class="metric-label-cell">TOTAL ORDER</td>
-          ${totOrdCells}
-          <td>${fmtInt(grandOrderAll)}</td>
-        </tr>
-        <tr class="row-total-reject">
-          <td class="metric-label-cell">${rejectLabel}</td>
-          ${totRejCells}
-          <td>${fmtInt(grandRejectAll)}</td>
-        </tr>
-        <tr class="row-total-pct">
-          <td class="metric-label-cell">% TOTAL WEEK</td>
-          ${totPctCells}
-          <td>${fmtPct(grandPctAll)}</td>
-        </tr>
-      </tbody></table>`;
+      html += `<td>${fmtInt(grandOrder)}</td><td>${fmtInt(grandReject)}</td><td class="tfoot-pct">${fmtPct(calcPct(grandReject, grandOrder))}</td></tr></tfoot></table>`;
 
       wrap.innerHTML = html;
     }
 
-    function renderTopProductSectionVertical(secKey, wrapId, qtyLabel) {
+    // REQ 1: DYNAMIC ROWS per Week untuk Section D & E TANPA TABEL GRAND TOTAL
+    function renderTopProductSectionDynamic(secKey, wrapId, typeName, qtyLabel) {
       const wrap = document.getElementById(wrapId);
       if (!wrap) return;
-      const rows = safeArr(appState[secKey]);
       const activeWeeks = getActiveWeekIndices(secKey);
+      const themeColor = secKey === 'sec3' ? 'var(--sky-bright)' : 'var(--teal)';
+      const secLetter = secKey === 'sec3' ? 'D' : 'E';
 
-      let html = `<table class="data-table">
-        <colgroup>
-          <col style="width:7.5%">
-          <col style="width:11.5%">
-          ${PRODUCT_TYPES.map(() => `<col style="width:9.0%">`).join('')}
-          <col style="width:9.0%">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>MINGGU</th>
-            <th>PARAMETER</th>
-            ${PRODUCT_TYPES.map(t => `<th>${t}</th>`).join('')}
-            <th class="sky-head">SUBTOTAL /<br>TOP ITEM</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-      const prodTotals = PRODUCT_TYPES.map(() => ({
-        order: 0,
-        reject: 0,
-        peakName: '-',
-        peakRej: 0
-      }));
-      let grandOrderAll = 0;
-      let grandRejectAll = 0;
-      let overallPeakName = '-';
-      let overallPeakRej = 0;
+      let html = '';
 
       activeWeeks.forEach(w => {
-        let weekSumOrd = 0;
-        let weekSumRej = 0;
-        let weekPeakName = '-';
-        let weekPeakVal = 0;
+        html += `<div class="week-subtable-wrap">
+          <div class="sub-table-header" style="background:${themeColor};">${secLetter}. PRODUK REJECT ${typeName} TERTINGGI WEEK ${w + 1}</div>
+          <table class="data-table" style="border-top:none; margin-bottom: 0;">
+            <colgroup><col style="width:18%;"><col style="width:34%;"><col style="width:16%;"><col style="width:16%;"><col style="width:16%;"></colgroup>
+            <thead>
+              <tr class="sub-header"><th>TYPE PRODUK</th><th>NAMA PRODUK</th><th>TOTAL ORDER</th><th>${qtyLabel}</th><th>PERSENTASE REJECT</th></tr>
+            </thead>
+            <tbody>`;
 
-        let nameCells = '';
-        let ordCells = '';
-        let rejCells = '';
-        let pctCells = '';
+        let weekSumOrd = 0, weekSumRej = 0;
 
-        PRODUCT_TYPES.forEach((_, pIdx) => {
-          const wkData = (rows[pIdx] && safeArr(rows[pIdx].weeks)[w]) || { name: '-', order: 0, reject: 0 };
-          const name = safeStr(wkData.name, '-');
-          const ord = safeNum(wkData.order);
-          const rej = safeNum(wkData.reject);
+        safeArr(appState[secKey][w]).forEach(item => {
+          const pIdx = PRODUCT_TYPES.indexOf(item.type);
+          if (pIdx !== -1 && !appState.settings.prodVisible[pIdx]) return;
+
+          const name = safeStr(item.name, '-');
+          const ord = safeNum(item.order);
+          const rej = safeNum(item.reject);
           const pct = calcPct(rej, ord);
 
-          weekSumOrd += ord;
-          weekSumRej += rej;
-          prodTotals[pIdx].order += ord;
-          prodTotals[pIdx].reject += rej;
+          weekSumOrd += ord; weekSumRej += rej;
 
-          if (rej > prodTotals[pIdx].peakRej && name !== '-') {
-            prodTotals[pIdx].peakRej = rej;
-            prodTotals[pIdx].peakName = name;
-          }
-          if (rej > weekPeakVal && name !== '-') {
-            weekPeakVal = rej;
-            weekPeakName = name;
-          }
-          if (rej > overallPeakRej && name !== '-') {
-            overallPeakRej = rej;
-            overallPeakName = name;
-          }
+          const isAlert = pct >= 2.5;
+          const textClass = isAlert ? 'text-red-alert bg-red-alert' : '';
+          const nameAlign = 'text-align:left; font-weight:600; padding-left:5px;';
 
-          nameCells += `<td>${name}</td>`;
-          ordCells += `<td>${fmtInt(ord)}</td>`;
-          rejCells += `<td>${fmtInt(rej)}</td>`;
-          pctCells += `<td>${fmtPct(pct)}</td>`;
+          html += `<tr>
+            <td class="col-type ${textClass}">${item.type}</td>
+            <td class="${textClass}" style="${nameAlign}">${name}</td>
+            <td class="${textClass}">${fmtInt(ord)}</td>
+            <td class="${textClass}">${fmtInt(rej)}</td>
+            <td class="${textClass}" style="font-weight:700;">${fmtPct(pct)}</td>
+          </tr>`;
         });
 
-        grandOrderAll += weekSumOrd;
-        grandRejectAll += weekSumRej;
-        const weekPct = calcPct(weekSumRej, weekSumOrd);
-
-        html += `
-          <tr class="row-metric-prodname">
-            <td rowspan="4" class="week-group-cell">WEEK ${w + 1}</td>
-            <td class="metric-label-cell">NAMA PRODUK</td>
-            ${nameCells}
-            <td class="col-total" style="text-align:center;">${weekPeakName}</td>
-          </tr>
-          <tr class="row-metric-order">
-            <td class="metric-label-cell">TOTAL ORDER</td>
-            ${ordCells}
-            <td class="col-total">${fmtInt(weekSumOrd)}</td>
-          </tr>
-          <tr class="row-metric-reject">
-            <td class="metric-label-cell">${qtyLabel}</td>
-            ${rejCells}
-            <td class="col-total">${fmtInt(weekSumRej)}</td>
-          </tr>
-          <tr class="row-metric-pct">
-            <td class="metric-label-cell">PERSENTASE (%)</td>
-            ${pctCells}
-            <td class="col-total">${fmtPct(weekPct)}</td>
-          </tr>
-        `;
+        html += `</tbody>
+            <tfoot>
+              <tr>
+                <th colspan="2" style="text-align:left; padding-left:5px;">TOTAL WEEK ${w + 1}</th>
+                <td>${fmtInt(weekSumOrd)}</td><td>${fmtInt(weekSumRej)}</td><td class="tfoot-pct">${fmtPct(calcPct(weekSumRej, weekSumOrd))}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>`;
       });
-
-      let totNameCells = '';
-      let totOrdCells = '';
-      let totRejCells = '';
-      let totPctCells = '';
-
-      prodTotals.forEach(pt => {
-        totNameCells += `<td>${pt.peakName}</td>`;
-        totOrdCells += `<td>${fmtInt(pt.order)}</td>`;
-        totRejCells += `<td>${fmtInt(pt.reject)}</td>`;
-        totPctCells += `<td>${fmtPct(calcPct(pt.reject, pt.order))}</td>`;
-      });
-
-      const grandPctAll = calcPct(grandRejectAll, grandOrderAll);
-
-      html += `
-        <tr class="row-total-prodname">
-          <td rowspan="4" class="total-week-group-cell" style="background:var(--sky-bright);">TOTAL<br>WEEK</td>
-          <td class="metric-label-cell">TOP PRODUK</td>
-          ${totNameCells}
-          <td style="text-align:center;">${overallPeakName}</td>
-        </tr>
-        <tr class="row-total-order">
-          <td class="metric-label-cell">TOTAL ORDER</td>
-          ${totOrdCells}
-          <td>${fmtInt(grandOrderAll)}</td>
-        </tr>
-        <tr class="row-total-reject">
-          <td class="metric-label-cell">${qtyLabel}</td>
-          ${totRejCells}
-          <td>${fmtInt(grandRejectAll)}</td>
-        </tr>
-        <tr class="row-total-pct">
-          <td class="metric-label-cell">% TOTAL WEEK</td>
-          ${totPctCells}
-          <td>${fmtPct(grandPctAll)}</td>
-        </tr>
-      </tbody></table>`;
 
       wrap.innerHTML = html;
     }
 
+    // REQ 2: Beda Warna Pilihan (Hijau) & Proses (Biru Cerah) di Section C
     function renderComparisonSection5() {
       const wrap = document.getElementById('tableWrapSec5');
       if (!wrap) return;
 
       const wSec1 = getActiveWeekIndices('sec1');
       const wSec2 = getActiveWeekIndices('sec2');
+      const activeProds = getActiveProductIndices();
       let totOrdAll = 0, totPilAll = 0, totProAll = 0;
 
-      let html = `<table class="data-table">
+      let html = `<table class="data-table" style="margin-bottom:0;">
         <thead>
           <tr>
             <th style="width:14%;">TYPE PRODUK</th>
             <th>TOTAL ORDER</th>
-            <th>TOTAL REJECT PILIHAN (QTY)</th>
-            <th>% REJECT PILIHAN</th>
-            <th>TOTAL REJECT PROSES (QTY)</th>
-            <th>% REJECT PROSES</th>
-            <th class="total-week-head">TOTAL NG (PILIHAN + PROSES)</th>
+            <th class="bg-pilihan-head">REJECT PILIHAN (QTY)</th>
+            <th class="bg-pilihan-head">% R. PILIHAN</th>
+            <th class="bg-proses-head">REJECT PROSES (QTY)</th>
+            <th class="bg-proses-head">% R. PROSES</th>
+            <th class="total-week-head">TOTAL NG (PIL + PROS)</th>
             <th class="total-week-head">% TOTAL REJECT</th>
           </tr>
         </thead>
         <tbody>`;
 
-      PRODUCT_TYPES.forEach((type, idx) => {
-        const r1 = (appState.sec1 && appState.sec1[idx]) ? safeArr(appState.sec1[idx].weeks) : [];
-        const r2 = (appState.sec2 && appState.sec2[idx]) ? safeArr(appState.sec2[idx].weeks) : [];
+      activeProds.forEach(pIdx => {
+        const type = PRODUCT_TYPES[pIdx];
+        const r1 = (appState.sec1 && appState.sec1[pIdx]) ? safeArr(appState.sec1[pIdx].weeks) : [];
+        const r2 = (appState.sec2 && appState.sec2[pIdx]) ? safeArr(appState.sec2[pIdx].weeks) : [];
 
         let ord = 0, pil = 0, pro = 0;
-        wSec1.forEach(w => {
-          ord += safeNum(r1[w] && r1[w].order);
-          pil += safeNum(r1[w] && r1[w].reject);
-        });
-        wSec2.forEach(w => {
-          pro += safeNum(r2[w] && r2[w].reject);
-        });
+        wSec1.forEach(w => { ord += safeNum(r1[w] && r1[w].order); pil += safeNum(r1[w] && r1[w].reject); });
+        wSec2.forEach(w => { pro += safeNum(r2[w] && r2[w].reject); });
 
         const comb = pil + pro;
-        totOrdAll += ord;
-        totPilAll += pil;
-        totProAll += pro;
+        totOrdAll += ord; totPilAll += pil; totProAll += pro;
 
         html += `
           <tr>
             <td class="col-type">${type}</td>
             <td>${fmtInt(ord)}</td>
-            <td>${fmtInt(pil)}</td>
-            <td class="col-pct">${fmtPct(calcPct(pil, ord))}</td>
-            <td>${fmtInt(pro)}</td>
-            <td class="col-pct">${fmtPct(calcPct(pro, ord))}</td>
+            <td class="bg-pilihan-cell">${fmtInt(pil)}</td>
+            <td class="bg-pilihan-cell">${fmtPct(calcPct(pil, ord))}</td>
+            <td class="bg-proses-cell">${fmtInt(pro)}</td>
+            <td class="bg-proses-cell">${fmtPct(calcPct(pro, ord))}</td>
             <td class="col-total">${fmtInt(comb)}</td>
             <td class="col-pct col-total">${fmtPct(calcPct(comb, ord))}</td>
           </tr>
@@ -2678,10 +1701,10 @@
         <tr>
           <th style="text-align:left; padding-left:4px;">GRAND TOTAL</th>
           <td>${fmtInt(totOrdAll)}</td>
-          <td>${fmtInt(totPilAll)}</td>
-          <td class="tfoot-pct">${fmtPct(calcPct(totPilAll, totOrdAll))}</td>
-          <td>${fmtInt(totProAll)}</td>
-          <td class="tfoot-pct">${fmtPct(calcPct(totProAll, totOrdAll))}</td>
+          <td class="bg-pilihan-foot">${fmtInt(totPilAll)}</td>
+          <td class="bg-pilihan-foot">${fmtPct(calcPct(totPilAll, totOrdAll))}</td>
+          <td class="bg-proses-foot">${fmtInt(totProAll)}</td>
+          <td class="bg-proses-foot">${fmtPct(calcPct(totProAll, totOrdAll))}</td>
           <td>${fmtInt(grandComb)}</td>
           <td class="tfoot-pct">${fmtPct(calcPct(grandComb, totOrdAll))}</td>
         </tr>
@@ -2690,63 +1713,40 @@
       wrap.innerHTML = html;
     }
 
-    // REQ 2: Pada Section F, warna pada % diganti dengan MERAH
     function renderMonthlySection6() {
       const wrap = document.getElementById('tableWrapSec6');
       if (!wrap) return;
       const rows = safeArr(appState.sec6);
-
       let sumOrd = 0, sumRej = 0;
 
-      let html = `<table class="data-table">
+      let html = `<table class="data-table" style="height:100%; margin-bottom:0;">
         <thead>
-          <tr>
-            <th style="width:26%;">BULAN</th>
-            <th>TOTAL ORDER</th>
-            <th>TOTAL REJECT<br>PILIHAN + PROSES</th>
-            <th class="red-head" style="width:18%;">%</th>
-          </tr>
+          <tr><th style="width:26%;">BULAN</th><th>TOTAL ORDER</th><th>TOTAL REJECT<br>PILIHAN + PROSES</th><th class="red-head" style="width:18%;">%</th></tr>
         </thead>
         <tbody>`;
 
       rows.forEach(r => {
-        const ord = safeNum(r.order);
-        const rej = safeNum(r.reject);
-        const pct = calcPct(rej, ord);
-        sumOrd += ord;
-        sumRej += rej;
-
-        html += `
-          <tr>
-            <td class="col-type">${safeStr(r.month)}</td>
-            <td>${fmtInt(ord)}</td>
-            <td>${fmtInt(rej)}</td>
-            <td class="col-pct-red">${fmtPct(pct)}</td>
-          </tr>
-        `;
+        const ord = safeNum(r.order); const rej = safeNum(r.reject); const pct = calcPct(rej, ord);
+        sumOrd += ord; sumRej += rej;
+        html += `<tr><td class="col-type">${safeStr(r.month)}</td><td>${fmtInt(ord)}</td><td>${fmtInt(rej)}</td><td class="col-pct-red">${fmtPct(pct)}</td></tr>`;
       });
 
       html += `</tbody><tfoot>
-        <tr>
-          <th style="text-align:left; padding-left:4px;">TOTAL TAHUNAN</th>
-          <td>${fmtInt(sumOrd)}</td>
-          <td>${fmtInt(sumRej)}</td>
-          <td class="tfoot-pct-red">${fmtPct(calcPct(sumRej, sumOrd))}</td>
-        </tr>
+        <tr><th style="text-align:left; padding-left:4px;">TOTAL TAHUNAN</th><td>${fmtInt(sumOrd)}</td><td>${fmtInt(sumRej)}</td><td class="tfoot-pct-red">${fmtPct(calcPct(sumRej, sumOrd))}</td></tr>
       </tfoot></table>`;
 
       wrap.innerHTML = html;
     }
 
     /* =========================================================================
-       8. GOOGLE CHARTS VISUALISASI INTERAKTIF (TANPA UNGU & % SEC F MERAH)
+       8. GOOGLE CHARTS VISUALISASI INTERAKTIF
        ========================================================================= */
     function renderAllCharts() {
       if (!chartsReady || !window.google || !google.visualization) return;
       drawWeeklyComboChart('sec1', 'chartSec1', 'GRAFIK REJECT PILIHAN (TREN MINGGU AKTIF)', '#1a237e', '#2e7d32', '#d97706');
       drawWeeklyComboChart('sec2', 'chartSec2', 'GRAFIK REJECT PROSES (TREN MINGGU AKTIF)', '#00695c', '#0284c7', '#dc2626');
-      drawTopProductComboChart('sec3', 'chartSec3', 'GRAFIK PRODUK REJECT PILIHAN TERTINGGI PER TYPE PRODUK');
-      drawTopProductComboChart('sec4', 'chartSec4', 'GRAFIK PRODUK REJECT PROSES TERTINGGI PER TYPE PRODUK');
+      drawTopProductComboChartDynamic('sec3', 'chartSec3', 'GRAFIK PRODUK REJECT PILIHAN TERTINGGI PER TYPE PRODUK');
+      drawTopProductComboChartDynamic('sec4', 'chartSec4', 'GRAFIK PRODUK REJECT PROSES TERTINGGI PER TYPE PRODUK');
       drawSection5Charts();
       drawMonthlyComboChart();
     }
@@ -2755,99 +1755,77 @@
       return {
         title: title,
         titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
-        fontName: 'Montserrat',
-        fontSize: 8,
+        fontName: 'Montserrat', fontSize: 8,
         chartArea: { left: 52, right: 48, top: 24, bottom: 26, width: '86%', height: '66%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 8, bold: true } },
-        tooltip: { isHtml: false, trigger: 'both' },
-        focusTarget: 'datum',
-        seriesType: 'bars',
-        colors: colors,
+        tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars', colors: colors,
         vAxes: {
           0: { title: 'Qty (Pcs)', textStyle: { fontSize: 7.5 }, titleTextStyle: { fontSize: 7.5, bold: true, italic: false } },
           1: { title: '% Reject', textStyle: { fontSize: 7.5 }, titleTextStyle: { fontSize: 7.5, bold: true, italic: false }, format: '#.##%' }
         },
-        series: {
-          2: { type: 'line', targetAxisIndex: 1, lineWidth: 2.2, pointSize: 5 }
-        },
-        bar: { groupWidth: '58%' }
+        series: { 2: { type: 'line', targetAxisIndex: 1, lineWidth: 2.2, pointSize: 5 } }, bar: { groupWidth: '58%' }
       };
     }
 
     function drawWeeklyComboChart(secKey, elId, title, colOrder, colRej, colLine) {
       const el = document.getElementById(elId);
       if (!el || el.offsetParent === null) return;
-
       const rows = safeArr(appState[secKey]);
       const activeWeeks = getActiveWeekIndices(secKey);
+      const activeProds = getActiveProductIndices();
       const dataArr = [['Minggu', 'Total Order', 'Total Reject', '% Reject']];
 
       activeWeeks.forEach(w => {
         let sumOrd = 0, sumRej = 0;
-        rows.forEach(r => {
-          const wk = safeArr(r.weeks)[w] || {};
-          sumOrd += safeNum(wk.order);
-          sumRej += safeNum(wk.reject);
+        activeProds.forEach(pIdx => {
+          const wk = safeArr(rows[pIdx].weeks)[w] || {};
+          sumOrd += safeNum(wk.order); sumRej += safeNum(wk.reject);
         });
         const ratio = sumOrd > 0 ? (sumRej / sumOrd) : 0;
         dataArr.push([`WEEK ${w + 1}`, sumOrd, sumRej, Number(ratio.toFixed(4))]);
       });
 
-      const data = google.visualization.arrayToDataTable(dataArr);
-      const opts = baseComboOptions(title, [colOrder, colRej, colLine]);
-      new google.visualization.ComboChart(el).draw(data, opts);
+      new google.visualization.ComboChart(el).draw(google.visualization.arrayToDataTable(dataArr), baseComboOptions(title, [colOrder, colRej, colLine]));
     }
 
-    function drawTopProductComboChart(secKey, elId, title) {
+    function drawTopProductComboChartDynamic(secKey, elId, title) {
       const el = document.getElementById(elId);
       if (!el || el.offsetParent === null) return;
-
-      const rows = safeArr(appState[secKey]);
       const activeWeeks = getActiveWeekIndices(secKey);
+      const activeProds = getActiveProductIndices();
+      
       const headerRow = ['Type Produk', ...activeWeeks.map(w => `W${w + 1}`), '% Total Reject'];
       const dataArr = [headerRow];
 
-      rows.forEach(r => {
-        const wks = safeArr(r.weeks);
-        let sumOrd = 0, sumRej = 0;
+      activeProds.forEach(pIdx => {
+        const type = PRODUCT_TYPES[pIdx];
+        let typeOrd = 0, typeRej = 0;
         const weekVals = activeWeeks.map(w => {
-          const ord = safeNum(wks[w] && wks[w].order);
-          const rej = safeNum(wks[w] && wks[w].reject);
-          sumOrd += ord;
-          sumRej += rej;
-          return rej;
+          let wRej = 0, wOrd = 0;
+          safeArr(appState[secKey][w]).forEach(item => {
+              if (item.type === type) { wRej += safeNum(item.reject); wOrd += safeNum(item.order); }
+          });
+          typeOrd += wOrd; typeRej += wRej;
+          return wRej;
         });
-        const ratio = sumOrd > 0 ? (sumRej / sumOrd) : 0;
-        dataArr.push([safeStr(r.type), ...weekVals, Number(ratio.toFixed(4))]);
+        const ratio = typeOrd > 0 ? (typeRej / typeOrd) : 0;
+        dataArr.push([type, ...weekVals, Number(ratio.toFixed(4))]);
       });
 
       const palette = ['#1a237e', '#2e7d32', '#0284c7', '#00695c', '#f59e0b'];
       const activeColors = activeWeeks.map(w => palette[w % palette.length]);
       activeColors.push('#dc2626');
 
-      const lineSeriesIdx = activeWeeks.length;
-      const data = google.visualization.arrayToDataTable(dataArr);
       const opts = {
-        title: title,
-        titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
-        fontName: 'Montserrat',
-        fontSize: 7.5,
-        chartArea: { left: 48, right: 48, top: 24, bottom: 26, width: '86%', height: '66%' },
+        title: title, titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
+        fontName: 'Montserrat', fontSize: 7.5, chartArea: { left: 48, right: 48, top: 24, bottom: 26, width: '86%', height: '66%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
-        tooltip: { isHtml: false, trigger: 'both' },
-        focusTarget: 'datum',
-        seriesType: 'bars',
-        colors: activeColors,
-        vAxes: {
-          0: { title: 'Qty Reject', textStyle: { fontSize: 7.5 } },
-          1: { title: '% Reject', textStyle: { fontSize: 7.5 }, format: '#.##%' }
-        },
-        series: {
-          [lineSeriesIdx]: { type: 'line', targetAxisIndex: 1, lineWidth: 2.2, pointSize: 5 }
-        }
+        tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars', colors: activeColors,
+        vAxes: { 0: { title: 'Qty Reject', textStyle: { fontSize: 7.5 } }, 1: { title: '% Reject', textStyle: { fontSize: 7.5 }, format: '#.##%' } },
+        series: { [activeWeeks.length]: { type: 'line', targetAxisIndex: 1, lineWidth: 2.2, pointSize: 5 } }
       };
 
-      new google.visualization.ComboChart(el).draw(data, opts);
+      new google.visualization.ComboChart(el).draw(google.visualization.arrayToDataTable(dataArr), opts);
     }
 
     function drawSection5Charts() {
@@ -2857,187 +1835,120 @@
 
       const wSec1 = getActiveWeekIndices('sec1');
       const wSec2 = getActiveWeekIndices('sec2');
+      const activeProds = getActiveProductIndices();
 
       const typeArr = [['Type Produk', 'Reject Pilihan', 'Reject Proses', 'Total Reject (Garis)']];
-      PRODUCT_TYPES.forEach((type, idx) => {
-        const r1 = safeArr(appState.sec1[idx] && appState.sec1[idx].weeks);
-        const r2 = safeArr(appState.sec2[idx] && appState.sec2[idx].weeks);
+      activeProds.forEach(pIdx => {
+        const type = PRODUCT_TYPES[pIdx];
+        const r1 = safeArr(appState.sec1[pIdx] && appState.sec1[pIdx].weeks);
+        const r2 = safeArr(appState.sec2[pIdx] && appState.sec2[pIdx].weeks);
         let pil = 0, pro = 0;
         wSec1.forEach(w => { pil += safeNum(r1[w] && r1[w].reject); });
         wSec2.forEach(w => { pro += safeNum(r2[w] && r2[w].reject); });
         typeArr.push([type, pil, pro, pil + pro]);
       });
 
-      const dataType = google.visualization.arrayToDataTable(typeArr);
       const optsType = {
         title: 'KOMPARASI REJECT PILIHAN VS PROSES PER TYPE PRODUK',
         titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
-        fontName: 'Montserrat',
-        fontSize: 7.5,
-        chartArea: { left: 50, right: 24, top: 24, bottom: 26, width: '88%', height: '66%' },
+        fontName: 'Montserrat', fontSize: 7.5, chartArea: { left: 50, right: 24, top: 24, bottom: 26, width: '88%', height: '66%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
-        tooltip: { isHtml: false, trigger: 'both' },
-        focusTarget: 'datum',
-        seriesType: 'bars',
-        colors: ['#1a237e', '#2e7d32', '#0284c7'],
-        series: { 2: { type: 'line', lineWidth: 2.2, pointSize: 5 } }
+        tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars',
+        colors: ['#1a237e', '#2e7d32', '#0284c7'], series: { 2: { type: 'line', lineWidth: 2.2, pointSize: 5 } }
       };
-      new google.visualization.ComboChart(elType).draw(dataType, optsType);
+      new google.visualization.ComboChart(elType).draw(google.visualization.arrayToDataTable(typeArr), optsType);
 
       const trendArr = [['Minggu', 'Reject Pilihan', 'Reject Proses', 'Total NG (Pilihan + Proses)']];
       for (let w = 0; w < 5; w++) {
         if (!appState.settings.weekVisible.sec1[w] && !appState.settings.weekVisible.sec2[w]) continue;
         let pilW = 0, proW = 0;
-        PRODUCT_TYPES.forEach((_, idx) => {
-          if (appState.settings.weekVisible.sec1[w]) pilW += safeNum(appState.sec1[idx].weeks[w].reject);
-          if (appState.settings.weekVisible.sec2[w]) proW += safeNum(appState.sec2[idx].weeks[w].reject);
+        activeProds.forEach(pIdx => {
+          if (appState.settings.weekVisible.sec1[w]) pilW += safeNum(appState.sec1[pIdx].weeks[w].reject);
+          if (appState.settings.weekVisible.sec2[w]) proW += safeNum(appState.sec2[pIdx].weeks[w].reject);
         });
         trendArr.push([`WEEK ${w + 1}`, pilW, proW, pilW + proW]);
       }
 
-      const dataTrend = google.visualization.arrayToDataTable(trendArr);
       const optsTrend = {
         title: 'TREN MINGGUAN (W1 - W5): REJECT PILIHAN VS REJECT PROSES',
         titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#00695c' },
-        fontName: 'Montserrat',
-        fontSize: 7.5,
-        chartArea: { left: 50, right: 24, top: 24, bottom: 26, width: '88%', height: '66%' },
+        fontName: 'Montserrat', fontSize: 7.5, chartArea: { left: 50, right: 24, top: 24, bottom: 26, width: '88%', height: '66%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
-        tooltip: { isHtml: false, trigger: 'both' },
-        focusTarget: 'datum',
-        seriesType: 'bars',
-        colors: ['#2e7d32', '#0284c7', '#dc2626'],
-        series: { 2: { type: 'line', lineWidth: 2.2, pointSize: 5 } }
+        tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars',
+        colors: ['#2e7d32', '#0284c7', '#dc2626'], series: { 2: { type: 'line', lineWidth: 2.2, pointSize: 5 } }
       };
-      new google.visualization.ComboChart(elTrend).draw(dataTrend, optsTrend);
+      new google.visualization.ComboChart(elTrend).draw(google.visualization.arrayToDataTable(trendArr), optsTrend);
     }
 
-    // REQ 1 & REQ 2: Grafik Bulanan Section F (Ungu diganti Biru Cerah Sky #0284c7, dan % Reject berwarna MERAH #dc2626)
     function drawMonthlyComboChart() {
       const el = document.getElementById('chartSec6');
       if (!el || el.offsetParent === null) return;
 
       const dataArr = [['Bulan', 'Total Order', 'Total Reject (Pilihan+Proses)', '% Reject']];
       safeArr(appState.sec6).forEach(m => {
-        const ord = safeNum(m.order);
-        const rej = safeNum(m.reject);
+        const ord = safeNum(m.order); const rej = safeNum(m.reject);
         const ratio = ord > 0 ? (rej / ord) : 0;
         dataArr.push([safeStr(m.month).slice(0, 3), ord, rej, Number(ratio.toFixed(4))]);
       });
 
-      const data = google.visualization.arrayToDataTable(dataArr);
       const opts = {
-        title: 'GRAFIK DATA E: PERBANDINGAN TOTAL ORDER VS TOTAL REJECT BULANAN (JAN - DES)',
+        title: 'GRAFIK DATA F: PERBANDINGAN TOTAL ORDER VS TOTAL REJECT BULANAN (JAN - DES)',
         titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
-        fontName: 'Montserrat',
-        fontSize: 7.5,
-        chartArea: { left: 52, right: 48, top: 26, bottom: 28, width: '80%', height: '68%' },
+        fontName: 'Montserrat', fontSize: 7.5, chartArea: { left: 52, right: 48, top: 26, bottom: 28, width: '80%', height: '68%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
-        tooltip: { isHtml: false, trigger: 'both' },
-        focusTarget: 'datum',
-        seriesType: 'bars',
-        colors: ['#1a237e', '#0284c7', '#dc2626'],
+        tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars', colors: ['#1a237e', '#0284c7', '#dc2626'],
         vAxes: {
           0: { title: 'Kuantitas (Pcs)', textStyle: { fontSize: 7.5 } },
           1: { title: '% Reject', textStyle: { fontSize: 7.5, color: '#dc2626', bold: true }, titleTextStyle: { fontSize: 7.5, color: '#dc2626', bold: true, italic: false }, format: '#.##%' }
         },
-        series: {
-          2: { type: 'line', targetAxisIndex: 1, lineWidth: 2.5, pointSize: 5, color: '#dc2626' }
-        }
+        series: { 2: { type: 'line', targetAxisIndex: 1, lineWidth: 2.5, pointSize: 5, color: '#dc2626' } }
       };
-
-      new google.visualization.ComboChart(el).draw(data, opts);
+      new google.visualization.ComboChart(el).draw(google.visualization.arrayToDataTable(dataArr), opts);
     }
 
     /* =========================================================================
-       9. HAPUS DATA PER SECTION & MANAJEMEN DATA
+       9. MANAJEMEN DATA
        ========================================================================= */
     function clearSectionData(secKey) {
-      const labels = {
-        sec1: 'Section 1 (Rekap Reject Pilihan)',
-        sec2: 'Section 2 (Rekap Reject Proses)',
-        sec3: 'Section 3 (Produk Reject Pilihan Tertinggi)',
-        sec4: 'Section 4 (Produk Reject Proses Tertinggi)',
-        sec5: 'Section 5 (Komparasi Reject Pilihan & Proses)',
-        sec6: 'Section 6 (Data Reject Bulanan Jan-Des)'
-      };
-      if (!confirm(`Hapus / kosongkan seluruh data pada ${labels[secKey] || secKey}?`)) return;
+      const labels = { sec1:'Section A (Rekap Pilihan)', sec2:'Section B (Rekap Proses)', sec3:'Section D (Top Pilihan)', sec4:'Section E (Top Proses)', sec5:'Section C (Komparasi)', sec6:'Section F (Bulanan)' };
+      if (!confirm(`Hapus seluruh data pada ${labels[secKey] || secKey}?`)) return;
 
-      if (secKey === 'sec1' || secKey === 'sec2') {
-        appState[secKey] = PRODUCT_TYPES.map(type => ({
-          type,
-          weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 }))
-        }));
-      } else if (secKey === 'sec3' || secKey === 'sec4') {
-        appState[secKey] = PRODUCT_TYPES.map(type => ({
-          type,
-          weeks: Array.from({ length: 5 }, () => ({ name: '-', order: 0, reject: 0 }))
-        }));
-      } else if (secKey === 'sec5') {
-        ['sec1', 'sec2'].forEach(k => {
-          appState[k].forEach(r => {
-            r.weeks.forEach(w => { w.reject = 0; });
-          });
-        });
-      } else if (secKey === 'sec6') {
-        appState.sec6 = MONTHS.map(month => ({ month, order: 0, reject: 0 }));
-      }
+      if (secKey === 'sec1' || secKey === 'sec2') { appState[secKey] = PRODUCT_TYPES.map(type => ({ type, weeks: Array.from({ length: 5 }, () => ({ order: 0, reject: 0 })) })); } 
+      else if (secKey === 'sec3' || secKey === 'sec4') { appState[secKey] = [[], [], [], [], []]; } 
+      else if (secKey === 'sec5') { ['sec1', 'sec2'].forEach(k => { appState[k].forEach(r => { r.weeks.forEach(w => { w.reject = 0; }); }); }); } 
+      else if (secKey === 'sec6') { appState.sec6 = MONTHS.map(month => ({ month, order: 0, reject: 0 })); }
 
-      saveToStorage();
-      buildAllSidebarEditors();
-      if (activeModalSection === secKey) renderModalBody(secKey);
-      renderAll();
+      saveToStorage(); buildAllSidebarEditors(); if (activeModalSection === secKey) renderModalBody(secKey); renderAll();
       showToast(`Data ${labels[secKey]} telah dikosongkan`);
     }
 
     function clearAllData() {
-      if (!confirm('Kosongkan semua angka pada tabel Section 1 s/d Section 6 menjadi 0?')) return;
-
-      appState = createDefaultState();
-      saveToStorage();
-      buildAllSidebarEditors();
-      if (activeModalSection) renderModalBody(activeModalSection);
-      renderAll();
-      showToast('Seluruh data laporan Section 1 s/d 6 telah dikosongkan');
+      if (!confirm('Kosongkan semua angka pada seluruh tabel menjadi 0?')) return;
+      appState = createDefaultState(); saveToStorage(); buildAllSidebarEditors();
+      if (activeModalSection) renderModalBody(activeModalSection); renderAll();
+      showToast('Seluruh data laporan telah dikosongkan');
     }
 
     function loadDemoData() {
-      appState = createSimulationState();
-      saveToStorage();
-      syncControlsFromState();
-      buildAllSidebarEditors();
-      if (activeModalSection) renderModalBody(activeModalSection);
-      renderAll();
+      appState = createSimulationState(); saveToStorage(); syncControlsFromState(); buildAllSidebarEditors();
+      if (activeModalSection) renderModalBody(activeModalSection); renderAll();
       showToast('Data simulasi pabrik berhasil dimuat!');
     }
 
     /* =========================================================================
-       10. EXPORT PNG & SIMPAN HTML INTERAKTIF (TANPA BANNER SNAPSHOT OFFLINE)
+       10. EXPORT PNG & SIMPAN HTML INTERAKTIF
        ========================================================================= */
     async function captureReportCanvas() {
-      const paper = document.getElementById('reportPaper');
-      showToast('Memproses tangkapan resolusi tinggi...');
-      return await html2canvas(paper, {
-        scale: 2.5,
-        useCORS: true,
-        backgroundColor: appState.settings.paperColor || '#ffffff',
-        logging: false
-      });
+      const paper = document.getElementById('reportPaper'); showToast('Memproses tangkapan resolusi tinggi...');
+      return await html2canvas(paper, { scale: 2.5, useCORS: true, backgroundColor: appState.settings.paperColor || '#ffffff', logging: false });
     }
 
     async function exportHighResPNG() {
       try {
-        const canvas = await captureReportCanvas();
-        const link = document.createElement('a');
-        const filename = `LAPORAN_REJECT_ASSY_${safeStr(appState.header.plant).replace(/\s+/g, '_')}_${safeStr(appState.header.week).replace(/\s+/g, '_')}.png`;
-        link.download = filename;
-        link.href = canvas.toDataURL('image/png', 1.0);
-        link.click();
-        showToast('Gambar PNG Resolusi Tinggi berhasil diunduh!');
-      } catch (err) {
-        console.error(err);
-        showToast('Gagal mengekspor PNG');
-      }
+        const canvas = await captureReportCanvas(); const link = document.createElement('a');
+        link.download = `LAPORAN_REJECT_ASSY_${safeStr(appState.header.plant).replace(/\s+/g, '_')}_${safeStr(appState.header.week).replace(/\s+/g, '_')}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0); link.click(); showToast('Gambar PNG Resolusi Tinggi berhasil diunduh!');
+      } catch (err) { console.error(err); showToast('Gagal mengekspor PNG'); }
     }
 
     function exportOfflineHTML() {
@@ -3059,37 +1970,10 @@
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"><\/script>
   <style>
     ${cssText}
-    :root {
-      --paper-bg-color: ${appState.settings.paperColor || '#ffffff'};
-      --table-font-size: ${safeNum(appState.settings.fontSize) || 8}px;
-      --table-cell-padding: ${safeNum(appState.settings.padding) || 3}px;
-    }
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background-color: #000000 !important;
-      height: auto !important;
-      min-height: 100vh;
-      overflow-x: auto !important;
-      overflow-y: auto !important;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
-    #reportPaper {
-      margin: 0 auto !important;
-      box-shadow: none !important;
-    }
-    @media (max-width: 1150px) {
-      body {
-        justify-content: flex-start;
-      }
-      #reportPaper.a4-landscape,
-      #reportPaper.a4-portrait {
-        width: 100vw !important;
-        min-width: 720px;
-      }
-    }
+    :root { --paper-bg-color: ${appState.settings.paperColor || '#ffffff'}; --table-font-size: ${parseFloat(appState.settings.fontSize) || 7.5}px; --table-cell-padding: ${parseFloat(appState.settings.padding) || 3}px; }
+    html, body { margin: 0 !important; padding: 0 !important; background-color: #000000 !important; height: auto !important; min-height: 100vh; overflow-x: auto !important; overflow-y: auto !important; display: flex; justify-content: center; align-items: flex-start; }
+    #reportPaper { margin: 0 auto !important; box-shadow: none !important; }
+    @media (max-width: 1150px) { body { justify-content: flex-start; } #reportPaper.a4-landscape, #reportPaper.a4-portrait { width: 100vw !important; min-width: 720px; } }
   </style>
 </head>
 <body>
@@ -3104,22 +1988,17 @@
     ${safeArr.toString()}
     ${ ensureWeekVisibleStructure.toString() }
     ${ getActiveWeekIndices.toString() }
+    ${ getActiveProductIndices.toString() }
     ${ baseComboOptions.toString() }
     ${ drawWeeklyComboChart.toString() }
-    ${ drawTopProductComboChart.toString() }
+    ${ drawTopProductComboChartDynamic.toString() }
     ${ drawSection5Charts.toString() }
     ${ drawMonthlyComboChart.toString() }
     ${ renderAllCharts.toString() }
 
     google.charts.load('current', { packages: ['corechart'] });
-    google.charts.setOnLoadCallback(function() {
-      chartsReady = true;
-      renderAllCharts();
-    });
-
-    window.addEventListener('resize', function() {
-      if (chartsReady) renderAllCharts();
-    });
+    google.charts.setOnLoadCallback(function() { chartsReady = true; renderAllCharts(); });
+    window.addEventListener('resize', function() { if (chartsReady) renderAllCharts(); });
   <\/script>
 </body>
 </html>`;
@@ -3127,13 +2006,8 @@
         const blob = new Blob([interactiveHtmlContent], { type: 'text/html;charset=utf-8' });
         const link = document.createElement('a');
         link.download = `LAPORAN_INTERAKTIF_${safeStr(appState.header.plant).replace(/\s+/g, '_')}_${safeStr(appState.header.week).replace(/\s+/g, '_')}.html`;
-        link.href = URL.createObjectURL(blob);
-        link.click();
-        showToast('File HTML Interaktif berhasil disimpan!');
-      } catch (err) {
-        console.error(err);
-        showToast('Gagal menyimpan HTML Interaktif');
-      }
+        link.href = URL.createObjectURL(blob); link.click(); showToast('File HTML Interaktif berhasil disimpan!');
+      } catch (err) { console.error(err); showToast('Gagal menyimpan HTML Interaktif'); }
     }
 
     function backupJSON() {
@@ -3141,9 +2015,7 @@
       const blob = new Blob([dataStr], { type: 'application/json' });
       const link = document.createElement('a');
       link.download = `BACKUP_REJECT_ASSY_${safeStr(appState.header.plant).replace(/\s+/g, '_')}.json`;
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      showToast('State data berhasil diunduh ke file .JSON');
+      link.href = URL.createObjectURL(blob); link.click(); showToast('State data diunduh ke .JSON');
     }
 
     function restoreJSON(event) {
@@ -3154,22 +2026,12 @@
         try {
           const parsed = JSON.parse(e.target.result);
           if (parsed && typeof parsed === 'object') {
-            const def = createDefaultState();
-            appState = Object.assign(def, parsed);
-            appState.settings = Object.assign(def.settings, parsed.settings || {});
-            ensureWeekVisibleStructure();
-            saveToStorage();
-            syncControlsFromState();
-            buildAllSidebarEditors();
-            renderAll();
-            showToast('Data JSON berhasil di-restore!');
+            appState = Object.assign(createDefaultState(), parsed);
+            ensureWeekVisibleStructure(); saveToStorage(); syncControlsFromState(); buildAllSidebarEditors(); renderAll(); showToast('Data JSON berhasil di-restore!');
           }
-        } catch (err) {
-          alert('Format file JSON tidak valid.');
-        }
+        } catch (err) { alert('Format file JSON tidak valid.'); }
       };
-      reader.readAsText(file);
-      event.target.value = '';
+      reader.readAsText(file); event.target.value = '';
     }
   </script>
 </body>
