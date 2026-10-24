@@ -214,7 +214,7 @@
             background-color: #d1d5db;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            overflow: auto; 
         }
         .preview-topbar {
             background-color: #374151;
@@ -228,9 +228,8 @@
         }
         
         .preview-content {
-            padding: 30px;
-            display: flex;
-            justify-content: center;
+            padding: 15px;
+            min-width: fit-content; 
         }
 
         /* --- TAMBAHAN UNTUK TOGGLE SIDEBAR --- */
@@ -265,6 +264,7 @@
             padding: 20px;
             transition: width 0.3s ease, background-color 0.3s ease;
             box-sizing: border-box;
+            margin: 0; 
         }
 
         .dash-header {
@@ -1827,8 +1827,17 @@
             const overActEl = document.getElementById('override-act');
             kpiData.leaderOverride = { plan: overPlanEl ? overPlanEl.value : '', act: overActEl ? overActEl.value : '' };
             
+            let bgImage = '';
+            const headerBgEl = document.getElementById('out-header-bg');
+            if(headerBgEl) bgImage = headerBgEl.style.backgroundImage;
+
             const payload = {
-                header: { plant: document.getElementById('in-plant').value, week: document.getElementById('in-week').value, periode: document.getElementById('in-periode').value },
+                header: { 
+                    plant: document.getElementById('in-plant').value, 
+                    week: document.getElementById('in-week').value, 
+                    periode: document.getElementById('in-periode').value,
+                    bgPhoto: bgImage
+                },
                 kpi: kpiData, leaders, analyses, prodLogs, spaChanges, machineIssues, qualityIssues
             };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
@@ -1848,6 +1857,23 @@
                         if(inPlant) inPlant.value = parsed.header.plant || ''; 
                         if(outPlant) outPlant.innerText = parsed.header.plant || '';
                         document.querySelectorAll('.out-plant-clone').forEach(el => el.innerText = parsed.header.plant || '');
+
+                        const inWeek = document.getElementById('in-week');
+                        const outWeek = document.getElementById('out-week');
+                        if(inWeek) inWeek.value = parsed.header.week || '';
+                        if(outWeek) outWeek.innerText = parsed.header.week || '';
+                        document.querySelectorAll('.out-week-clone').forEach(el => el.innerText = parsed.header.week || '');
+
+                        const inPeriode = document.getElementById('in-periode');
+                        const outPeriode = document.getElementById('out-periode');
+                        if(inPeriode) inPeriode.value = parsed.header.periode || '';
+                        if(outPeriode) outPeriode.innerText = parsed.header.periode || '';
+                        document.querySelectorAll('.out-periode-clone').forEach(el => el.innerText = parsed.header.periode || '');
+
+                        if(parsed.header.bgPhoto) {
+                            document.getElementById('out-header-bg').style.backgroundImage = parsed.header.bgPhoto;
+                            document.querySelectorAll('.dash-header').forEach(el => el.style.backgroundImage = parsed.header.bgPhoto);
+                        }
                     }
                     if (parsed.kpi) {
                         if(parsed.kpi.a) {
@@ -1887,10 +1913,22 @@
         function clearSection(sectionId) {
             if (confirm(`Apakah Anda yakin ingin mengosongkan data?`)) {
                 if (sectionId === 'header') { 
-                    const inPlant = document.getElementById('in-plant');
-                    if(inPlant) inPlant.value = ''; 
-                    const outPlant = document.getElementById('out-plant');
-                    if(outPlant) outPlant.innerText = ''; 
+                    const inPlant = document.getElementById('in-plant'); if(inPlant) inPlant.value = ''; 
+                    const outPlant = document.getElementById('out-plant'); if(outPlant) outPlant.innerText = ''; 
+                    
+                    const inWeek = document.getElementById('in-week'); if(inWeek) inWeek.value = ''; 
+                    const outWeek = document.getElementById('out-week'); if(outWeek) outWeek.innerText = ''; 
+                    
+                    const inPeriode = document.getElementById('in-periode'); if(inPeriode) inPeriode.value = ''; 
+                    const outPeriode = document.getElementById('out-periode'); if(outPeriode) outPeriode.innerText = ''; 
+
+                    document.querySelectorAll('.out-plant-clone').forEach(el => el.innerText = '');
+                    document.querySelectorAll('.out-week-clone').forEach(el => el.innerText = '');
+                    document.querySelectorAll('.out-periode-clone').forEach(el => el.innerText = '');
+
+                    document.getElementById('out-header-bg').style.backgroundImage = '';
+                    document.querySelectorAll('.dash-header').forEach(el => el.style.backgroundImage = '');
+                    const inPhoto = document.getElementById('in-photo'); if(inPhoto) inPhoto.value = '';
                 }
                 else if (sectionId === 1) {
                     for(let i=1; i<=5; i++) {
@@ -1919,7 +1957,7 @@
         }
         function clearAllData() { 
             if (confirm("Kosongkan semua data?")) { 
-                clearSection(1); leaders=[]; analyses=[]; prodLogs=[]; spaChanges=[]; machineIssues=[]; qualityIssues=[]; 
+                clearSection('header'); clearSection(1); leaders=[]; analyses=[]; prodLogs=[]; spaChanges=[]; machineIssues=[]; qualityIssues=[]; 
                 const overPlanEl = document.getElementById('override-plan');
                 if(overPlanEl) overPlanEl.value = '';
                 const overActEl = document.getElementById('override-act');
@@ -2166,14 +2204,14 @@
                 });
             });
 
-            // 2. Injeksi State Array (Data Aplikasi) ke dalam DOM
+            // 2. Injeksi State Array (Data Aplikasi) ke dalam DOM di paling atas document body
             const stateDiv = document.createElement('div');
             stateDiv.id = 'app-saved-state';
             stateDiv.style.display = 'none';
             stateDiv.setAttribute('data-state', JSON.stringify({ leaders, analyses, prodLogs, spaChanges, machineIssues, qualityIssues }));
-            document.body.appendChild(stateDiv);
+            document.body.insertBefore(stateDiv, document.body.firstChild);
 
-            // 3. Sembunyikan sidebar otomatis di file hasil unduhan
+            // 3. Sembunyikan sidebar dan topbar secara otomatis
             const sidebar = document.querySelector('.editor-sidebar');
             let wasHidden = true;
             if(sidebar) {
@@ -2181,23 +2219,38 @@
                 if (!wasHidden) sidebar.classList.add('hidden-sidebar');
             }
 
-            // --- TAMBAHAN BARU: Sembunyikan Topbar ---
             const topbar = document.querySelector('.preview-topbar');
             let topbarWasHidden = true;
             if(topbar) {
                 topbarWasHidden = topbar.style.display === 'none';
                 if (!topbarWasHidden) topbar.style.display = 'none';
             }
-            // ----------------------------------------
 
-            // 4. Kloning HTML Keseluruhan
-            const htmlContent = "<!DOCTYPE html>\n<html lang=\"id\">\n" + document.documentElement.outerHTML + "\n</html>";
+            // 4. Ambil dan Modifikasi HTML untuk Mode View (Tanpa Flex)
+            let htmlContent = "<!DOCTYPE html>\n<html lang=\"id\">\n" + document.documentElement.outerHTML + "\n</html>";
             
-            // 5. Kembalikan State UI Editor (Cleanup)
+            // --- FIX MOBILE VIEWPORT & LAYOUT ---
+            // Set viewport agar mengikuti lebar asli dashboard sehingga browser HP bisa zoom fit
+            const orientEl = document.getElementById('in-print-orientation');
+            const orientation = orientEl ? orientEl.value : 'landscape';
+            const dashWidth = orientation === 'portrait' ? '880' : '1200';
+            htmlContent = htmlContent.replace(/<meta name="viewport" content="[^"]*">/i, `<meta name="viewport" content="width=${dashWidth}, user-scalable=yes">`);
+
+            // Inject CSS khusus untuk file simpanan agar scroll natural dari pojok kiri atas dan margin dihilangkan
+            const mobileFixStyle = `
+            <style>
+                body { display: block !important; height: auto !important; overflow: auto !important; background-color: var(--print-bg) !important; margin: 0 !important; padding: 10px 0 !important; }
+                .preview-area { display: block !important; height: auto !important; overflow: visible !important; padding: 0 !important; background-color: transparent !important; }
+                .preview-content { padding: 0 !important; display: block !important; }
+                .dashboard { margin: 0 auto !important; box-shadow: none !important; width: ${dashWidth}px !important; }
+            </style>
+            `;
+            htmlContent = htmlContent.replace('</head>', mobileFixStyle + '</head>');
+            // ------------------------------------
+
+            // 5. Kembalikan State UI Editor seperti semula
             if(sidebar && !wasHidden) sidebar.classList.remove('hidden-sidebar');
-            // --- Restore Topbar ---
             if(topbar && !topbarWasHidden) topbar.style.display = '';
-            // ----------------------
             document.body.removeChild(stateDiv);
 
             // 6. Proses Unduh
