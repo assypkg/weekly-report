@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generator Laporan Reject Pilihan & Proses</title>
-  <!-- Favicon Standar & Favicon Khusus HP -->
+    <!-- Favicon Standar & Favicon Khusus HP -->
     <link rel="icon" type="image/png" href="97799.png">
     <link rel="apple-touch-icon" href="97799.png">
 
@@ -40,11 +40,19 @@
             border: 2px dashed #bdc3c7;
             border-radius: 6px;
             text-align: center;
+            background-color: #fafafa;
         }
         .file-box label {
             display: block;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .file-hint {
+            display: block;
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 12px;
         }
         button {
             background-color: #3498db;
@@ -88,12 +96,14 @@
     
     <div class="upload-section">
         <div class="file-box">
-            <label for="filePilihan">Upload File Reject PILIHAN (.xlsx)</label>
-            <input type="file" id="filePilihan" accept=".xlsx, .xls">
+            <label for="filePilihan">Upload File Reject PILIHAN</label>
+            <span class="file-hint">Format didukung: Excel (.xlsx, .xls) & LibreOffice (.ods)</span>
+            <input type="file" id="filePilihan" accept=".xlsx, .xls, .ods">
         </div>
         <div class="file-box">
-            <label for="fileProses">Upload File Reject PROSES (.xlsx)</label>
-            <input type="file" id="fileProses" accept=".xlsx, .xls">
+            <label for="fileProses">Upload File Reject PROSES</label>
+            <span class="file-hint">Format didukung: Excel (.xlsx, .xls) & LibreOffice (.ods)</span>
+            <input type="file" id="fileProses" accept=".xlsx, .xls, .ods">
         </div>
     </div>
 
@@ -120,7 +130,24 @@
 
     function getSortIndex(type) {
         const idx = CUSTOM_ORDER.indexOf(type);
-        return idx === -1 ? 999 : idx; // Jika tipe tidak ada di list, taruh di urutan paling bawah
+        return idx === -1 ? 999 : idx;
+    }
+
+    function cleanProductType(rawType) {
+        let t = String(rawType).toUpperCase().replace(/\s+/g, ' ').trim();
+        if (t === 'COMAPCT') return 'COMPACT';
+        if (t === 'LIPBLAM') return 'LIPBALM';
+        if (t === 'LIPGLOS') return 'LIPGLOSS';
+        if (t === 'LIPSTIK') return 'LIPSTICK';
+        if (t === 'MASCARA' || t === 'EYELINER') return 'MASCARA/EYELINER';
+        if (t === 'PENCIL') return 'PENCIL UNIT';
+        return t;
+    }
+
+    function cleanProductName(rawName) {
+        if (!rawName) return "Unknown";
+        // Merapikan spasi ganda/berlebih agar tidak terpecah saat digabung
+        return String(rawName).replace(/\s+/g, ' ').trim();
     }
 
     function generateLaporan() {
@@ -136,7 +163,7 @@
         if (fileProses) promises.push(processFile(fileProses, 'PROSES'));
 
         if (promises.length === 0) {
-            outputArea.innerHTML = '<p style="color:red;">Harap unggah minimal satu file terlebih dahulu.</p>';
+            outputArea.innerHTML = '<p style="color:red;">Harap unggah minimal satu file terlebih dahulu (.xlsx, .xls, atau .ods).</p>';
             return;
         }
 
@@ -144,7 +171,7 @@
             outputArea.innerHTML = '';
             results.forEach(res => renderReport(res.jenis, res.data));
         }).catch(err => {
-            outputArea.innerHTML = `<p style="color:red;">Terjadi kesalahan sistem: ${err}</p>`;
+            outputArea.innerHTML = `<p style="color:red;">Terjadi kesalahan pembacaan file: ${err}</p>`;
         });
     }
 
@@ -162,55 +189,56 @@
                         const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
                         
                         let startRow = -1;
-                        for(let i=0; i<json.length; i++) {
+                        for (let i = 0; i < json.length; i++) {
                             const row = json[i] || [];
-                            const upperRow = row.map(cell => String(cell).trim().toUpperCase());
-                            if(upperRow.includes('TYPE') && upperRow.includes('QTY ORDER')) {
+                            const upperRow = row.map(cell => String(cell || '').replace(/\s+/g, ' ').trim().toUpperCase());
+                            if (upperRow.includes('TYPE') && upperRow.includes('QTY ORDER')) {
                                 startRow = i;
                                 break;
                             }
                         }
 
-                        if(startRow !== -1) {
-                            const headerRow = (json[startRow] || []).map(c => String(c).trim().toUpperCase());
+                        if (startRow !== -1) {
+                            const headerRow = (json[startRow] || []).map(c => String(c || '').replace(/\s+/g, ' ').trim().toUpperCase());
                             const typeIdx = headerRow.indexOf('TYPE');
                             const nameIdx = headerRow.indexOf('NAMA PRODUK');
                             const orderIdx = headerRow.indexOf('QTY ORDER');
 
+                            // Cari letak kolom QTY Reject di sub-header (1 s.d 4 baris di bawah header utama)
                             let qtyCols = [];
-                            for(let offset = 1; offset <= 3; offset++) {
-                                const subRow = (json[startRow + offset] || []).map(c => String(c).trim().toUpperCase());
-                                for(let c = orderIdx + 1; c < subRow.length; c++) {
-                                    if(subRow[c] === 'QTY') qtyCols.push(c);
+                            for (let offset = 1; offset <= 4; offset++) {
+                                const subRow = (json[startRow + offset] || []).map(c => String(c || '').trim().toUpperCase());
+                                for (let c = orderIdx + 1; c < subRow.length; c++) {
+                                    if (subRow[c] === 'QTY') qtyCols.push(c);
                                 }
-                                if(qtyCols.length > 0) break;
+                                if (qtyCols.length > 0) break;
                             }
 
-                            for(let r = startRow + 4; r < json.length; r++) {
+                            // Pemindaian baris data dimulai tepat setelah startRow (Auto-Skip sub-header non-angka)
+                            for (let r = startRow + 1; r < json.length; r++) {
                                 const row = json[r] || [];
                                 let type = row[typeIdx];
-                                let name = row[nameIdx] || "Unknown";
+                                let name = row[nameIdx];
                                 let order = row[orderIdx];
 
-                                if(!type || !order || String(order).trim().toUpperCase() === 'TOTAL') continue;
+                                if (!type || order === undefined || order === null || String(order).trim() === '') continue;
+                                if (String(type).trim().toUpperCase() === 'TOTAL' || String(order).trim().toUpperCase() === 'TOTAL') continue;
                                 
                                 order = parseFloat(order);
-                                if(isNaN(order)) continue;
+                                if (isNaN(order) || order <= 0) continue;
 
                                 let rejectQty = 0;
                                 qtyCols.forEach(c => {
                                     let val = parseFloat(row[c]);
-                                    if(!isNaN(val)) rejectQty += val;
+                                    if (!isNaN(val)) rejectQty += val;
                                 });
 
-                                // Standardisasi Penamaan Tipe
-                                type = String(type).toUpperCase().trim();
-                                if(type === 'COMAPCT') type = 'COMPACT';
-                                if(type === 'LIPBLAM' || type === 'LIPBLAM ') type = 'LIPBALM';
-                                if(type === 'MASCARA' || type === 'EYELINER') type = 'MASCARA/EYELINER';
-                                if(type === 'PENCIL') type = 'PENCIL UNIT';
-
-                                rawData.push({ type, name, order, reject: rejectQty });
+                                rawData.push({
+                                    type: cleanProductType(type),
+                                    name: cleanProductName(name),
+                                    order: order,
+                                    reject: rejectQty
+                                });
                             }
                         }
                     });
@@ -228,19 +256,19 @@
         let detailMap = {};
 
         rawData.forEach(row => {
-            // Summary
+            // Agregasi Summary per Tipe Produk
             if (!summaryMap[row.type]) summaryMap[row.type] = { order: 0, reject: 0 };
             summaryMap[row.type].order += row.order;
             summaryMap[row.type].reject += row.reject;
 
-            // Detail
+            // Agregasi Detail per Tipe + Nama Produk
             let key = row.type + "|||" + row.name;
             if (!detailMap[key]) detailMap[key] = { type: row.type, name: row.name, order: 0, reject: 0 };
             detailMap[key].order += row.order;
             detailMap[key].reject += row.reject;
         });
 
-        // 1. Render Summary Table (Diurutkan berdasarkan CUSTOM_ORDER)
+        // 1. Render Summary Table
         let html = `<h2>Laporan Reject ${jenis}</h2>`;
         html += `<h3>1. Keseluruhan Reject per Tipe Produk</h3>`;
         html += `<table>
@@ -267,7 +295,7 @@
         });
         html += `</tbody></table>`;
 
-        // 2. Render Detail Table (>= 2.5%) (Diurutkan berdasarkan CUSTOM_ORDER, lalu Persentase)
+        // 2. Render Detail Table (>= 2.5%)
         html += `<h3>2. Item Produk Reject Tertinggi (&ge; 2.5%)</h3>`;
         
         let detailsArr = Object.values(detailMap).map(d => {
@@ -275,14 +303,13 @@
             return d;
         }).filter(d => d.pct >= 2.5);
 
-        if(detailsArr.length === 0) {
+        if (detailsArr.length === 0) {
             html += `<p><em>Tidak ada item dengan persentase reject mencapai 2.5% atau lebih.</em></p>`;
         } else {
-            // Sorting Detail Table
             detailsArr.sort((a, b) => {
                 let diff = getSortIndex(a.type) - getSortIndex(b.type);
                 if (diff === 0) {
-                    return b.pct - a.pct; // Jika tipenya sama, urutkan dari persen tertinggi
+                    return b.pct - a.pct;
                 }
                 return diff;
             });
