@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard & Laporan REJECT ASSY - System v13</title>
-  <!-- Favicon Standar & Favicon Khusus HP -->
+  <title>Dashboard & Laporan REJECT ASSY - Executive Manufacturing System v14</title>
+ <!-- Favicon Standar & Favicon Khusus HP -->
     <link rel="icon" type="image/png" href="97799.png">
     <link rel="apple-touch-icon" href="97799.png">
-  
+
   <!-- Google Fonts: Montserrat -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +30,7 @@
       --red-alert: #dc2626;
       --bg-dark: #0f172a;
       --sidebar-width: 480px;
-      --table-font-size: 8px;
+      --table-font-size: 7.5px;
       --table-cell-padding: 3px;
       --paper-bg-color: #ffffff;
     }
@@ -290,10 +290,27 @@
     .kbd-badge { background: #334155; color: #fde047; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; border: 1px solid #64748b; }
 
     /* ================= LIVE PREVIEW AREA ================= */
-    #previewContainer { flex: 1; height: 100vh; overflow: auto; padding: 12px; background: #334155; display: flex; justify-content: center; align-items: flex-start; }
-    #reportPaper { background-color: var(--paper-bg-color); color: #0f172a; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden; margin: 0 !important; padding: 0 !important; }
-    #reportPaper.a4-landscape { width: 297mm; min-height: 210mm; }
-    #reportPaper.a4-portrait { width: 210mm; min-height: 297mm; }
+    #previewContainer {
+      flex: 1;
+      height: 100vh;
+      overflow: auto;
+      padding: 12px;
+      background: #334155;
+      display: block;
+    }
+
+    #reportPaper {
+      background-color: var(--paper-bg-color);
+      color: #0f172a;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: visible;
+      margin: 0 auto !important;
+      padding: 0 !important;
+    }
+
+    #reportPaper.a4-landscape { width: 1122px; min-width: 1122px; min-height: 794px; }
+    #reportPaper.a4-portrait { width: 794px; min-width: 794px; min-height: 1122px; }
     #paperBgOverlay { position: absolute; inset: 0; background-size: cover; background-position: center; background-repeat: no-repeat; pointer-events: none; z-index: 0; opacity: 0.12; }
     #reportContent { position: relative; z-index: 1; margin: 0 !important; padding: 0 !important; width: 100%; }
 
@@ -306,21 +323,38 @@
     .report-meta-block .week-badge { font-size: 11.5px; font-weight: 800; color: #fde047; text-transform: uppercase; }
     .report-meta-block .period-text { font-size: 9.5px; font-weight: 600; color: #f1f5f9; }
 
-    /* REQ 1: EXECUTIVE KPI SUMMARY STRIP (6 COLUMNS) */
-    .kpi-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; padding: 6px; background: #e2e8f0; }
-    .kpi-card { padding: 6px 8px; border-radius: 5px; color: #fff; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.12); }
-    .kpi-icon-box { width: 28px; height: 28px; border-radius: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.32); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    /* EXECUTIVE KPI SUMMARY STRIP (6 KOLOM ANTI TERPOTONG) */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 5px;
+      padding: 6px;
+      background: #e2e8f0;
+      width: 100%;
+    }
+    .kpi-card {
+      padding: 6px 7px;
+      border-radius: 5px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+      min-width: 0;
+      overflow: hidden;
+    }
+    .kpi-icon-box { width: 26px; height: 26px; border-radius: 6px; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.32); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .kpi-icon-box svg { width: 14px; height: 14px; }
-    .kpi-info { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+    .kpi-info { display: flex; flex-direction: column; justify-content: center; min-width: 0; flex: 1; }
     
-    .kpi-navy { background: linear-gradient(135deg, var(--navy) 0%, #283593 100%); border-left: 4px solid #38bdf8; }
-    .kpi-emerald { background: linear-gradient(135deg, var(--emerald) 0%, #1b5e20 100%); border-left: 4px solid #fde047; }
-    .kpi-sky { background: linear-gradient(135deg, var(--sky-bright) 0%, var(--sky-light) 100%); border-left: 4px solid #fde047; }
-    .kpi-bluegrey { background: linear-gradient(135deg, var(--blue-grey) 0%, #263238 100%); border-left: 4px solid #9ca3af; }
+    .kpi-navy { background: linear-gradient(135deg, var(--navy) 0%, #283593 100%); border-left: 3.5px solid #38bdf8; }
+    .kpi-emerald { background: linear-gradient(135deg, var(--emerald) 0%, #1b5e20 100%); border-left: 3.5px solid #fde047; }
+    .kpi-sky { background: linear-gradient(135deg, var(--sky-bright) 0%, var(--sky-light) 100%); border-left: 3.5px solid #fde047; }
+    .kpi-bluegrey { background: linear-gradient(135deg, var(--blue-grey) 0%, #263238 100%); border-left: 3.5px solid #9ca3af; }
 
-    .kpi-card .kpi-title { font-size: 6.5px; font-weight: 800; text-transform: uppercase; opacity: 0.95; letter-spacing: 0.2px; line-height: 1.1; }
-    .kpi-card .kpi-val { font-size: 11px; font-weight: 800; margin-top: 2px; white-space: nowrap; }
-    .kpi-card .kpi-sub { font-size: 6px; opacity: 0.9; margin-top: 1px; }
+    .kpi-card .kpi-title { font-size: 6.5px; font-weight: 800; text-transform: uppercase; opacity: 0.95; letter-spacing: 0.15px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kpi-card .kpi-val { font-size: 10.5px; font-weight: 800; margin-top: 2px; white-space: nowrap; }
+    .kpi-card .kpi-sub { font-size: 6px; opacity: 0.9; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .report-section { margin: 0 0 6px 0; background: rgba(255, 255, 255, 0.98); border-bottom: 2px solid #cbd5e1; padding: 0; width: 100%; page-break-inside: avoid; }
     .section-banner { display: flex; justify-content: flex-start; align-items: center; padding: 5px 10px; color: #ffffff; font-size: 9.5px; font-weight: 800; letter-spacing: 0.35px; text-transform: uppercase; }
@@ -334,7 +368,7 @@
     .banner-bluegrey { background: linear-gradient(90deg, var(--blue-grey) 0%, #455a64 100%); }
 
     /* Report Matrix Table */
-    .table-responsive { width: 100%; overflow-x: hidden; }
+    .table-responsive { width: 100%; overflow-x: visible; }
     .data-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: var(--table-font-size); }
     .data-table th, .data-table td { border: 1px solid #94a3b8; padding: var(--table-cell-padding) 2px; text-align: right; overflow: hidden; text-overflow: ellipsis; word-wrap: break-word; line-height: 1.15; }
     .data-table thead th { background: var(--navy); color: #ffffff; font-weight: 800; text-align: center; vertical-align: middle; padding: calc(var(--table-cell-padding) + 1px) 2px; }
@@ -366,11 +400,11 @@
     .bg-red-alert { background: #fef2f2 !important; }
 
     /* Chart Container & Others */
-    .chart-box { width: 100%; height: 165px; border-top: 1px solid #cbd5e1; background: #ffffff; }
+    .chart-box { width: 100%; height: 165px; border-top: 1px solid #cbd5e1; background: #ffffff; overflow: hidden; }
     .vertical-stack { display: flex; flex-direction: column; width: 100%; }
     .vertical-stack .chart-box { height: 170px; width: 100%; }
-    .monthly-grid { display: grid; grid-template-columns: 38% 62%; width: 100%; align-items: stretch; }
-    .monthly-grid .chart-box { height: 100%; min-height: 210px; border-top: none; border-left: 1px solid #cbd5e1; }
+    .monthly-grid { display: grid; grid-template-columns: 42% 58%; width: 100%; align-items: stretch; }
+    .monthly-grid .chart-box { height: 100%; min-height: 215px; border-top: none; border-left: 1px solid #cbd5e1; }
 
     /* Sub-Tabel per Minggu di Section D dan E */
     .week-subtable-wrap { margin-bottom: 8px; }
@@ -384,7 +418,7 @@
       html, body { background: #ffffff !important; overflow: visible !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
       #sidebar, #toggleSidebarBtn, #editorModal, #toast { display: none !important; }
       #previewContainer { padding: 0 !important; margin: 0 !important; background: #ffffff !important; overflow: visible !important; height: auto !important; display: block !important; }
-      #reportPaper { box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+      #reportPaper { box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; min-width: 0 !important; }
     }
   </style>
 </head>
@@ -419,7 +453,7 @@
       </div>
       <div>
         <h1>DASHBOARD &amp; LAPORAN REJECT ASSY</h1>
-        <p>Manufacturing System Analyst &bull; Smart Map v13</p>
+        <p>Manufacturing System Analyst &bull; Full Scroll v14</p>
       </div>
     </div>
 
@@ -635,7 +669,7 @@
             <button class="btn btn-danger" onclick="clearSectionData('sec6')">&#128465; Hapus Data</button>
           </div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Excel Paste (Sec F):</strong> Tempel <code>Bulan | Total Order | Total Reject Pilihan+Proses</code>:</div>
+            <div class="helper-text"><strong>Smart Excel Paste (Sec F):</strong> Tempel <code>Bulan | Total Order | Reject Pilihan | % | Reject Proses | %</code>:</div>
             <textarea id="pasteSec6" placeholder="Paste data Excel Bulanan di sini..." oninput="handleExcelPasteMonthly(this.value)"></textarea>
           </div>
           <div class="editor-table-wrap" id="editorSec6"></div>
@@ -667,7 +701,7 @@
           </div>
         </header>
 
-        <!-- EXECUTIVE KPI SUMMARY STRIP (REQ 1: 6 KOLOM) -->
+        <!-- EXECUTIVE KPI SUMMARY STRIP (6 KOLOM PROPORSIONAL) -->
         <div class="kpi-strip">
           <div class="kpi-card kpi-navy">
             <div class="kpi-icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
@@ -792,7 +826,7 @@
       'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'
     ];
 
-    const STORAGE_KEY = 'REJECT_ASSY_SPA_STATE_V13';
+    const STORAGE_KEY = 'REJECT_ASSY_SPA_STATE_V14';
     let chartsReady = false;
     let activeModalSection = null;
     let appState = createDefaultState();
@@ -1746,7 +1780,7 @@
       let html = `<table class="data-table" style="height:100%; margin-bottom:0;">
         <thead>
           <tr>
-            <th style="width:20%;">BULAN</th>
+            <th style="width:18%;">BULAN</th>
             <th>TOTAL ORDER</th>
             <th class="bg-pilihan-head">REJECT PILIHAN</th>
             <th class="bg-pilihan-head">% PILIHAN</th>
@@ -1807,7 +1841,7 @@
         title: title,
         titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
         fontName: 'Montserrat', fontSize: 8,
-        chartArea: { left: 52, right: 48, top: 24, bottom: 26, width: '86%', height: '66%' },
+        chartArea: { left: 56, right: 60, top: 24, bottom: 26, width: '84%', height: '66%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 8, bold: true } },
         tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars', colors: colors,
         vAxes: {
@@ -1869,7 +1903,7 @@
 
       const opts = {
         title: title, titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
-        fontName: 'Montserrat', fontSize: 7.5, chartArea: { left: 48, right: 48, top: 24, bottom: 26, width: '86%', height: '66%' },
+        fontName: 'Montserrat', fontSize: 7.5, chartArea: { left: 56, right: 60, top: 24, bottom: 26, width: '84%', height: '66%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
         tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars', colors: activeColors,
         vAxes: { 0: { title: 'Qty Reject', textStyle: { fontSize: 7.5 } }, 1: { title: '% Reject', textStyle: { fontSize: 7.5 }, format: '#.##%' } },
@@ -1912,7 +1946,7 @@
         title: 'KOMPARASI REJECT PILIHAN VS PROSES PER TYPE PRODUK',
         titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
         fontName: 'Montserrat', fontSize: 7.5, 
-        chartArea: { left: 52, right: 48, top: 24, bottom: 26, width: '86%', height: '66%' },
+        chartArea: { left: 56, right: 60, top: 24, bottom: 26, width: '84%', height: '66%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
         tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars',
         colors: ['#1a237e', '#2e7d32', '#0ea5e9'], 
@@ -1951,7 +1985,7 @@
         title: 'TREN MINGGUAN (W1 - W5): REJECT PILIHAN VS REJECT PROSES',
         titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#00695c' },
         fontName: 'Montserrat', fontSize: 7.5, 
-        chartArea: { left: 52, right: 48, top: 24, bottom: 26, width: '86%', height: '66%' },
+        chartArea: { left: 56, right: 60, top: 24, bottom: 26, width: '84%', height: '66%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
         tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars',
         colors: ['#1a237e', '#2e7d32', '#0ea5e9'], 
@@ -1980,7 +2014,7 @@
       const opts = {
         title: 'GRAFIK DATA F: PERBANDINGAN JUMLAH REJECT BULANAN (JAN - DES)',
         titleTextStyle: { fontName: 'Montserrat', fontSize: 9.5, bold: true, color: '#1a237e' },
-        fontName: 'Montserrat', fontSize: 7.5, chartArea: { left: 52, right: 48, top: 26, bottom: 28, width: '80%', height: '68%' },
+        fontName: 'Montserrat', fontSize: 7.5, chartArea: { left: 56, right: 56, top: 26, bottom: 28, width: '76%', height: '68%' },
         legend: { position: 'top', alignment: 'end', textStyle: { fontSize: 7.5, bold: true } },
         tooltip: { isHtml: false, trigger: 'both' }, focusTarget: 'datum', seriesType: 'bars', 
         colors: ['#1a237e', '#2e7d32', '#dc2626'],
@@ -2023,7 +2057,7 @@
     }
 
     /* =========================================================================
-       10. EXPORT PNG & SIMPAN HTML INTERAKTIF
+       10. EXPORT PNG & SIMPAN HTML INTERAKTIF (BEBAS TERPOTONG DI HP)
        ========================================================================= */
     async function captureReportCanvas() {
       const paper = document.getElementById('reportPaper'); showToast('Memproses tangkapan resolusi tinggi...');
@@ -2044,12 +2078,14 @@
         const cssText = document.getElementById('coreReportStyles').innerHTML;
         const paperHTML = document.getElementById('reportPaper').outerHTML;
         const serializedState = JSON.stringify(appState);
+        const isPortrait = appState.settings.orientation === 'portrait';
+        const exactPaperWidth = isPortrait ? 794 : 1122;
 
         const interactiveHtmlContent = `<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=${exactPaperWidth + 24}, initial-scale=1.0, user-scalable=yes" />
   <title>${title}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2057,14 +2093,53 @@
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"><\/script>
   <style>
     ${cssText}
-    :root { --paper-bg-color: ${appState.settings.paperColor || '#ffffff'}; --table-font-size: ${parseFloat(appState.settings.fontSize) || 7.5}px; --table-cell-padding: ${parseFloat(appState.settings.padding) || 3}px; }
-    html, body { margin: 0 !important; padding: 0 !important; background-color: #000000 !important; height: auto !important; min-height: 100vh; overflow-x: auto !important; overflow-y: auto !important; display: flex; justify-content: center; align-items: flex-start; }
-    #reportPaper { margin: 0 auto !important; box-shadow: none !important; }
-    @media (max-width: 1150px) { body { justify-content: flex-start; } #reportPaper.a4-landscape, #reportPaper.a4-portrait { width: 100vw !important; min-width: 720px; } }
+    :root {
+      --paper-bg-color: ${appState.settings.paperColor || '#ffffff'};
+      --table-font-size: ${parseFloat(appState.settings.fontSize) || 7.5}px;
+      --table-cell-padding: ${parseFloat(appState.settings.padding) || 3}px;
+    }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background-color: #000000 !important;
+      width: 100%;
+      height: auto !important;
+      min-height: 100vh;
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+      display: block !important;
+      -webkit-overflow-scrolling: touch;
+    }
+    .offline-scroll-container {
+      width: 100%;
+      overflow-x: auto;
+      padding: 8px;
+      text-align: center;
+      -webkit-overflow-scrolling: touch;
+    }
+    #reportPaper {
+      display: inline-block !important;
+      text-align: left !important;
+      margin: 0 auto !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+    }
+    #reportPaper.a4-landscape {
+      width: 1122px !important;
+      min-width: 1122px !important;
+      max-width: none !important;
+    }
+    #reportPaper.a4-portrait {
+      width: 794px !important;
+      min-width: 794px !important;
+      max-width: none !important;
+    }
   </style>
 </head>
 <body>
-  ${paperHTML}
+  <div class="offline-scroll-container">
+    ${paperHTML}
+  </div>
   <script>
     const PRODUCT_TYPES = ${JSON.stringify(PRODUCT_TYPES)};
     const appState = ${serializedState};
@@ -2093,7 +2168,7 @@
         const blob = new Blob([interactiveHtmlContent], { type: 'text/html;charset=utf-8' });
         const link = document.createElement('a');
         link.download = `LAPORAN_INTERAKTIF_${safeStr(appState.header.plant).replace(/\s+/g, '_')}_${safeStr(appState.header.week).replace(/\s+/g, '_')}.html`;
-        link.href = URL.createObjectURL(blob); link.click(); showToast('File HTML Interaktif berhasil disimpan!');
+        link.href = URL.createObjectURL(blob); link.click(); showToast('File HTML Interaktif (Anti-Terpotong) berhasil disimpan!');
       } catch (err) { console.error(err); showToast('Gagal menyimpan HTML Interaktif'); }
     }
 
