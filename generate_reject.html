@@ -178,7 +178,6 @@
 
         outputArea.innerHTML = '<h2>Memproses data...</h2>';
 
-        // Beri jeda 50ms agar tampilan "Memproses data..." ter-render sebelum kalkulasi berjalan
         setTimeout(() => {
             let promises = [];
             if (filePilihan) promises.push(processFile(filePilihan, 'PILIHAN'));
@@ -197,7 +196,6 @@
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
 
-            // Tangkap error jika file terkunci (misal: sedang terbuka di Microsoft Excel)
             reader.onerror = function() {
                 reject(`File <strong>"${file.name}"</strong> tidak dapat dibaca oleh browser. <br>
                         <em>Solusi: Tutup terlebih dahulu file "${file.name}" jika sedang terbuka di aplikasi Microsoft Excel, lalu klik tombol Browse untuk memilih ulang file tersebut.</em>`);
@@ -206,7 +204,6 @@
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    // Batasi pembacaan maksimal 3000 baris per sheet agar anti-freeze
                     const workbook = XLSX.read(data, { type: 'array', sheetRows: 3000 });
                     let rawData = [];
 
@@ -214,13 +211,12 @@
                         const sheet = workbook.Sheets[sheetName];
                         if (!sheet || !sheet['!ref']) return;
 
-                        // PERBAIKAN UTAMA: Pangkas kolom "hantu" XFD (16.384 kolom) menjadi maksimal 40 kolom (Kolom A - AN)
+                        // Pangkas kolom "hantu" XFD menjadi maksimal 40 kolom (Kolom A - AN)
                         let range = XLSX.utils.decode_range(sheet['!ref']);
                         if (range.e.c > 40) range.e.c = 40;
                         if (range.e.r > 3000) range.e.r = 3000;
                         sheet['!ref'] = XLSX.utils.encode_range(range);
 
-                        // Gunakan defval: "" agar tidak ada sparse array di Firefox/Chrome
                         const json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
                         
                         let startRow = -1;
@@ -241,7 +237,6 @@
                             const jobIdx  = headerRow.indexOf('JOB ORDER');
                             const orderIdx = headerRow.indexOf('QTY ORDER');
 
-                            // Cari kolom QTY Reject pada 1 s/d 4 baris di bawah header
                             let qtyCols = [];
                             for (let offset = 1; offset <= 4; offset++) {
                                 if (startRow + offset >= json.length) break;
@@ -252,7 +247,6 @@
                                 if (qtyCols.length > 0) break;
                             }
 
-                            // Pindai baris data
                             for (let r = startRow + 1; r < json.length; r++) {
                                 const row = json[r] || [];
                                 const firstCol = String(row[0] || '').toUpperCase();
@@ -260,12 +254,10 @@
                                 const rawType  = String(row[typeIdx] || '').trim();
                                 const rawOrder = row[orderIdx];
 
-                                // Lewati baris kosong atau baris TOTAL / Header berulang
                                 if (!rawType || rawOrder === '' || rawOrder === null || rawOrder === undefined) continue;
                                 if (firstCol.includes('TOTAL') || rawName.toUpperCase().includes('TOTAL') || rawType.toUpperCase().includes('TOTAL')) continue;
                                 if (rawType.toUpperCase() === 'TYPE') continue;
 
-                                // Bersihkan format angka jika ada koma/titik ribuan berupa teks
                                 let order = typeof rawOrder === 'number' ? rawOrder : parseFloat(String(rawOrder).replace(/,/g, ''));
                                 if (isNaN(order) || order <= 0) continue;
 
@@ -318,13 +310,12 @@
             detailMap[key].reject += row.reject;
         });
 
-        // 1. Render Tabel Keseluruhan per Tipe Produk
+        // 1. Render Tabel Keseluruhan per Tipe Produk (Tanpa Kolom No)
         let html = `<h2>Laporan Reject ${jenis} <span style="font-size:14px; font-weight:normal; color:#7f8c8d;">(${fileName})</span></h2>`;
         html += `<h3>1. Keseluruhan Reject per Tipe Produk</h3>`;
         html += `<table>
                     <thead>
                         <tr>
-                            <th>No</th>
                             <th>Tipe Produk</th>
                             <th>Total Order</th>
                             <th>Total Reject (Qty)</th>
@@ -334,12 +325,11 @@
                     <tbody>`;
         
         let sortedTypes = Object.keys(summaryMap).sort((a, b) => getSortIndex(a) - getSortIndex(b));
-        sortedTypes.forEach((type, idx) => {
+        sortedTypes.forEach(type => {
             let s = summaryMap[type];
             let pct = s.order > 0 ? (s.reject / s.order) * 100 : 0;
             let cls = pct >= 2.5 ? 'class="high-reject"' : '';
             html += `<tr>
-                        <td>${idx + 1}</td>
                         <td><strong>${type}</strong></td>
                         <td>${s.order.toLocaleString('id-ID')}</td>
                         <td>${s.reject.toLocaleString('id-ID')}</td>
@@ -348,7 +338,7 @@
         });
         html += `</tbody></table>`;
 
-        // 2. Render Tabel Item Produk Reject Tertinggi (>= 2.5%)
+        // 2. Render Tabel Item Produk Reject Tertinggi (>= 2.5%) (Tanpa Kolom No)
         html += `<h3>2. Reject ${jenis} Tertinggi (&ge; 2,5%) per Tipe Produk</h3>`;
         
         let detailsArr = Object.values(detailMap).map(d => {
@@ -368,7 +358,6 @@
             html += `<table>
                         <thead>
                             <tr>
-                                <th>No</th>
                                 <th>Tipe Produk</th>
                                 <th>Nama Produk</th>
                                 <th>Total Order</th>
@@ -378,9 +367,8 @@
                         </thead>
                         <tbody>`;
             
-            detailsArr.forEach((item, idx) => {
+            detailsArr.forEach(item => {
                 html += `<tr>
-                            <td>${idx + 1}</td>
                             <td><strong>${item.type}</strong></td>
                             <td>${item.name}</td>
                             <td>${item.order.toLocaleString('id-ID')}</td>
