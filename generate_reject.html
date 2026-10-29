@@ -7,7 +7,6 @@
     <!-- Favicon Standar & Favicon Khusus HP -->
     <link rel="icon" type="image/png" href="97799.png">
     <link rel="apple-touch-icon" href="97799.png">
-    <!-- Gunakan SheetJS v0.20.3 agar pembacaan XML LibreOffice (.ods) & Excel (.xlsx) 100% identik -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <style>
         body {
@@ -80,9 +79,11 @@
             text-align: left;
         }
         th {
-            background-color: #34495e;
+            background-color: #1a237e; /* Diperbarui menggunakan warna Navy Blue presisi */
             color: white;
             white-space: nowrap;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: bold;
         }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .high-reject { color: #e74c3c; font-weight: bold; }
@@ -105,12 +106,12 @@
     <div class="upload-section">
         <div class="file-box">
             <label for="filePilihan">Upload File Reject PILIHAN</label>
-            <span class="file-hint">Format didukung: Excel (.xlsx, .xls) & LibreOffice (.ods)</span>
+            <span class="file-hint">Format didukung: Excel (.xlsx) & LibreOffice (.ods)</span>
             <input type="file" id="filePilihan" accept=".xlsx, .xls, .ods">
         </div>
         <div class="file-box">
             <label for="fileProses">Upload File Reject PROSES</label>
-            <span class="file-hint">Format didukung: Excel (.xlsx, .xls) & LibreOffice (.ods)</span>
+            <span class="file-hint">Format didukung: Excel (.xlsx) & LibreOffice (.ods)</span>
             <input type="file" id="fileProses" accept=".xlsx, .xls, .ods">
         </div>
     </div>
@@ -122,15 +123,8 @@
 
 <script>
     const CUSTOM_ORDER = [
-        "LIPSTICK",
-        "COMPACT",
-        "POWDER",
-        "JAR",
-        "PENCIL UNIT",
-        "MASCARA/EYELINER",
-        "LIPGLOSS",
-        "LIPBALM",
-        "COVER"
+        "LIPSTICK", "COMPACT", "POWDER", "JAR", "PENCIL UNIT", 
+        "MASCARA/EYELINER", "LIPGLOSS", "LIPBALM", "COVER"
     ];
 
     function getSortIndex(type) {
@@ -138,7 +132,6 @@
         return idx === -1 ? 999 : idx;
     }
 
-    // Pastikan SheetJS v0.20.3 aktif (mengatasi bug .ods jika di aplikasi utama masih termuat v0.18.5)
     function ensureModernXLSX() {
         return new Promise((resolve, reject) => {
             if (typeof XLSX !== 'undefined' && XLSX.version && !XLSX.version.startsWith('0.18')) {
@@ -156,81 +149,38 @@
         });
     }
 
-    // Standarisasi Tipe Produk + Deteksi Kontekstual Pencil Unit
     function cleanProductType(rawType, rawName, sectionHint) {
         let t = String(rawType || '').toUpperCase().replace(/\s+/g, ' ').trim();
         let nameUpper = String(rawName || '').toUpperCase().trim();
 
-        // 1. Kunci sebagai PENCIL UNIT jika tertulis Pencil, berada di sub-tabel Pencil Unit, atau kode produk seri 51xx
-        if (t.includes('PENCIL') || t.includes('PENSIL') || 
-            sectionHint === 'PENCIL UNIT' || 
-            /^51\d{2}/.test(nameUpper)) {
+        if (t.includes('PENCIL') || t.includes('PENSIL') || sectionHint === 'PENCIL UNIT' || /^51\d{2}/.test(nameUpper)) {
             return 'PENCIL UNIT';
         }
-
         if (!t) return '';
-
-        // 2. Deteksi segala variasi typo Mascara / Eyeliner
-        if (t.includes('MASC') || t.includes('MASAC') || t.includes('MSCR') || 
-            t.includes('EYEL') || t.includes('EYE L') || t.includes('LINER') || 
-            t.startsWith('MAS')) {
-            return 'MASCARA/EYELINER';
-        }
-
-        // 3. Deteksi Lipstick
-        if (t.includes('LIPST') || t.includes('LIP ST') || t.includes('LIPT') || t.includes('LPST')) {
-            return 'LIPSTICK';
-        }
-
-        // 4. Deteksi Compact
-        if (t.includes('COMP') || t.includes('COMAP') || t.includes('CMP') || t.includes('KOMP')) {
-            return 'COMPACT';
-        }
-
-        // 5. Deteksi Powder
-        if (t.includes('POWD') || t.includes('PWDR') || t.includes('POWR')) {
-            return 'POWDER';
-        }
-
-        // 6. Deteksi Jar
-        if (t.startsWith('JA') || t === 'JR') {
-            return 'JAR';
-        }
-
-        // 7. Deteksi Lipgloss
-        if (t.includes('GLOS') || t.includes('GLSS') || t.includes('LIPG')) {
-            return 'LIPGLOSS';
-        }
-
-        // 8. Deteksi Lipbalm
-        if (t.includes('BALM') || t.includes('BLAM') || t.includes('BLM') || t.includes('LIPB')) {
-            return 'LIPBALM';
-        }
-
-        // 9. Deteksi Cover
-        if (t.includes('COVER') || t.includes('CVR')) {
-            return 'COVER';
-        }
-
+        if (t.includes('MASC') || t.includes('MASAC') || t.includes('MSCR') || t.includes('EYEL') || t.includes('EYE L') || t.includes('LINER') || t.startsWith('MAS')) return 'MASCARA/EYELINER';
+        if (t.includes('LIPST') || t.includes('LIP ST') || t.includes('LIPT') || t.includes('LPST')) return 'LIPSTICK';
+        if (t.includes('COMP') || t.includes('COMAP') || t.includes('CMP') || t.includes('KOMP')) return 'COMPACT';
+        if (t.includes('POWD') || t.includes('PWDR') || t.includes('POWR')) return 'POWDER';
+        if (t.startsWith('JA') || t === 'JR') return 'JAR';
+        if (t.includes('GLOS') || t.includes('GLSS') || t.includes('LIPG')) return 'LIPGLOSS';
+        if (t.includes('BALM') || t.includes('BLAM') || t.includes('BLM') || t.includes('LIPB')) return 'LIPBALM';
+        if (t.includes('COVER') || t.includes('CVR')) return 'COVER';
+        
         return t;
     }
 
     function cleanProductName(rawName, fallbackJobOrder) {
         let cleaned = String(rawName || '').replace(/\s+/g, ' ').trim();
-        if (!cleaned && fallbackJobOrder) {
-            return "(Tanpa Nama - JO: " + String(fallbackJobOrder).trim() + ")";
-        }
+        if (!cleaned && fallbackJobOrder) return "(Tanpa Nama - JO: " + String(fallbackJobOrder).trim() + ")";
         return cleaned || "Tanpa Nama Produk";
     }
 
-    // Pembaca nilai angka yang aman untuk format Indonesia/Inggris di .ods maupun .xlsx
     function parseNumericCell(cellVal) {
         if (typeof cellVal === 'number') return isNaN(cellVal) ? 0 : cellVal;
         if (cellVal === null || cellVal === undefined || cellVal === '') return 0;
         let str = String(cellVal).trim();
         if (!str || str.includes('%')) return 0;
 
-        // Jika format seperti "25.000" (titik sebagai ribuan) vs "25,000" (koma sebagai ribuan)
         if (/^\d{1,3}(\.\d{3})+$/.test(str)) {
             str = str.replace(/\./g, '');
         } else {
@@ -240,44 +190,36 @@
         return isNaN(parsed) ? 0 : parsed;
     }
 
-    // Membaca matriks sheet langsung berdasarkan koordinat sel agar tidak terdampak bug array .ods
-    function sheetToDenseMatrix(sheet, maxRows = 500, maxCols = 32) {
-        if (!sheet || !sheet['!ref']) return [];
-        const range = XLSX.utils.decode_range(sheet['!ref']);
-        const endRow = Math.min(range.e.r, maxRows);
-        const endCol = Math.min(range.e.c, maxCols);
-
-        const matrix = [];
-        for (let r = 0; r <= endRow; r++) {
-            const row = new Array(endCol + 1).fill("");
-            for (let c = 0; c <= endCol; c++) {
-                const cellAddress = XLSX.utils.encode_cell({ r, c });
-                const cell = sheet[cellAddress];
-                if (cell !== undefined && cell !== null) {
-                    // Prioritaskan nilai numerik/raw (cell.v) dibanding teks terformat
-                    if (cell.v !== undefined && cell.v !== null) {
-                        row[c] = cell.v;
-                    } else if (cell.w !== undefined && cell.w !== null) {
-                        row[c] = cell.w;
-                    }
-                }
-            }
-            matrix.push(row);
+    // [PEMBARUAN INTI 1] Mengganti kalkulasi absolut yang bermasalah di LibreOffice
+    // Menggunakan fungsi bawaan SheetJS untuk generate array 2D yang aman dari kompresi sel kosong
+    function sheetToDenseMatrix(sheet) {
+        if (!sheet) return [];
+        
+        // Memaksa penentuan ulang rentang matriks jika data metadata LibreOffice korup
+        if (!sheet['!ref']) {
+            const keys = Object.keys(sheet).filter(k => !k.startsWith('!'));
+            if (keys.length === 0) return [];
+            sheet['!ref'] = XLSX.utils.encode_range(
+                XLSX.utils.decode_cell(keys[0]), 
+                XLSX.utils.decode_cell(keys[keys.length - 1])
+            );
         }
-        return matrix;
+
+        // Mengekstrak seluruh sheet ke dalam array 2D yang bersih
+        return XLSX.utils.sheet_to_json(sheet, { 
+            header: 1, 
+            defval: "", 
+            blankrows: true 
+        });
     }
 
-    // Deteksi apakah blok sub-tabel saat ini adalah blok khusus PENCIL UNIT
     function detectSectionHint(matrix, headerRowIdx, maxRow) {
         for (let r = headerRowIdx + 1; r < Math.min(headerRowIdx + 20, maxRow); r++) {
             const rowStr = (matrix[r] || []).map(x => String(x || '').toUpperCase()).join(' ');
-            // Jika sub-header memiliki komponen NOZZLE atau baris TOTAL menyebut PENCIL UNIT
             if (rowStr.includes('NOZZLE') || rowStr.includes('PENCIL UNIT') || rowStr.includes('PENCILUNIT')) {
                 return 'PENCIL UNIT';
             }
-            if (rowStr.includes('TYPE') && rowStr.includes('QTY ORDER')) {
-                break; // Sudah masuk ke sub-tabel berikutnya
-            }
+            if (rowStr.includes('TYPE') && rowStr.includes('QTY ORDER')) break; 
         }
         return '';
     }
@@ -290,7 +232,7 @@
         const fileProses = document.getElementById('fileProses').files[0];
 
         if (!filePilihan && !fileProses) {
-            outputArea.innerHTML = `<div class="error-box">Harap pilih minimal satu file terlebih dahulu (.xlsx, .xls, atau .ods).</div>`;
+            outputArea.innerHTML = `<div class="error-box">Harap pilih minimal satu file terlebih dahulu (.xlsx atau .ods).</div>`;
             return;
         }
 
@@ -315,18 +257,20 @@
             const reader = new FileReader();
 
             reader.onerror = function() {
-                reject(`File <strong>"${file.name}"</strong> tidak dapat dibaca oleh browser. Pastikan file tidak sedang dikunci/terbuka di program Excel atau LibreOffice.`);
+                reject(`File <strong>"${file.name}"</strong> tidak dapat dibaca oleh browser.`);
             };
 
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array', cellFormula: false, cellNF: false });
+                    // [PEMBARUAN INTI 2] Menambahkan parameter `raw: true` 
+                    // Menginstruksikan sistem untuk membaca angka mentah agar tidak terpengaruh format teks LibreOffice
+                    const workbook = XLSX.read(data, { type: 'array', raw: true, cellFormula: false });
                     let rawData = [];
 
                     workbook.SheetNames.forEach(sheetName => {
                         const sheet = workbook.Sheets[sheetName];
-                        const matrix = sheetToDenseMatrix(sheet, 500, 32);
+                        const matrix = sheetToDenseMatrix(sheet);
                         if (matrix.length === 0) return;
 
                         let typeIdx = -1, nameIdx = -1, jobIdx = -1, orderIdx = -1;
@@ -336,7 +280,6 @@
                             const row = matrix[r];
                             const upperRow = row.map(c => String(c || '').replace(/\s+/g, ' ').trim().toUpperCase());
 
-                            // Deteksi setiap kali bertemu baris Header Tabel / Sub-Tabel
                             if (upperRow.includes('TYPE') && upperRow.includes('QTY ORDER')) {
                                 typeIdx  = upperRow.indexOf('TYPE');
                                 nameIdx  = upperRow.indexOf('NAMA PRODUK');
@@ -354,33 +297,25 @@
                             const rawType  = String(row[typeIdx] || '').trim();
                             const rawOrder = row[orderIdx];
 
-                            // Abaikan baris sub-header atau baris TOTAL
                             if (!rawType && !rawName) continue;
                             if (firstCol.includes('TOTAL') || firstCol.includes('TOTA ') ||
                                 rawName.toUpperCase().includes('TOTAL') || rawType.toUpperCase().includes('TOTAL')) {
                                 continue;
                             }
                             if (upperRow[typeIdx] === 'TYPE' || upperRow[orderIdx] === 'QTY ORDER') continue;
-
-                            // Abaikan baris template kosong yang tidak punya Nama Produk sekaligus tidak punya Job Order
                             if (!rawName && !rawJob) continue;
 
                             const order = parseNumericCell(rawOrder);
                             if (order <= 0) continue;
 
-                            // Hitung Total Reject (Qty) berdasarkan struktur kolom di kanan QTY ORDER
                             let rejectQty = 0;
                             if (jenis === 'PROSES') {
-                                // Reject Proses selalu berada tepat 1 kolom di kanan QTY ORDER (Kolom H)
                                 rejectQty = parseNumericCell(row[orderIdx + 1]);
                             } else {
-                                // Reject Pilihan memiliki 9 pasang komponen (QTY, %) di kanan QTY ORDER:
-                                // Indeks relatif: +1 (H), +3 (J), +5 (L), +7 (N), +9 (P), +11 (R), +13 (T), +15 (V), +17 (X)
                                 for (let k = 0; k < 10; k++) {
                                     let colQty = orderIdx + 1 + (k * 2);
                                     if (colQty < row.length) {
                                         let val = parseNumericCell(row[colQty]);
-                                        // Pastikan yang dijumlahkan adalah angka bulat/kuantitas reject (bukan desimal persentase)
                                         if (val > 0) rejectQty += Math.round(val);
                                     }
                                 }
@@ -403,7 +338,6 @@
                     reject(`Terjadi kesalahan struktur pada file <strong>"${file.name}"</strong>: ${error.message || error}`);
                 }
             };
-
             reader.readAsArrayBuffer(file);
         });
     }
@@ -430,7 +364,6 @@
             detailMap[key].reject += row.reject;
         });
 
-        // 1. Render Tabel Keseluruhan per Tipe Produk
         let html = `<h2>Laporan Reject ${jenis} <span style="font-size:14px; font-weight:normal; color:#7f8c8d;">(${fileName})</span></h2>`;
         html += `<h3>1. Keseluruhan Reject per Tipe Produk</h3>`;
         html += `<table>
@@ -458,7 +391,6 @@
         });
         html += `</tbody></table>`;
 
-        // 2. Render Tabel Item Produk Reject Tertinggi (>= 2.5%)
         html += `<h3>2. Reject ${jenis} Tertinggi (&ge; 2,5%) per Tipe Produk</h3>`;
         
         let detailsArr = Object.values(detailMap).map(d => {
