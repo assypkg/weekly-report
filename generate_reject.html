@@ -8,9 +8,9 @@
     <link rel="icon" type="image/png" href="97799.png">
     <link rel="apple-touch-icon" href="97799.png">
 
-    <!-- Pustaka Utama SheetJS + Fallback CDN jika diblokir jaringan -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" 
-            onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';"></script>
+    <!-- Pustaka SheetJS v0.20.3 (Mendukung penuh struktur Merge Cell LibreOffice .ods) + Fallback CDN -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" 
+            onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -140,14 +140,56 @@
         return idx === -1 ? 999 : idx;
     }
 
+    // Filter koreksi typo berbasis pola suku kata agar 100% masuk ke 9 kategori baku
     function cleanProductType(rawType) {
         let t = String(rawType || '').toUpperCase().replace(/\s+/g, ' ').trim();
-        if (t === 'COMAPCT') return 'COMPACT';
-        if (t === 'LIPBLAM') return 'LIPBALM';
-        if (t === 'LIPGLOS') return 'LIPGLOSS';
-        if (t === 'LIPSTIK') return 'LIPSTICK';
-        if (t === 'MASCARA' || t === 'MASACARA' || t === 'MASCRA' || t === 'EYELINER') return 'MASCARA/EYELINER';
-        if (t === 'PENCIL') return 'PENCIL UNIT';
+        if (!t) return '';
+
+        // 1. Deteksi Pencil Unit lebih dulu (jika tertulis "EYELINER - PENCIL UNIT" atau "PENCIL")
+        if (t.includes('PENCIL') || t.includes('PENSIL')) return 'PENCIL UNIT';
+
+        // 2. Deteksi segala variasi typo Mascara / Eyeliner (termasuk MASACRA, MASACARA, MASCRA, dll.)
+        if (t.includes('MASC') || t.includes('MASAC') || t.includes('MSCR') || 
+            t.includes('EYEL') || t.includes('EYE L') || t.includes('LINER') || 
+            t.startsWith('MAS')) {
+            return 'MASCARA/EYELINER';
+        }
+
+        // 3. Deteksi Lipstick (LIPSTICK, LIPSTIK, LIPTIK, dll.)
+        if (t.includes('LIPST') || t.includes('LIP ST') || t.includes('LIPT') || t.includes('LPST')) {
+            return 'LIPSTICK';
+        }
+
+        // 4. Deteksi Compact (COMPACT, COMAPCT, COMPAC, dll.)
+        if (t.includes('COMP') || t.includes('COMAP') || t.includes('CMP') || t.includes('KOMP')) {
+            return 'COMPACT';
+        }
+
+        // 5. Deteksi Powder (POWDER, POWDR, PWDR, dll.)
+        if (t.includes('POWD') || t.includes('PWDR') || t.includes('POWR')) {
+            return 'POWDER';
+        }
+
+        // 6. Deteksi Jar (JAR, JAE, JR, dll.)
+        if (t.startsWith('JA') || t === 'JR') {
+            return 'JAR';
+        }
+
+        // 7. Deteksi Lipgloss (LIPGLOSS, LIPGLOS, LIPGGLOSS, dll.)
+        if (t.includes('GLOS') || t.includes('GLSS') || t.includes('LIPG')) {
+            return 'LIPGLOSS';
+        }
+
+        // 8. Deteksi Lipbalm (LIPBALM, LIPBLAM, LIPBLM, dll.)
+        if (t.includes('BALM') || t.includes('BLAM') || t.includes('BLM') || t.includes('LIPB')) {
+            return 'LIPBALM';
+        }
+
+        // 9. Deteksi Cover
+        if (t.includes('COVER') || t.includes('CVR')) {
+            return 'COVER';
+        }
+
         return t;
     }
 
@@ -159,12 +201,22 @@
         return cleaned || "Tanpa Nama Produk";
     }
 
+    function parseNumericCell(cellVal) {
+        if (typeof cellVal === 'number') return isNaN(cellVal) ? 0 : cellVal;
+        if (cellVal === null || cellVal === undefined || cellVal === '') return 0;
+        let str = String(cellVal).trim();
+        if (!str) return 0;
+        // Hilangkan pemisah ribuan koma jika berupa string angka
+        let parsed = parseFloat(str.replace(/,/g, ''));
+        return isNaN(parsed) ? 0 : parsed;
+    }
+
     function generateLaporan() {
         const outputArea = document.getElementById('outputArea');
         outputArea.style.display = 'block';
 
         if (typeof XLSX === 'undefined') {
-            outputArea.innerHTML = `<div class="error-box"><strong>Gagal Memuat Komponen Pembaca Excel:</strong> Pastikan komputer Anda terhubung ke internet saat membuka halaman ini agar pustaka SheetJS dapat dimuat.</div>`;
+            outputArea.innerHTML = `<div class="error-box"><strong>Gagal Memuat Komponen Pembaca Excel/ODS:</strong> Pastikan komputer Anda terhubung ke internet saat membuka halaman ini.</div>`;
             return;
         }
 
@@ -192,13 +244,45 @@
         }, 50);
     }
 
+    // Penentuan kolom QTY Reject yang tahan terhadap bug pergeseran merge-cell pada file .ods
+    function detectQtyColumns(json, headerRowIdx, orderIdx, jenis) {
+        if (jenis === 'PROSES') {
+            // Pada laporan Reject Proses, kolom QTY Bongkaran selalu tepat 1 kolom di kanan QTY ORDER (Kolom H)
+            return [orderIdx + 1];
+        }
+
+        let maxPairs = 0;
+        for (let offset = 1; offset <= 4; offset++) {
+            if (headerRowIdx + offset >= json.length) break;
+            const subRow = (json[headerRowIdx + offset] || []).map(c => String(c || '').trim().toUpperCase());
+            
+            let qtyCount = 0;
+            let pctCount = 0;
+            for (let c = 0; c < subRow.length; c++) {
+                if (subRow[c] === 'QTY') qtyCount++;
+                if (subRow[c] === '%') pctCount++;
+            }
+            let pairsInRow = Math.max(qtyCount, pctCount);
+            if (pairsInRow > maxPairs) maxPairs = pairsInRow;
+        }
+
+        // Default Pilihan memiliki 9 pasang komponen (QTY & %) di kanan QTY ORDER
+        if (maxPairs === 0) maxPairs = 9;
+
+        let cols = [];
+        for (let k = 0; k < maxPairs; k++) {
+            cols.push(orderIdx + 1 + (k * 2));
+        }
+        return cols;
+    }
+
     function processFile(file, jenis) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
 
             reader.onerror = function() {
                 reject(`File <strong>"${file.name}"</strong> tidak dapat dibaca oleh browser. <br>
-                        <em>Solusi: Tutup terlebih dahulu file "${file.name}" jika sedang terbuka di aplikasi Microsoft Excel, lalu klik tombol Browse untuk memilih ulang file tersebut.</em>`);
+                        <em>Solusi: Tutup terlebih dahulu file "${file.name}" jika sedang terbuka di Excel/LibreOffice Calc, lalu pilih ulang file tersebut.</em>`);
             };
 
             reader.onload = function(e) {
@@ -211,7 +295,6 @@
                         const sheet = workbook.Sheets[sheetName];
                         if (!sheet || !sheet['!ref']) return;
 
-                        // Pangkas kolom "hantu" XFD menjadi maksimal 40 kolom (Kolom A - AN)
                         let range = XLSX.utils.decode_range(sheet['!ref']);
                         if (range.e.c > 40) range.e.c = 40;
                         if (range.e.r > 3000) range.e.r = 3000;
@@ -232,20 +315,12 @@
 
                         if (startRow !== -1) {
                             const headerRow = (json[startRow] || []).map(c => String(c).replace(/\s+/g, ' ').trim().toUpperCase());
-                            const typeIdx = headerRow.indexOf('TYPE');
-                            const nameIdx = headerRow.indexOf('NAMA PRODUK');
-                            const jobIdx  = headerRow.indexOf('JOB ORDER');
+                            const typeIdx  = headerRow.indexOf('TYPE');
+                            const nameIdx  = headerRow.indexOf('NAMA PRODUK');
+                            const jobIdx   = headerRow.indexOf('JOB ORDER');
                             const orderIdx = headerRow.indexOf('QTY ORDER');
 
-                            let qtyCols = [];
-                            for (let offset = 1; offset <= 4; offset++) {
-                                if (startRow + offset >= json.length) break;
-                                const subRow = (json[startRow + offset] || []).map(c => String(c).trim().toUpperCase());
-                                for (let c = orderIdx + 1; c < subRow.length; c++) {
-                                    if (subRow[c] === 'QTY') qtyCols.push(c);
-                                }
-                                if (qtyCols.length > 0) break;
-                            }
+                            let qtyCols = detectQtyColumns(json, startRow, orderIdx, jenis);
 
                             for (let r = startRow + 1; r < json.length; r++) {
                                 const row = json[r] || [];
@@ -254,18 +329,24 @@
                                 const rawType  = String(row[typeIdx] || '').trim();
                                 const rawOrder = row[orderIdx];
 
+                                // Jika bertemu baris header sub-tabel berikutnya di tengah sheet, perbarui qtyCols
+                                if (rawType.toUpperCase() === 'TYPE' && String(rawOrder).toUpperCase().includes('QTY ORDER')) {
+                                    qtyCols = detectQtyColumns(json, r, orderIdx, jenis);
+                                    continue;
+                                }
+
                                 if (!rawType || rawOrder === '' || rawOrder === null || rawOrder === undefined) continue;
-                                if (firstCol.includes('TOTAL') || rawName.toUpperCase().includes('TOTAL') || rawType.toUpperCase().includes('TOTAL')) continue;
+                                if (firstCol.includes('TOTAL') || firstCol.includes('TOTA ') || 
+                                    rawName.toUpperCase().includes('TOTAL') || rawType.toUpperCase().includes('TOTAL')) continue;
                                 if (rawType.toUpperCase() === 'TYPE') continue;
 
-                                let order = typeof rawOrder === 'number' ? rawOrder : parseFloat(String(rawOrder).replace(/,/g, ''));
-                                if (isNaN(order) || order <= 0) continue;
+                                let order = parseNumericCell(rawOrder);
+                                if (order <= 0) continue;
 
                                 let rejectQty = 0;
                                 qtyCols.forEach(c => {
-                                    let cellVal = row[c];
-                                    let val = typeof cellVal === 'number' ? cellVal : parseFloat(String(cellVal).replace(/,/g, ''));
-                                    if (!isNaN(val) && val > 0) rejectQty += val;
+                                    let val = parseNumericCell(row[c]);
+                                    if (val > 0) rejectQty += val;
                                 });
 
                                 rawData.push({
@@ -310,7 +391,7 @@
             detailMap[key].reject += row.reject;
         });
 
-        // 1. Render Tabel Keseluruhan per Tipe Produk (Tanpa Kolom No)
+        // 1. Render Tabel Keseluruhan per Tipe Produk
         let html = `<h2>Laporan Reject ${jenis} <span style="font-size:14px; font-weight:normal; color:#7f8c8d;">(${fileName})</span></h2>`;
         html += `<h3>1. Keseluruhan Reject per Tipe Produk</h3>`;
         html += `<table>
@@ -338,7 +419,7 @@
         });
         html += `</tbody></table>`;
 
-        // 2. Render Tabel Item Produk Reject Tertinggi (>= 2.5%) (Tanpa Kolom No)
+        // 2. Render Tabel Item Produk Reject Tertinggi (>= 2.5%)
         html += `<h3>2. Reject ${jenis} Tertinggi (&ge; 2,5%) per Tipe Produk</h3>`;
         
         let detailsArr = Object.values(detailMap).map(d => {
