@@ -7,10 +7,8 @@
     <!-- Favicon Standar & Favicon Khusus HP -->
     <link rel="icon" type="image/png" href="97799.png">
     <link rel="apple-touch-icon" href="97799.png">
-
-    <!-- Pustaka SheetJS v0.20.3 (Mendukung penuh struktur Merge Cell LibreOffice .ods) + Fallback CDN -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" 
-            onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';"></script>
+    <!-- Gunakan SheetJS v0.20.3 agar pembacaan XML LibreOffice (.ods) & Excel (.xlsx) 100% identik -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -140,47 +138,71 @@
         return idx === -1 ? 999 : idx;
     }
 
-    // Filter koreksi typo berbasis pola suku kata agar 100% masuk ke 9 kategori baku
-    function cleanProductType(rawType) {
+    // Pastikan SheetJS v0.20.3 aktif (mengatasi bug .ods jika di aplikasi utama masih termuat v0.18.5)
+    function ensureModernXLSX() {
+        return new Promise((resolve, reject) => {
+            if (typeof XLSX !== 'undefined' && XLSX.version && !XLSX.version.startsWith('0.18')) {
+                resolve();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+            script.onload = () => resolve();
+            script.onerror = () => {
+                if (typeof XLSX !== 'undefined') resolve();
+                else reject('Gagal memuat pustaka pembaca Excel/ODS.');
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    // Standarisasi Tipe Produk + Deteksi Kontekstual Pencil Unit
+    function cleanProductType(rawType, rawName, sectionHint) {
         let t = String(rawType || '').toUpperCase().replace(/\s+/g, ' ').trim();
+        let nameUpper = String(rawName || '').toUpperCase().trim();
+
+        // 1. Kunci sebagai PENCIL UNIT jika tertulis Pencil, berada di sub-tabel Pencil Unit, atau kode produk seri 51xx
+        if (t.includes('PENCIL') || t.includes('PENSIL') || 
+            sectionHint === 'PENCIL UNIT' || 
+            /^51\d{2}/.test(nameUpper)) {
+            return 'PENCIL UNIT';
+        }
+
         if (!t) return '';
 
-        // 1. Deteksi Pencil Unit lebih dulu (jika tertulis "EYELINER - PENCIL UNIT" atau "PENCIL")
-        if (t.includes('PENCIL') || t.includes('PENSIL')) return 'PENCIL UNIT';
-
-        // 2. Deteksi segala variasi typo Mascara / Eyeliner (termasuk MASACRA, MASACARA, MASCRA, dll.)
+        // 2. Deteksi segala variasi typo Mascara / Eyeliner
         if (t.includes('MASC') || t.includes('MASAC') || t.includes('MSCR') || 
             t.includes('EYEL') || t.includes('EYE L') || t.includes('LINER') || 
             t.startsWith('MAS')) {
             return 'MASCARA/EYELINER';
         }
 
-        // 3. Deteksi Lipstick (LIPSTICK, LIPSTIK, LIPTIK, dll.)
+        // 3. Deteksi Lipstick
         if (t.includes('LIPST') || t.includes('LIP ST') || t.includes('LIPT') || t.includes('LPST')) {
             return 'LIPSTICK';
         }
 
-        // 4. Deteksi Compact (COMPACT, COMAPCT, COMPAC, dll.)
+        // 4. Deteksi Compact
         if (t.includes('COMP') || t.includes('COMAP') || t.includes('CMP') || t.includes('KOMP')) {
             return 'COMPACT';
         }
 
-        // 5. Deteksi Powder (POWDER, POWDR, PWDR, dll.)
+        // 5. Deteksi Powder
         if (t.includes('POWD') || t.includes('PWDR') || t.includes('POWR')) {
             return 'POWDER';
         }
 
-        // 6. Deteksi Jar (JAR, JAE, JR, dll.)
+        // 6. Deteksi Jar
         if (t.startsWith('JA') || t === 'JR') {
             return 'JAR';
         }
 
-        // 7. Deteksi Lipgloss (LIPGLOSS, LIPGLOS, LIPGGLOSS, dll.)
+        // 7. Deteksi Lipgloss
         if (t.includes('GLOS') || t.includes('GLSS') || t.includes('LIPG')) {
             return 'LIPGLOSS';
         }
 
-        // 8. Deteksi Lipbalm (LIPBALM, LIPBLAM, LIPBLM, dll.)
+        // 8. Deteksi Lipbalm
         if (t.includes('BALM') || t.includes('BLAM') || t.includes('BLM') || t.includes('LIPB')) {
             return 'LIPBALM';
         }
@@ -201,24 +223,68 @@
         return cleaned || "Tanpa Nama Produk";
     }
 
+    // Pembaca nilai angka yang aman untuk format Indonesia/Inggris di .ods maupun .xlsx
     function parseNumericCell(cellVal) {
         if (typeof cellVal === 'number') return isNaN(cellVal) ? 0 : cellVal;
         if (cellVal === null || cellVal === undefined || cellVal === '') return 0;
         let str = String(cellVal).trim();
-        if (!str) return 0;
-        // Hilangkan pemisah ribuan koma jika berupa string angka
-        let parsed = parseFloat(str.replace(/,/g, ''));
+        if (!str || str.includes('%')) return 0;
+
+        // Jika format seperti "25.000" (titik sebagai ribuan) vs "25,000" (koma sebagai ribuan)
+        if (/^\d{1,3}(\.\d{3})+$/.test(str)) {
+            str = str.replace(/\./g, '');
+        } else {
+            str = str.replace(/,/g, '');
+        }
+        let parsed = parseFloat(str);
         return isNaN(parsed) ? 0 : parsed;
     }
 
-    function generateLaporan() {
+    // Membaca matriks sheet langsung berdasarkan koordinat sel agar tidak terdampak bug array .ods
+    function sheetToDenseMatrix(sheet, maxRows = 500, maxCols = 32) {
+        if (!sheet || !sheet['!ref']) return [];
+        const range = XLSX.utils.decode_range(sheet['!ref']);
+        const endRow = Math.min(range.e.r, maxRows);
+        const endCol = Math.min(range.e.c, maxCols);
+
+        const matrix = [];
+        for (let r = 0; r <= endRow; r++) {
+            const row = new Array(endCol + 1).fill("");
+            for (let c = 0; c <= endCol; c++) {
+                const cellAddress = XLSX.utils.encode_cell({ r, c });
+                const cell = sheet[cellAddress];
+                if (cell !== undefined && cell !== null) {
+                    // Prioritaskan nilai numerik/raw (cell.v) dibanding teks terformat
+                    if (cell.v !== undefined && cell.v !== null) {
+                        row[c] = cell.v;
+                    } else if (cell.w !== undefined && cell.w !== null) {
+                        row[c] = cell.w;
+                    }
+                }
+            }
+            matrix.push(row);
+        }
+        return matrix;
+    }
+
+    // Deteksi apakah blok sub-tabel saat ini adalah blok khusus PENCIL UNIT
+    function detectSectionHint(matrix, headerRowIdx, maxRow) {
+        for (let r = headerRowIdx + 1; r < Math.min(headerRowIdx + 20, maxRow); r++) {
+            const rowStr = (matrix[r] || []).map(x => String(x || '').toUpperCase()).join(' ');
+            // Jika sub-header memiliki komponen NOZZLE atau baris TOTAL menyebut PENCIL UNIT
+            if (rowStr.includes('NOZZLE') || rowStr.includes('PENCIL UNIT') || rowStr.includes('PENCILUNIT')) {
+                return 'PENCIL UNIT';
+            }
+            if (rowStr.includes('TYPE') && rowStr.includes('QTY ORDER')) {
+                break; // Sudah masuk ke sub-tabel berikutnya
+            }
+        }
+        return '';
+    }
+
+    async function generateLaporan() {
         const outputArea = document.getElementById('outputArea');
         outputArea.style.display = 'block';
-
-        if (typeof XLSX === 'undefined') {
-            outputArea.innerHTML = `<div class="error-box"><strong>Gagal Memuat Komponen Pembaca Excel/ODS:</strong> Pastikan komputer Anda terhubung ke internet saat membuka halaman ini.</div>`;
-            return;
-        }
 
         const filePilihan = document.getElementById('filePilihan').files[0];
         const fileProses = document.getElementById('fileProses').files[0];
@@ -230,50 +296,18 @@
 
         outputArea.innerHTML = '<h2>Memproses data...</h2>';
 
-        setTimeout(() => {
+        try {
+            await ensureModernXLSX();
             let promises = [];
             if (filePilihan) promises.push(processFile(filePilihan, 'PILIHAN'));
             if (fileProses) promises.push(processFile(fileProses, 'PROSES'));
 
-            Promise.all(promises).then(results => {
-                outputArea.innerHTML = '';
-                results.forEach(res => renderReport(res.jenis, res.fileName, res.data));
-            }).catch(err => {
-                outputArea.innerHTML = `<div class="error-box"><strong>Gagal Memproses File:</strong><br>${err}</div>`;
-            });
-        }, 50);
-    }
-
-    // Penentuan kolom QTY Reject yang tahan terhadap bug pergeseran merge-cell pada file .ods
-    function detectQtyColumns(json, headerRowIdx, orderIdx, jenis) {
-        if (jenis === 'PROSES') {
-            // Pada laporan Reject Proses, kolom QTY Bongkaran selalu tepat 1 kolom di kanan QTY ORDER (Kolom H)
-            return [orderIdx + 1];
+            const results = await Promise.all(promises);
+            outputArea.innerHTML = '';
+            results.forEach(res => renderReport(res.jenis, res.fileName, res.data));
+        } catch (err) {
+            outputArea.innerHTML = `<div class="error-box"><strong>Gagal Memproses File:</strong><br>${err}</div>`;
         }
-
-        let maxPairs = 0;
-        for (let offset = 1; offset <= 4; offset++) {
-            if (headerRowIdx + offset >= json.length) break;
-            const subRow = (json[headerRowIdx + offset] || []).map(c => String(c || '').trim().toUpperCase());
-            
-            let qtyCount = 0;
-            let pctCount = 0;
-            for (let c = 0; c < subRow.length; c++) {
-                if (subRow[c] === 'QTY') qtyCount++;
-                if (subRow[c] === '%') pctCount++;
-            }
-            let pairsInRow = Math.max(qtyCount, pctCount);
-            if (pairsInRow > maxPairs) maxPairs = pairsInRow;
-        }
-
-        // Default Pilihan memiliki 9 pasang komponen (QTY & %) di kanan QTY ORDER
-        if (maxPairs === 0) maxPairs = 9;
-
-        let cols = [];
-        for (let k = 0; k < maxPairs; k++) {
-            cols.push(orderIdx + 1 + (k * 2));
-        }
-        return cols;
     }
 
     function processFile(file, jenis) {
@@ -281,81 +315,86 @@
             const reader = new FileReader();
 
             reader.onerror = function() {
-                reject(`File <strong>"${file.name}"</strong> tidak dapat dibaca oleh browser. <br>
-                        <em>Solusi: Tutup terlebih dahulu file "${file.name}" jika sedang terbuka di Excel/LibreOffice Calc, lalu pilih ulang file tersebut.</em>`);
+                reject(`File <strong>"${file.name}"</strong> tidak dapat dibaca oleh browser. Pastikan file tidak sedang dikunci/terbuka di program Excel atau LibreOffice.`);
             };
 
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array', sheetRows: 3000 });
+                    const workbook = XLSX.read(data, { type: 'array', cellFormula: false, cellNF: false });
                     let rawData = [];
 
                     workbook.SheetNames.forEach(sheetName => {
                         const sheet = workbook.Sheets[sheetName];
-                        if (!sheet || !sheet['!ref']) return;
+                        const matrix = sheetToDenseMatrix(sheet, 500, 32);
+                        if (matrix.length === 0) return;
 
-                        let range = XLSX.utils.decode_range(sheet['!ref']);
-                        if (range.e.c > 40) range.e.c = 40;
-                        if (range.e.r > 3000) range.e.r = 3000;
-                        sheet['!ref'] = XLSX.utils.encode_range(range);
+                        let typeIdx = -1, nameIdx = -1, jobIdx = -1, orderIdx = -1;
+                        let currentSectionHint = '';
 
-                        const json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-                        
-                        let startRow = -1;
-                        const maxScanHeader = Math.min(json.length, 30);
-                        for (let i = 0; i < maxScanHeader; i++) {
-                            const row = json[i] || [];
-                            const upperRow = row.map(cell => String(cell).replace(/\s+/g, ' ').trim().toUpperCase());
+                        for (let r = 0; r < matrix.length; r++) {
+                            const row = matrix[r];
+                            const upperRow = row.map(c => String(c || '').replace(/\s+/g, ' ').trim().toUpperCase());
+
+                            // Deteksi setiap kali bertemu baris Header Tabel / Sub-Tabel
                             if (upperRow.includes('TYPE') && upperRow.includes('QTY ORDER')) {
-                                startRow = i;
-                                break;
+                                typeIdx  = upperRow.indexOf('TYPE');
+                                nameIdx  = upperRow.indexOf('NAMA PRODUK');
+                                jobIdx   = upperRow.indexOf('JOB ORDER');
+                                orderIdx = upperRow.indexOf('QTY ORDER');
+                                currentSectionHint = detectSectionHint(matrix, r, matrix.length);
+                                continue;
                             }
-                        }
 
-                        if (startRow !== -1) {
-                            const headerRow = (json[startRow] || []).map(c => String(c).replace(/\s+/g, ' ').trim().toUpperCase());
-                            const typeIdx  = headerRow.indexOf('TYPE');
-                            const nameIdx  = headerRow.indexOf('NAMA PRODUK');
-                            const jobIdx   = headerRow.indexOf('JOB ORDER');
-                            const orderIdx = headerRow.indexOf('QTY ORDER');
+                            if (typeIdx === -1 || orderIdx === -1) continue;
 
-                            let qtyCols = detectQtyColumns(json, startRow, orderIdx, jenis);
+                            const firstCol = upperRow[0] || '';
+                            const rawName  = nameIdx !== -1 ? String(row[nameIdx] || '').trim() : '';
+                            const rawJob   = jobIdx !== -1 ? String(row[jobIdx] || '').trim() : '';
+                            const rawType  = String(row[typeIdx] || '').trim();
+                            const rawOrder = row[orderIdx];
 
-                            for (let r = startRow + 1; r < json.length; r++) {
-                                const row = json[r] || [];
-                                const firstCol = String(row[0] || '').toUpperCase();
-                                const rawName  = String(row[nameIdx] || '');
-                                const rawType  = String(row[typeIdx] || '').trim();
-                                const rawOrder = row[orderIdx];
+                            // Abaikan baris sub-header atau baris TOTAL
+                            if (!rawType && !rawName) continue;
+                            if (firstCol.includes('TOTAL') || firstCol.includes('TOTA ') ||
+                                rawName.toUpperCase().includes('TOTAL') || rawType.toUpperCase().includes('TOTAL')) {
+                                continue;
+                            }
+                            if (upperRow[typeIdx] === 'TYPE' || upperRow[orderIdx] === 'QTY ORDER') continue;
 
-                                // Jika bertemu baris header sub-tabel berikutnya di tengah sheet, perbarui qtyCols
-                                if (rawType.toUpperCase() === 'TYPE' && String(rawOrder).toUpperCase().includes('QTY ORDER')) {
-                                    qtyCols = detectQtyColumns(json, r, orderIdx, jenis);
-                                    continue;
+                            // Abaikan baris template kosong yang tidak punya Nama Produk sekaligus tidak punya Job Order
+                            if (!rawName && !rawJob) continue;
+
+                            const order = parseNumericCell(rawOrder);
+                            if (order <= 0) continue;
+
+                            // Hitung Total Reject (Qty) berdasarkan struktur kolom di kanan QTY ORDER
+                            let rejectQty = 0;
+                            if (jenis === 'PROSES') {
+                                // Reject Proses selalu berada tepat 1 kolom di kanan QTY ORDER (Kolom H)
+                                rejectQty = parseNumericCell(row[orderIdx + 1]);
+                            } else {
+                                // Reject Pilihan memiliki 9 pasang komponen (QTY, %) di kanan QTY ORDER:
+                                // Indeks relatif: +1 (H), +3 (J), +5 (L), +7 (N), +9 (P), +11 (R), +13 (T), +15 (V), +17 (X)
+                                for (let k = 0; k < 10; k++) {
+                                    let colQty = orderIdx + 1 + (k * 2);
+                                    if (colQty < row.length) {
+                                        let val = parseNumericCell(row[colQty]);
+                                        // Pastikan yang dijumlahkan adalah angka bulat/kuantitas reject (bukan desimal persentase)
+                                        if (val > 0) rejectQty += Math.round(val);
+                                    }
                                 }
-
-                                if (!rawType || rawOrder === '' || rawOrder === null || rawOrder === undefined) continue;
-                                if (firstCol.includes('TOTAL') || firstCol.includes('TOTA ') || 
-                                    rawName.toUpperCase().includes('TOTAL') || rawType.toUpperCase().includes('TOTAL')) continue;
-                                if (rawType.toUpperCase() === 'TYPE') continue;
-
-                                let order = parseNumericCell(rawOrder);
-                                if (order <= 0) continue;
-
-                                let rejectQty = 0;
-                                qtyCols.forEach(c => {
-                                    let val = parseNumericCell(row[c]);
-                                    if (val > 0) rejectQty += val;
-                                });
-
-                                rawData.push({
-                                    type: cleanProductType(rawType),
-                                    name: cleanProductName(rawName, jobIdx !== -1 ? row[jobIdx] : ''),
-                                    order: order,
-                                    reject: rejectQty
-                                });
                             }
+
+                            const finalType = cleanProductType(rawType, rawName, currentSectionHint);
+                            if (!finalType) continue;
+
+                            rawData.push({
+                                type: finalType,
+                                name: cleanProductName(rawName, rawJob),
+                                order: order,
+                                reject: rejectQty
+                            });
                         }
                     });
 
@@ -373,7 +412,7 @@
         const outputArea = document.getElementById('outputArea');
 
         if (!rawData || rawData.length === 0) {
-            outputArea.innerHTML += `<div class="error-box"><strong>Laporan Reject ${jenis} (${fileName}):</strong> Tidak ditemukan baris data yang valid. Pastikan terdapat kolom header <b>TYPE</b> dan <b>QTY ORDER</b> di dalam sheet.</div>`;
+            outputArea.innerHTML += `<div class="error-box"><strong>Laporan Reject ${jenis} (${fileName}):</strong> Tidak ditemukan baris data yang valid.</div>`;
             return;
         }
 
