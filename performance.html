@@ -29,8 +29,15 @@
             --bluegrey-theme: #374151;
             --bg-gray: #f4f6f9;
             --border-color: #dce1e6;
+            
+            /* Variabel Ukuran Font Dinamis */
             --table-pad-y: 8px;
-            --table-font-size: 11px; /* Variabel dinamis Font Size Tabel */
+            --table-font-size: 11px; 
+            --h1-font-size: 42px;
+            --h3-font-size: 16px;
+            --badge-font-size: 13px;
+            --section-title-font-size: 13px;
+            
             --print-bg: #ffffff;
         }
 
@@ -286,22 +293,23 @@
             z-index: 1;
         }
         .dash-header-content { position: relative; z-index: 2; }
-        .dash-header h3 { font-size: 16px; font-weight: 700; margin-bottom: 5px; letter-spacing: 0.5px; }
-        .dash-header h1 { font-size: 42px; font-weight: 900; margin-bottom: 10px; letter-spacing: 1.5px; }
+        .dash-header h3 { font-size: var(--h3-font-size); font-weight: 700; margin-bottom: 5px; letter-spacing: 0.5px; transition: font-size 0.2s; }
+        .dash-header h1 { font-size: var(--h1-font-size); font-weight: 900; margin-bottom: 10px; letter-spacing: 1.5px; transition: font-size 0.2s; }
         .dash-header .badge {
             background-color: var(--emerald-green);
             padding: 6px 18px;
             border-radius: 20px;
             display: inline-block;
             font-weight: 700;
-            font-size: 13px;
+            font-size: var(--badge-font-size);
+            transition: font-size 0.2s;
         }
 
         .section-title {
             background-color: var(--navy-blue);
             color: white;
             padding: 10px 15px;
-            font-size: 13px;
+            font-size: var(--section-title-font-size);
             font-weight: 700;
             border-radius: 4px;
             margin-bottom: 15px;
@@ -309,6 +317,7 @@
             align-items: center;
             gap: 10px;
             letter-spacing: 0.5px;
+            transition: font-size 0.2s;
         }
         .section-title.purple { background-color: var(--purple-dark); }
         .section-title.orange-theme { background-color: #ef6c00; }
@@ -317,7 +326,7 @@
         .section-title.pink-theme { background-color: #c2185b; }
         .section-title.indigo-theme { background-color: #3949ab; }
         
-        .icon-svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+        .icon-svg { width: 1.2em; height: 1.2em; fill: currentColor; flex-shrink: 0; }
 
         .text-green { color: var(--emerald-green); }
         .text-red { color: #d32f2f; }
@@ -561,7 +570,15 @@
                             <option value="portrait">A4 Portrait (Tegak)</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="toggle-clone-headers" checked onchange="toggleSections()"> Tampilkan Header Berulang
+                        </label>
+                        <p style="font-size: 9px; color: #666; margin-left: 20px;">Hapus centang untuk menyembunyikan header tambahan (cocok saat simpan HTML).</p>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 10px;">
                         <label>Warna Background Kertas (7 Pilihan)</label>
                         <select id="in-print-bg" onchange="updatePrintSettings()">
                             <option value="#ffffff">1. Putih (Standard)</option>
@@ -576,7 +593,7 @@
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Ukuran Font Tabel (px)</label>
+                            <label>Ukuran Font Global (Tabel & Judul)</label>
                             <input type="number" id="in-table-fontsize" min="6" max="24" step="0.5" value="11" oninput="updateTableStyle()" placeholder="Contoh: 11">
                         </div>
                     </div>
@@ -620,6 +637,19 @@
                         <div class="form-group"><label>Week</label><input type="text" id="in-week" value=""></div>
                         <div class="form-group"><label>Periode</label><input type="text" id="in-periode" value=""></div>
                     </div>
+                    
+                    <!-- FITUR LOGO -->
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="toggle-logo" checked onchange="toggleLogoVisibility()"> Tampilkan Logo di Header
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload Logo Header (Opsional)</label>
+                        <input type="file" id="in-logo" accept="image/*">
+                    </div>
+                    <!-- /FITUR LOGO -->
+
                     <div class="form-group">
                         <label>Upload Foto Background Header</label>
                         <input type="file" id="in-photo" accept="image/*">
@@ -793,12 +823,17 @@
                 
                 <!-- Header Utama -->
                 <div class="dash-header" id="out-header-bg">
-                    <div class="dash-header-content">
-                        <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
-                        <h1 id="out-plant"></h1>
-                        <div class="badge">
-                            <span id="out-week"></span> | <span id="out-periode"></span>
+                    <div class="dash-header-content" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
+                            <h1 id="out-plant"></h1>
+                            <div class="badge">
+                                <span id="out-week"></span> | <span id="out-periode"></span>
+                            </div>
                         </div>
+                        
+                        <!-- Base64 Logo (Kemas) Default -->
+                        <img id="out-logo-main" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAMAAADaVD+IAAAAXVBMVEUAAAD///9ZWVltbW11dXWJiYlKSkoZGRktLS0uLi4xMTE2NjbQ0NBnZ2cdHR3u7u7Z2dnAwMDi4uK9vb2zs7Obm5uQkJCOjo5+fn5paWmqqqp4eHhfX19QUFA7Ozv967R+AAADYUlEQVR42u3c2XLDIAwEYBtsYyC24zj//42dOHbSjGdo2Eln3u6T3DCCrLBCk/7u4m+QAAAAAACAx6A1v/x+mRj6Y5q4eO253/L77M/3+2NqXh9eX3y/O6OevL54fs9GPXl98f12GfXg9cX3uzPqiL6X1xdfnL9h9Z28vvj+/Iyq7+b1xRcXo+q7eX3xxR+T7bt5ffH9nptn38XrQ3m3p8X8m19+A4SBBBBACCGAEEAAAQQQQAAhhABCAAEEEEAAAQQQQAAhhABCAAEEEEAAAQQQQgghgABCAAEEEEAAAQQQQgghgABCCAEEYq5tU2pY0lprX0zYj6G3H+Nq+fQ5m2nI2u6r5e8c26q9wR1LpY8Zq6NteUv1T9wRz1fH7T/VlF8w5lK8t6uN+v/xQO/l0Xb7j+qQ+N04l25Z+9u3rJ+w3u/3rZ/jH90v96uf7f8eX90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/3hL5/vX/5e/eL7/fT7+4vn+z30y/uL5/u/9NP7i+f6/99H4i+d7eU05i+d7eX3i+V5eH3m+l9dnnu/l9Ynne3l95vleXh95vpfXZ57v5fWR53t5feb5Xl6fee9AAAEAAAAAAAAA8B/8AoF17wT4WJ2kAAAAAElFTkSuQmCC" alt="Logo" style="height: 70px; border-radius: 8px;">
                     </div>
                 </div>
 
@@ -1049,12 +1084,15 @@
 
                 <!-- Header Klon 1 (untuk Sec 3) -->
                 <div class="dash-header" id="header-clone-3">
-                    <div class="dash-header-content">
-                        <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
-                        <h1 class="out-plant-clone"></h1>
-                        <div class="badge">
-                            <span class="out-week-clone"></span> | <span class="out-periode-clone"></span>
+                    <div class="dash-header-content" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
+                            <h1 class="out-plant-clone"></h1>
+                            <div class="badge">
+                                <span class="out-week-clone"></span> | <span class="out-periode-clone"></span>
+                            </div>
                         </div>
+                        <img class="out-logo-clone" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAMAAADaVD+IAAAAXVBMVEUAAAD///9ZWVltbW11dXWJiYlKSkoZGRktLS0uLi4xMTE2NjbQ0NBnZ2cdHR3u7u7Z2dnAwMDi4uK9vb2zs7Obm5uQkJCOjo5+fn5paWmqqqp4eHhfX19QUFA7Ozv967R+AAADYUlEQVR42u3c2XLDIAwEYBtsYyC24zj//42dOHbSjGdo2Eln3u6T3DCCrLBCk/7u4m+QAAAAAACAx6A1v/x+mRj6Y5q4eO253/L77M/3+2NqXh9eX3y/O6OevL54fs9GPXl98f12GfXg9cX3uzPqiL6X1xdfnL9h9Z28vvj+/Iyq7+b1xRcXo+q7eX3xxR+T7bt5ffH9nptn38XrQ3m3p8X8m19+A4SBBBBACCGAEEAAAQQQQAAhhABCAAEEEEAAAQQQQAAhhABCAAEEEEAAAQQQQgghgABCAAEEEEAAAQQQQgghgABCCAEEYq5tU2pY0lprX0zYj6G3H+Nq+fQ5m2nI2u6r5e8c26q9wR1LpY8Zq6NteUv1T9wRz1fH7T/VlF8w5lK8t6uN+v/xQO/l0Xb7j+qQ+N04l25Z+9u3rJ+w3u/3rZ/jH90v96uf7f8eX90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/3hL5/vX/5e/eL7/fT7+4vn+z30y/uL5/u/9NP7i+f6/99H4i+d7eU05i+d7eX3i+V5eH3m+l9dnnu/l9Ynne3l95vleXh95vpfXZ57v5fWR53t5feb5Xl6fee9AAAEAAAAAAAAA8B/8AoF17wT4WJ2kAAAAAElFTkSuQmCC" alt="Logo" style="height: 70px; border-radius: 8px;">
                     </div>
                 </div>
 
@@ -1086,12 +1124,15 @@
 
                 <!-- Header Klon 2 (untuk Sec 4) -->
                 <div class="dash-header" id="header-clone-4">
-                    <div class="dash-header-content">
-                        <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
-                        <h1 class="out-plant-clone"></h1>
-                        <div class="badge">
-                            <span class="out-week-clone"></span> | <span class="out-periode-clone"></span>
+                    <div class="dash-header-content" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
+                            <h1 class="out-plant-clone"></h1>
+                            <div class="badge">
+                                <span class="out-week-clone"></span> | <span class="out-periode-clone"></span>
+                            </div>
                         </div>
+                        <img class="out-logo-clone" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAMAAADaVD+IAAAAXVBMVEUAAAD///9ZWVltbW11dXWJiYlKSkoZGRktLS0uLi4xMTE2NjbQ0NBnZ2cdHR3u7u7Z2dnAwMDi4uK9vb2zs7Obm5uQkJCOjo5+fn5paWmqqqp4eHhfX19QUFA7Ozv967R+AAADYUlEQVR42u3c2XLDIAwEYBtsYyC24zj//42dOHbSjGdo2Eln3u6T3DCCrLBCk/7u4m+QAAAAAACAx6A1v/x+mRj6Y5q4eO253/L77M/3+2NqXh9eX3y/O6OevL54fs9GPXl98f12GfXg9cX3uzPqiL6X1xdfnL9h9Z28vvj+/Iyq7+b1xRcXo+q7eX3xxR+T7bt5ffH9nptn38XrQ3m3p8X8m19+A4SBBBBACCGAEEAAAQQQQAAhhABCAAEEEEAAAQQQQAAhhABCAAEEEEAAAQQQQgghgABCAAEEEEAAAQQQQgghgABCCAEEYq5tU2pY0lprX0zYj6G3H+Nq+fQ5m2nI2u6r5e8c26q9wR1LpY8Zq6NteUv1T9wRz1fH7T/VlF8w5lK8t6uN+v/xQO/l0Xb7j+qQ+N04l25Z+9u3rJ+w3u/3rZ/jH90v96uf7f8eX90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/3hL5/vX/5e/eL7/fT7+4vn+z30y/uL5/u/9NP7i+f6/99H4i+d7eU05i+d7eX3i+V5eH3m+l9dnnu/l9Ynne3l95vleXh95vpfXZ57v5fWR53t5feb5Xl6fee9AAAEAAAAAAAAA8B/8AoF17wT4WJ2kAAAAAElFTkSuQmCC" alt="Logo" style="height: 70px; border-radius: 8px;">
                     </div>
                 </div>
 
@@ -1153,12 +1194,15 @@
 
                 <!-- Header Klon 3 (untuk Sec 6) -->
                 <div class="dash-header" id="header-clone-6">
-                    <div class="dash-header-content">
-                        <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
-                        <h1 class="out-plant-clone"></h1>
-                        <div class="badge">
-                            <span class="out-week-clone"></span> | <span class="out-periode-clone"></span>
+                    <div class="dash-header-content" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
+                            <h1 class="out-plant-clone"></h1>
+                            <div class="badge">
+                                <span class="out-week-clone"></span> | <span class="out-periode-clone"></span>
+                            </div>
                         </div>
+                        <img class="out-logo-clone" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAMAAADaVD+IAAAAXVBMVEUAAAD///9ZWVltbW11dXWJiYlKSkoZGRktLS0uLi4xMTE2NjbQ0NBnZ2cdHR3u7u7Z2dnAwMDi4uK9vb2zs7Obm5uQkJCOjo5+fn5paWmqqqp4eHhfX19QUFA7Ozv967R+AAADYUlEQVR42u3c2XLDIAwEYBtsYyC24zj//42dOHbSjGdo2Eln3u6T3DCCrLBCk/7u4m+QAAAAAACAx6A1v/x+mRj6Y5q4eO253/L77M/3+2NqXh9eX3y/O6OevL54fs9GPXl98f12GfXg9cX3uzPqiL6X1xdfnL9h9Z28vvj+/Iyq7+b1xRcXo+q7eX3xxR+T7bt5ffH9nptn38XrQ3m3p8X8m19+A4SBBBBACCGAEEAAAQQQQAAhhABCAAEEEEAAAQQQQAAhhABCAAEEEEAAAQQQQgghgABCAAEEEEAAAQQQQgghgABCCAEEYq5tU2pY0lprX0zYj6G3H+Nq+fQ5m2nI2u6r5e8c26q9wR1LpY8Zq6NteUv1T9wRz1fH7T/VlF8w5lK8t6uN+v/xQO/l0Xb7j+qQ+N04l25Z+9u3rJ+w3u/3rZ/jH90v96uf7f8eX90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/3hL5/vX/5e/eL7/fT7+4vn+z30y/uL5/u/9NP7i+f6/99H4i+d7eU05i+d7eX3i+V5eH3m+l9dnnu/l9Ynne3l95vleXh95vpfXZ57v5fWR53t5feb5Xl6fee9AAAEAAAAAAAAA8B/8AoF17wT4WJ2kAAAAAElFTkSuQmCC" alt="Logo" style="height: 70px; border-radius: 8px;">
                     </div>
                 </div>
 
@@ -1192,12 +1236,15 @@
 
                 <!-- Header Klon 4 (untuk Sec 7) -->
                 <div class="dash-header" id="header-clone-7">
-                    <div class="dash-header-content">
-                        <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
-                        <h1 class="out-plant-clone"></h1>
-                        <div class="badge">
-                            <span class="out-week-clone"></span> | <span class="out-periode-clone"></span>
+                    <div class="dash-header-content" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3>LAPORAN PERFORMANCE ASSEMBLY</h3>
+                            <h1 class="out-plant-clone"></h1>
+                            <div class="badge">
+                                <span class="out-week-clone"></span> | <span class="out-periode-clone"></span>
+                            </div>
                         </div>
+                        <img class="out-logo-clone" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAMAAADaVD+IAAAAXVBMVEUAAAD///9ZWVltbW11dXWJiYlKSkoZGRktLS0uLi4xMTE2NjbQ0NBnZ2cdHR3u7u7Z2dnAwMDi4uK9vb2zs7Obm5uQkJCOjo5+fn5paWmqqqp4eHhfX19QUFA7Ozv967R+AAADYUlEQVR42u3c2XLDIAwEYBtsYyC24zj//42dOHbSjGdo2Eln3u6T3DCCrLBCk/7u4m+QAAAAAACAx6A1v/x+mRj6Y5q4eO253/L77M/3+2NqXh9eX3y/O6OevL54fs9GPXl98f12GfXg9cX3uzPqiL6X1xdfnL9h9Z28vvj+/Iyq7+b1xRcXo+q7eX3xxR+T7bt5ffH9nptn38XrQ3m3p8X8m19+A4SBBBBACCGAEEAAAQQQQAAhhABCAAEEEEAAAQQQQAAhhABCAAEEEEAAAQQQQgghgABCAAEEEEAAAQQQQgghgABCCAEEYq5tU2pY0lprX0zYj6G3H+Nq+fQ5m2nI2u6r5e8c26q9wR1LpY8Zq6NteUv1T9wRz1fH7T/VlF8w5lK8t6uN+v/xQO/l0Xb7j+qQ+N04l25Z+9u3rJ+w3u/3rZ/jH90v96uf7f8eX90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/3hL5/vX/5e/eL7/fT7+4vn+z30y/uL5/u/9NP7i+f6/99H4i+d7eU05i+d7eX3i+V5eH3m+l9dnnu/l9Ynne3l95vleXh95vpfXZ57v5fWR53t5feb5Xl6fee9AAAEAAAAAAAAA8B/8AoF17wT4WJ2kAAAAAElFTkSuQmCC" alt="Logo" style="height: 70px; border-radius: 8px;">
                     </div>
                 </div>
 
@@ -1302,10 +1349,16 @@
             const padEl = document.getElementById('in-table-padding');
             const fontEl = document.getElementById('in-table-fontsize');
             const paddingValue = padEl ? padEl.value : 8;
-            const fontSizeValue = fontEl ? (fontEl.value || 11) : 11;
+            const fontSizeValue = fontEl ? parseFloat(fontEl.value || 11) : 11;
             
             document.documentElement.style.setProperty('--table-pad-y', paddingValue + 'px');
             document.documentElement.style.setProperty('--table-font-size', fontSizeValue + 'px');
+            
+            // Perhitungan proporsional untuk teks global
+            document.documentElement.style.setProperty('--h1-font-size', (fontSizeValue * 3.82) + 'px');
+            document.documentElement.style.setProperty('--h3-font-size', (fontSizeValue * 1.45) + 'px');
+            document.documentElement.style.setProperty('--badge-font-size', (fontSizeValue * 1.18) + 'px');
+            document.documentElement.style.setProperty('--section-title-font-size', (fontSizeValue * 1.18) + 'px');
         }
 
         // --- UPDATE ORIENTASI DAN WARNA ---
@@ -1348,6 +1401,9 @@
                 7: "QUALITY ISSUES BY PERFORMANCE &lt;85%"
             };
 
+            const cloneCheckbox = document.getElementById('toggle-clone-headers');
+            const showClones = cloneCheckbox ? cloneCheckbox.checked : true;
+
             for(let i=1; i<=7; i++) {
                 const cb = document.getElementById(`toggle-sec-${i}`);
                 const container = document.getElementById(`sec-${i}-container`);
@@ -1356,7 +1412,9 @@
                 if(cb && container) {
                     if(cb.checked) {
                         container.style.display = '';
-                        if(headerClone) headerClone.style.display = '';
+                        if(headerClone) {
+                            headerClone.style.display = showClones ? '' : 'none';
+                        }
                         
                         const titleEl = container.querySelector('.section-title');
                         if(titleEl) {
@@ -1371,6 +1429,18 @@
                     }
                 }
             }
+        }
+
+        function toggleLogoVisibility() {
+            const logoCheckbox = document.getElementById('toggle-logo');
+            const isVisible = logoCheckbox ? logoCheckbox.checked : true;
+            
+            const mainLogo = document.getElementById('out-logo-main');
+            if(mainLogo) mainLogo.style.display = isVisible ? 'block' : 'none';
+            
+            document.querySelectorAll('.out-logo-clone').forEach(el => {
+                el.style.display = isVisible ? 'block' : 'none';
+            });
         }
 
         // --- INISIALISASI GOOGLE CHARTS ---
@@ -1810,7 +1880,7 @@
         function addQualityIssueRow() { qualityIssues.push({ date: "", leader: "Leader", item_code: "KODE", product: "PRODUK", pct: "0%", issue: "Kualitas" }); renderQualityIssueEditor(); } function removeQualityIssueRow(index) { qualityIssues.splice(index, 1); renderQualityIssueEditor(); }
 
         function backupData() {
-            let kpiData = { a: {}, b: {}, c: {}, leaderOverride: {} };
+            let kpiData = { a: {}, b: {}, c: {}, leaderOverride: {}, layout: {} };
             for(let i=1; i<=5; i++) {
                 const planElA = document.getElementById(`in-a-w${i}-plan`);
                 if(planElA) {
@@ -1827,16 +1897,28 @@
             const overActEl = document.getElementById('override-act');
             kpiData.leaderOverride = { plan: overPlanEl ? overPlanEl.value : '', act: overActEl ? overActEl.value : '' };
             
+            const cloneCheckbox = document.getElementById('toggle-clone-headers');
+            const logoCheckbox = document.getElementById('toggle-logo');
+            kpiData.layout = { 
+                showCloneHeaders: cloneCheckbox ? cloneCheckbox.checked : true,
+                showLogo: logoCheckbox ? logoCheckbox.checked : true
+            };
+            
             let bgImage = '';
             const headerBgEl = document.getElementById('out-header-bg');
             if(headerBgEl) bgImage = headerBgEl.style.backgroundImage;
+
+            let logoImage = '';
+            const mainLogoEl = document.getElementById('out-logo-main');
+            if(mainLogoEl) logoImage = mainLogoEl.src;
 
             const payload = {
                 header: { 
                     plant: document.getElementById('in-plant').value, 
                     week: document.getElementById('in-week').value, 
                     periode: document.getElementById('in-periode').value,
-                    bgPhoto: bgImage
+                    bgPhoto: bgImage,
+                    logoPhoto: logoImage
                 },
                 kpi: kpiData, leaders, analyses, prodLogs, spaChanges, machineIssues, qualityIssues
             };
@@ -1874,6 +1956,12 @@
                             document.getElementById('out-header-bg').style.backgroundImage = parsed.header.bgPhoto;
                             document.querySelectorAll('.dash-header').forEach(el => el.style.backgroundImage = parsed.header.bgPhoto);
                         }
+
+                        if(parsed.header.logoPhoto) {
+                            const mainLogo = document.getElementById('out-logo-main');
+                            if(mainLogo) mainLogo.src = parsed.header.logoPhoto;
+                            document.querySelectorAll('.out-logo-clone').forEach(el => el.src = parsed.header.logoPhoto);
+                        }
                     }
                     if (parsed.kpi) {
                         if(parsed.kpi.a) {
@@ -1895,6 +1983,14 @@
                             if(overPlanEl) overPlanEl.value = parsed.kpi.leaderOverride.plan || '';
                             if(overActEl) overActEl.value = parsed.kpi.leaderOverride.act || '';
                         }
+                        if(parsed.kpi.layout) {
+                            const cloneCheckbox = document.getElementById('toggle-clone-headers');
+                            const logoCheckbox = document.getElementById('toggle-logo');
+                            if(cloneCheckbox) cloneCheckbox.checked = parsed.kpi.layout.showCloneHeaders;
+                            if(logoCheckbox) {
+                                logoCheckbox.checked = parsed.kpi.layout.showLogo !== undefined ? parsed.kpi.layout.showLogo : true;
+                            }
+                        }
                         calcMatrixPerformance();
                     }
                     if (parsed.leaders) leaders = parsed.leaders; 
@@ -1905,6 +2001,8 @@
                     if (parsed.qualityIssues) qualityIssues = parsed.qualityIssues;
                     
                     renderLeaderEditor(); renderAnalysisEditor(); renderProdLogEditor(); renderSpaChangeEditor(); renderMachineIssueEditor(); renderQualityIssueEditor();
+                    toggleSections();
+                    toggleLogoVisibility();
                     alert("Data berhasil dipulihkan.");
                 } catch (err) { alert("Gagal membaca file JSON."); }
             }; reader.readAsText(file);
@@ -1929,6 +2027,12 @@
                     document.getElementById('out-header-bg').style.backgroundImage = '';
                     document.querySelectorAll('.dash-header').forEach(el => el.style.backgroundImage = '');
                     const inPhoto = document.getElementById('in-photo'); if(inPhoto) inPhoto.value = '';
+                    
+                    const defaultLogo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAMAAADaVD+IAAAAXVBMVEUAAAD///9ZWVltbW11dXWJiYlKSkoZGRktLS0uLi4xMTE2NjbQ0NBnZ2cdHR3u7u7Z2dnAwMDi4uK9vb2zs7Obm5uQkJCOjo5+fn5paWmqqqp4eHhfX19QUFA7Ozv967R+AAADYUlEQVR42u3c2XLDIAwEYBtsYyC24zj//42dOHbSjGdo2Eln3u6T3DCCrLBCk/7u4m+QAAAAAACAx6A1v/x+mRj6Y5q4eO253/L77M/3+2NqXh9eX3y/O6OevL54fs9GPXl98f12GfXg9cX3uzPqiL6X1xdfnL9h9Z28vvj+/Iyq7+b1xRcXo+q7eX3xxR+T7bt5ffH9nptn38XrQ3m3p8X8m19+A4SBBBBACCGAEEAAAQQQQAAhhABCAAEEEEAAAQQQQAAhhABCAAEEEEAAAQQQQgghgABCAAEEEEAAAQQQQgghgABCCAEEYq5tU2pY0lprX0zYj6G3H+Nq+fQ5m2nI2u6r5e8c26q9wR1LpY8Zq6NteUv1T9wRz1fH7T/VlF8w5lK8t6uN+v/xQO/l0Xb7j+qQ+N04l25Z+9u3rJ+w3u/3rZ/jH90v96uf7f8eX90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/+h+uZ/jH90v93P8o/vlfo5/dL/cz/GP7pf7Of7R/XI/xz+6X+7n+Ef3y/0c/3hL5/vX/5e/eL7/fT7+4vn+z30y/uL5/u/9NP7i+f6/99H4i+d7eU05i+d7eX3i+V5eH3m+l9dnnu/l9Ynne3l95vleXh95vpfXZ57v5fWR53t5feb5Xl6fee9AAAEAAAAAAAAA8B/8AoF17wT4WJ2kAAAAAElFTkSuQmCC";
+                    const mainLogo = document.getElementById('out-logo-main');
+                    if(mainLogo) mainLogo.src = defaultLogo;
+                    document.querySelectorAll('.out-logo-clone').forEach(el => el.src = defaultLogo);
+                    const inLogo = document.getElementById('in-logo'); if(inLogo) inLogo.value = '';
                 }
                 else if (sectionId === 1) {
                     for(let i=1; i<=5; i++) {
@@ -2118,6 +2222,7 @@
             if(el) el.addEventListener('input', calcMatrixPerformance);
         });
 
+        // Event listener untuk Upload Background Photo
         const photoInput = document.getElementById('in-photo');
         if(photoInput) {
             photoInput.addEventListener('change', function(e) {
@@ -2128,6 +2233,23 @@
                         const bgUrl = `url('${event.target.result}')`;
                         document.getElementById('out-header-bg').style.backgroundImage = bgUrl;
                         document.querySelectorAll('.dash-header').forEach(el => el.style.backgroundImage = bgUrl);
+                    }; reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Event listener untuk Upload Logo
+        const logoInput = document.getElementById('in-logo');
+        if(logoInput) {
+            logoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const logoUrl = event.target.result;
+                        const mainLogo = document.getElementById('out-logo-main');
+                        if (mainLogo) mainLogo.src = logoUrl;
+                        document.querySelectorAll('.out-logo-clone').forEach(el => el.src = logoUrl);
                     }; reader.readAsDataURL(file);
                 }
             });
@@ -2226,23 +2348,24 @@
                 if (!topbarWasHidden) topbar.style.display = 'none';
             }
 
-            // 4. Ambil dan Modifikasi HTML untuk Mode View (Tanpa Flex)
+            // 4. Ambil dan Modifikasi HTML untuk Mode View HP
             let htmlContent = "<!DOCTYPE html>\n<html lang=\"id\">\n" + document.documentElement.outerHTML + "\n</html>";
             
-            // --- FIX MOBILE VIEWPORT & LAYOUT ---
-            // Set viewport agar mengikuti lebar asli dashboard sehingga browser HP bisa zoom fit
+            // --- FIX MOBILE VIEWPORT & SCROLLING ---
             const orientEl = document.getElementById('in-print-orientation');
             const orientation = orientEl ? orientEl.value : 'landscape';
             const dashWidth = orientation === 'portrait' ? '880' : '1200';
+            
+            // Atur meta viewport agar browser HP menyesuaikan skala secara proporsional
             htmlContent = htmlContent.replace(/<meta name="viewport" content="[^"]*">/i, `<meta name="viewport" content="width=${dashWidth}, user-scalable=yes">`);
 
-            // Inject CSS khusus untuk file simpanan agar scroll natural dari pojok kiri atas dan margin dihilangkan
+            // Injeksi CSS Khusus File Unduhan (Menghapus Flex agar scroll natural dari ujung kiri atas)
             const mobileFixStyle = `
             <style>
-                body { display: block !important; height: auto !important; overflow: auto !important; background-color: var(--print-bg) !important; margin: 0 !important; padding: 10px 0 !important; }
+                body { display: block !important; height: auto !important; overflow: auto !important; background-color: var(--print-bg) !important; margin: 0 !important; padding: 20px 0 !important; }
                 .preview-area { display: block !important; height: auto !important; overflow: visible !important; padding: 0 !important; background-color: transparent !important; }
                 .preview-content { padding: 0 !important; display: block !important; }
-                .dashboard { margin: 0 auto !important; box-shadow: none !important; width: ${dashWidth}px !important; }
+                .dashboard { margin: 0 !important; box-shadow: none !important; width: ${dashWidth}px !important; }
             </style>
             `;
             htmlContent = htmlContent.replace('</head>', mobileFixStyle + '</head>');
@@ -2302,6 +2425,7 @@
         }
 
         toggleSections();
+        toggleLogoVisibility();
         renderLeaderEditor(); 
         renderAnalysisEditor(); 
         renderProdLogEditor();
