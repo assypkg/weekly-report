@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <style>
     :root {
       --navy-950: #091124;
@@ -519,6 +520,30 @@
       border-radius: 6px;
     }
 
+    .type-badge {
+      background: #1E3A8A;
+      color: #DBEAFE;
+      border: 1px solid #3B82F6;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .file-type-tag {
+      background: #DBEAFE;
+      color: #1E3A8A;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
     .product-name {
       font-family: 'Montserrat', sans-serif;
       font-weight: 700;
@@ -753,7 +778,7 @@
       <div class="brand-badge">QC</div>
       <div>
         <h1>ASSEMBLY REJECT & OUTPUT GENERATOR</h1>
-        <p>Rekap Finish Good Murni, Reject Pilihan & Reject Proses Lintas Komponen &bull; v5</p>
+        <p>Rekap Finish Good Murni, Reject Pilihan & Reject Proses Lintas Komponen &bull; v8</p>
       </div>
     </div>
     <div class="top-actions">
@@ -815,7 +840,11 @@
     </div>
 
     <div class="filter-group">
-      <span class="filter-label">Filter Produk:</span>
+      <span class="filter-label">Type Produk:</span>
+      <select id="typeFilter" class="input-ctrl" style="width:auto;" onchange="renderDashboard()">
+        <option value="ALL">Semua Type</option>
+      </select>
+      <span class="filter-label">Produk:</span>
       <select id="productFilter" class="input-ctrl" style="width:auto;" onchange="renderDashboard()">
         <option value="ALL">Semua Produk Terunggah</option>
       </select>
@@ -889,6 +918,98 @@
   };
 
   const MONTHS_SHORT = ['', 'JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+
+  const PRODUCT_TYPES_MASTER = [
+    { name: 'Lipstick', rangeLabel: '1000-1E00 & 7000' },
+    { name: 'Compact', rangeLabel: '2000' },
+    { name: 'Powder', rangeLabel: '3000' },
+    { name: 'Jar', rangeLabel: '4000' },
+    { name: 'Pencil Unit', rangeLabel: '5000' },
+    { name: 'Lipgloss', rangeLabel: '8001-8009 & 8500-8600' },
+    { name: 'Mascara/Eyeliner', rangeLabel: '8300-8400 & 8700' },
+    { name: 'Lipbalm', rangeLabel: '9000' },
+    { name: 'Cover', rangeLabel: 'Z000' }
+  ];
+
+  function extractFgCodePattern(text) {
+    if (!text) return '';
+    const m = String(text).toUpperCase().match(/\bFG-[A-Z0-9]+-[A-Z0-9]+\b/);
+    return m ? m[0] : '';
+  }
+
+  function extractSeriesCode(fgCode, prodName = '', fileName = '') {
+    const sources = [fgCode, fileName, prodName];
+    for (const src of sources) {
+      if (!src) continue;
+      const s = String(src).toUpperCase();
+      const mFg = s.match(/FG-[A-Z]?([0-9Z][0-9A-Z]{3})\b/);
+      if (mFg) return mFg[1];
+      const mWi = s.match(/WI-[A-Z]?([0-9Z][0-9A-Z]{3})\b/);
+      if (mWi) return mWi[1];
+    }
+    for (const src of sources) {
+      if (!src) continue;
+      const s = String(src).toUpperCase();
+      const matches = s.match(/\b[1-9Z][0-9A-E][0-9]{2}\b/g);
+      if (matches) {
+        for (const cand of matches) {
+          if (/^\d{4}$/.test(cand)) {
+            const num = parseInt(cand, 10);
+            if (num >= 2020 && num <= 2039) continue;
+          }
+          return cand;
+        }
+      }
+    }
+    return '';
+  }
+
+  function classifyProductType(fgCode, prodName = '', fileName = '') {
+    const code = extractSeriesCode(fgCode, prodName, fileName);
+    if (!code) return 'Lainnya';
+
+    // Cover: Z000 (Z000 - Z999 / Zxxx)
+    if (code.startsWith('Z')) return 'Cover';
+
+    // Lipstick: 1000-1E00 dan 7000
+    if (/^1[0-9A-E][0-9A-Z]{2}$/.test(code)) return 'Lipstick';
+    if (/^7\d{3}$/.test(code)) return 'Lipstick';
+
+    if (/^\d{4}$/.test(code)) {
+      const num = parseInt(code, 10);
+      if (num >= 2000 && num <= 2999) return 'Compact';
+      if (num >= 3000 && num <= 3999) return 'Powder';
+      if (num >= 4000 && num <= 4999) return 'Jar';
+      if (num >= 5000 && num <= 5999) return 'Pencil Unit';
+      if ((num >= 8001 && num <= 8009) || (num >= 8500 && num <= 8699)) return 'Lipgloss';
+      if ((num >= 8300 && num <= 8499) || (num >= 8700 && num <= 8799)) return 'Mascara/Eyeliner';
+      if (num >= 9000 && num <= 9999) return 'Lipbalm';
+    }
+
+    return 'Lainnya';
+  }
+
+  function getProductTypeOrder(typeName) {
+    const idx = PRODUCT_TYPES_MASTER.findIndex(t => t.name === typeName);
+    return idx === -1 ? PRODUCT_TYPES_MASTER.length : idx;
+  }
+
+  function sortProductsByTypeAndSeries(items) {
+    return items.sort((a, b) => {
+      const orderDiff = getProductTypeOrder(a.productType) - getProductTypeOrder(b.productType);
+      if (orderDiff !== 0) return orderDiff;
+
+      const sA = extractSeriesCode(a.fgCode, a.productName, a.fileName) || 'ZZZZ';
+      const sB = extractSeriesCode(b.fgCode, b.productName, b.fileName) || 'ZZZZ';
+      const seriesDiff = sA.localeCompare(sB, 'en', { numeric: true });
+      if (seriesDiff !== 0) return seriesDiff;
+
+      const fgDiff = String(a.fgCode || '').localeCompare(String(b.fgCode || ''), 'en', { numeric: true });
+      if (fgDiff !== 0) return fgDiff;
+
+      return String(a.productName || '').localeCompare(String(b.productName || ''), 'id');
+    });
+  }
 
   // Pola ciri khas defect unit rakitan (Reject Proses) untuk deteksi otomatis jika merge header tergeser
   const FG_HEADER_RE = /^(HASIL\s*)?(FINISH\s*GOOD|FG)$/i;
@@ -1147,21 +1268,45 @@
     let rawProdName = fallbackProdName || sheetName;
     let rawFgCode = fallbackFgCode || '-';
     let wipCode = '';
+    let foundExplicitFg = '';
+    let foundExplicitProd = '';
 
-    for (let r = 0; r < Math.min(matrix.length, 6); r++) {
+    const metaRowLimit = Math.min(matrix.length, Math.max(subHeaderIdx, 6));
+    for (let r = 0; r < metaRowLimit; r++) {
       const rText = (matrix[r] || []).join(' ').toUpperCase();
+      const extracted = extractCleanMetaText(matrix[r]);
+      const fgMatch = extractFgCodePattern(rText);
+      if (fgMatch && !foundExplicitFg) {
+        foundExplicitFg = fgMatch;
+      }
+
       if (rText.includes('NAMA BARANG') || (r === 2 && subHeaderIdx >= 5)) {
-        const extracted = extractCleanMetaText(matrix[r]);
-        if (extracted && !extracted.includes('KONTROL MATERIAL')) rawProdName = extracted;
+        if (extracted && !extracted.includes('KONTROL MATERIAL') && !/^ASSEMBLING$/i.test(extracted) && !/^FG-/i.test(extracted) && !/^WI-/i.test(extracted)) {
+          foundExplicitProd = extracted;
+        }
       }
       if (rText.includes('KODE ITEM') || (r === 3 && subHeaderIdx >= 5)) {
-        const extracted = extractCleanMetaText(matrix[r]);
-        if (extracted) rawFgCode = extracted;
+        if (extracted) {
+          const m = extractFgCodePattern(extracted);
+          if (m) {
+            foundExplicitFg = m;
+          } else if (!foundExplicitProd && !/^ASSEMBLING$/i.test(extracted) && !/^WI-/i.test(extracted) && !extracted.includes('KONTROL MATERIAL')) {
+            // Jika baris KODE ITEM tergeser berisi nama barang (seperti kasus 8603-0002)
+            foundExplicitProd = extracted;
+          }
+        }
       }
       if (rText.includes('KODE WIP') || (r === 4 && subHeaderIdx >= 5)) {
-        const extracted = extractCleanMetaText(matrix[r]);
         if (extracted && /^WI-|^R\d+|^M\d+|^PZ/i.test(extracted)) wipCode = extracted.toUpperCase();
       }
+    }
+
+    if (foundExplicitProd) rawProdName = foundExplicitProd;
+    if (foundExplicitFg) {
+      rawFgCode = foundExplicitFg;
+    } else {
+      const fgFromFile = extractFgCodePattern(fallbackProdName);
+      if (fgFromFile) rawFgCode = fgFromFile;
     }
 
     const isSortir = /SORTIR/i.test(rawProdName) || /SORTIR/i.test(sheetName);
@@ -1422,11 +1567,14 @@
         const primarySheet = parsedSheets.find(s => s.enabled) || parsedSheets[0];
 
         const existingIdx = loadedSources.findIndex(src => src.fileName === file.name);
+        const resolvedProdName = primarySheet.productName || fallbackFromFile;
+        const resolvedFgCode = primarySheet.fgCode;
         const sourceObj = {
           id: 'src_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
           fileName: file.name,
-          productName: primarySheet.productName || fallbackFromFile,
-          fgCode: primarySheet.fgCode,
+          productName: resolvedProdName,
+          fgCode: resolvedFgCode,
+          productType: classifyProductType(resolvedFgCode, resolvedProdName, file.name),
           sheets: parsedSheets
         };
 
@@ -1489,6 +1637,7 @@
       fileName: `Paste: ${prodName} (${partName})`,
       productName: parsed.productName,
       fgCode: parsed.fgCode,
+      productType: classifyProductType(parsed.fgCode, parsed.productName, prodName),
       sheets: [parsed]
     };
 
@@ -1561,6 +1710,7 @@
         <div class="file-item">
           <div class="file-meta">
             <span class="file-tag">${escapeHtml(src.fgCode)}</span>
+            <span class="file-type-tag">${escapeHtml(src.productType || 'Lainnya')}</span>
             <div>
               <div style="font-weight:700; font-size:13px; color:var(--slate-900);">${escapeHtml(src.productName)}</div>
               <div style="font-size:11.5px; color:var(--slate-500);">${escapeHtml(src.fileName)}</div>
@@ -1613,6 +1763,20 @@
       document.getElementById('endDateSelect').value = dateMap.has(prevEnd) ? prevEnd : sortedDates[sortedDates.length - 1][0];
     }
 
+    const typeSelect = document.getElementById('typeFilter');
+    const prevType = typeSelect.value;
+    const typeCounts = new Map();
+    for (const s of loadedSources) {
+      const t = s.productType || 'Lainnya';
+      typeCounts.set(t, (typeCounts.get(t) || 0) + 1);
+    }
+    const availableTypes = Array.from(typeCounts.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    typeSelect.innerHTML = `<option value="ALL">Semua Type (${loadedSources.length})</option>` +
+      availableTypes.map(([t, cnt]) => `<option value="${escapeHtml(t)}">${escapeHtml(t)} (${cnt})</option>`).join('');
+    if (typeCounts.has(prevType)) {
+      typeSelect.value = prevType;
+    }
+
     const prodSelect = document.getElementById('productFilter');
     const prevProd = prodSelect.value;
     prodSelect.innerHTML = `<option value="ALL">Semua Produk (${loadedSources.length})</option>` +
@@ -1647,11 +1811,16 @@
 
   function computeAggregatedData() {
     const fixTypo = document.getElementById('chkNormalizeTypo').checked;
+    const selectedType = document.getElementById('typeFilter').value;
     const selectedProdId = document.getElementById('productFilter').value;
 
-    const activeSources = selectedProdId === 'ALL'
+    let activeSources = selectedProdId === 'ALL'
       ? loadedSources
       : loadedSources.filter(s => s.id === selectedProdId);
+
+    if (selectedType !== 'ALL') {
+      activeSources = activeSources.filter(s => (s.productType || 'Lainnya') === selectedType);
+    }
 
     const productResults = [];
 
@@ -1801,6 +1970,7 @@
         fileName: src.fileName,
         productName: src.productName,
         fgCode: src.fgCode,
+        productType: src.productType || classifyProductType(src.fgCode, src.productName, src.fileName),
         dates: sortedDateLabels,
         totalFg,
         totalRejectPilihan,
@@ -1817,7 +1987,7 @@
       });
     }
 
-    return productResults;
+    return sortProductsByTypeAndSeries(productResults);
   }
 
   function fmt(num) {
@@ -1961,6 +2131,7 @@
           <div class="product-header">
             <div class="product-title-wrap">
               <span class="fg-code-badge">${escapeHtml(prod.fgCode)}</span>
+              <span class="type-badge">${escapeHtml(prod.productType)}</span>
               <span class="product-name">${escapeHtml(prod.productName)}</span>
             </div>
             <div class="product-submeta">
@@ -2087,7 +2258,7 @@
 
     return [
       `*${prod.productName}* (${prod.fgCode})`,
-      `Periode: ${periode}`,
+      `Type Produk: *${prod.productType}* | Periode: ${periode}`,
       `- Hasil Finish Good: *${fmt(prod.totalFg)} pcs*`,
       `- Jumlah Reject Pilihan: *${fmt(prod.totalRejectPilihan)} pcs* (${prod.pilihanRateFg.toFixed(2)}% dari FG)`,
       `  Top 3 Reject Pilihan:`,
@@ -2114,34 +2285,748 @@
     navigator.clipboard.writeText(text).then(() => showToast('Seluruh rekap berhasil disalin ke clipboard!'));
   }
 
-  function exportSummaryExcel() {
+  async function exportSummaryExcel() {
     const results = computeAggregatedData();
-    if (results.length === 0 || !window.XLSX) return;
+    if (results.length === 0) return;
 
-    const summaryRows = results.map(r => ({
-      'Kode Item FG': r.fgCode,
-      'Nama Produk': r.productName,
-      'Periode': r.dates.length > 0 ? (r.dates.length === 1 ? r.dates[0] : `${r.dates[0]} - ${r.dates[r.dates.length - 1]}`) : '-',
-      'Hasil Finish Good (pcs)': r.totalFg,
-      'Jumlah Reject Pilihan (pcs)': r.totalRejectPilihan,
-      'Reject Pilihan (% FG)': Number(r.pilihanRateFg.toFixed(2)),
-      'Top 1 Reject Pilihan': r.top3Pilihan[0] ? `${r.top3Pilihan[0].defect} [${r.top3Pilihan[0].component}] (${r.top3Pilihan[0].qty})` : '-',
-      'Top 2 Reject Pilihan': r.top3Pilihan[1] ? `${r.top3Pilihan[1].defect} [${r.top3Pilihan[1].component}] (${r.top3Pilihan[1].qty})` : '-',
-      'Top 3 Reject Pilihan': r.top3Pilihan[2] ? `${r.top3Pilihan[2].defect} [${r.top3Pilihan[2].component}] (${r.top3Pilihan[2].qty})` : '-',
-      'Jumlah Reject Proses (pcs)': r.totalRejectProses,
-      'Reject Proses (% FG)': Number(r.prosesRateFg.toFixed(2)),
-      'Top 1 Reject Proses': r.top3Proses[0] ? `${r.top3Proses[0].defect} (${r.top3Proses[0].qty})` : '-',
-      'Top 2 Reject Proses': r.top3Proses[1] ? `${r.top3Proses[1].defect} (${r.top3Proses[1].qty})` : '-',
-      'Top 3 Reject Proses': r.top3Proses[2] ? `${r.top3Proses[2].defect} (${r.top3Proses[2].qty})` : '-',
-      'Total Reject (pcs)': r.totalRejectAll,
-      'Total Reject (% FG)': Number(r.rejectRate.toFixed(2))
-    }));
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const outFileName = `Rekap_Reject_Assembly_${todayStr}.xlsx`;
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(summaryRows);
-    XLSX.utils.book_append_sheet(wb, ws, 'REKAP_REJECT_FG');
-    XLSX.writeFile(wb, `Rekap_Reject_Assembly_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    showToast('File Excel rekap berhasil diunduh.');
+    // Fallback ke SheetJS jika library ExcelJS gagal dimuat (misal offline total)
+    if (!window.ExcelJS) {
+      if (!window.XLSX) return;
+      const summaryRows = [];
+      let prevFallbackType = null;
+      results.forEach((r, i) => {
+        if (prevFallbackType !== null && r.productType !== prevFallbackType) {
+          summaryRows.push({});
+          summaryRows.push({});
+        }
+        prevFallbackType = r.productType;
+        summaryRows.push({
+          'No': i + 1,
+          'Kode Item FG': r.fgCode,
+          'Nama Produk': r.productName,
+          'Type Produk': r.productType,
+          'Periode': r.dates.length > 0 ? (r.dates.length === 1 ? r.dates[0] : `${r.dates[0]} - ${r.dates[r.dates.length - 1]}`) : '-',
+          'Hasil Finish Good (pcs)': r.totalFg,
+          'Reject Pilihan (pcs)': r.totalRejectPilihan,
+          'Reject Pilihan (% FG)': Number(r.pilihanRateFg.toFixed(2)),
+          'Top 1 Reject Pilihan': r.top3Pilihan[0] ? `${r.top3Pilihan[0].defect} [${r.top3Pilihan[0].component}] (${fmt(r.top3Pilihan[0].qty)})` : '-',
+          'Top 2 Reject Pilihan': r.top3Pilihan[1] ? `${r.top3Pilihan[1].defect} [${r.top3Pilihan[1].component}] (${fmt(r.top3Pilihan[1].qty)})` : '-',
+          'Top 3 Reject Pilihan': r.top3Pilihan[2] ? `${r.top3Pilihan[2].defect} [${r.top3Pilihan[2].component}] (${fmt(r.top3Pilihan[2].qty)})` : '-',
+          'Reject Proses (pcs)': r.totalRejectProses,
+          'Reject Proses (% FG)': Number(r.prosesRateFg.toFixed(2)),
+          'Top 1 Reject Proses': r.top3Proses[0] ? `${r.top3Proses[0].defect} (${fmt(r.top3Proses[0].qty)})` : '-',
+          'Top 2 Reject Proses': r.top3Proses[1] ? `${r.top3Proses[1].defect} (${fmt(r.top3Proses[1].qty)})` : '-',
+          'Top 3 Reject Proses': r.top3Proses[2] ? `${r.top3Proses[2].defect} (${fmt(r.top3Proses[2].qty)})` : '-',
+          'Total Reject (pcs)': r.totalRejectAll,
+          'Total Reject (% FG)': Number(r.rejectRate.toFixed(2))
+        });
+      });
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(summaryRows);
+      ws['!cols'] = [
+        { wch: 5 }, { wch: 18 }, { wch: 38 }, { wch: 18 }, { wch: 24 },
+        { wch: 16 }, { wch: 15 }, { wch: 14 }, { wch: 28 }, { wch: 28 }, { wch: 28 },
+        { wch: 15 }, { wch: 14 }, { wch: 30 }, { wch: 30 }, { wch: 30 }, { wch: 15 }, { wch: 15 }
+      ];
+      XLSX.utils.book_append_sheet(wb, ws, 'REKAP_REJECT_FG');
+      XLSX.writeFile(wb, outFileName);
+      showToast('File Excel diunduh (mode standar).');
+      return;
+    }
+
+    try {
+      const wb = new ExcelJS.Workbook();
+      wb.creator = 'Assembly Reject & Output Generator v8';
+      wb.created = new Date();
+
+      const thinBorder = {
+        top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        right: { style: 'thin', color: { argb: 'FFCBD5E1' } }
+      };
+
+      const totalBorder = {
+        top: { style: 'medium', color: { argb: 'FF0F172A' } },
+        left: { style: 'thin', color: { argb: 'FF94A3B8' } },
+        bottom: { style: 'double', color: { argb: 'FF0F172A' } },
+        right: { style: 'thin', color: { argb: 'FF94A3B8' } }
+      };
+
+      // =========================================================
+      // SHEET 1: REKAP_REJECT_FG (Detail Per Produk + Type Produk)
+      // =========================================================
+      const ws = wb.addWorksheet('REKAP_REJECT_FG', {
+        views: [{ state: 'frozen', xSplit: 4, ySplit: 4, showGridLines: true }]
+      });
+
+      ws.columns = [
+        { key: 'no', width: 6 },
+        { key: 'fgCode', width: 18 },
+        { key: 'productName', width: 38 },
+        { key: 'productType', width: 18 },
+        { key: 'periode', width: 25 },
+        { key: 'fg', width: 17 },
+        { key: 'pilQty', width: 15 },
+        { key: 'pilPct', width: 14 },
+        { key: 'pil1', width: 28 },
+        { key: 'pil2', width: 28 },
+        { key: 'pil3', width: 28 },
+        { key: 'proQty', width: 15 },
+        { key: 'proPct', width: 14 },
+        { key: 'pro1', width: 30 },
+        { key: 'pro2', width: 30 },
+        { key: 'pro3', width: 30 },
+        { key: 'totQty', width: 15 },
+        { key: 'totPct', width: 15 }
+      ];
+
+      // Row 1: Title Banner
+      ws.mergeCells('A1:R1');
+      const titleCell = ws.getCell('A1');
+      titleCell.value = 'REKAP OUTPUT FINISH GOOD & REJECT ASSEMBLING';
+      titleCell.font = { name: 'Calibri', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
+      titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+      ws.getRow(1).height = 30;
+
+      // Row 2: Subtitle Info
+      const modeVal = document.getElementById('dateMode').value;
+      let filterInfo = 'Semua Tanggal';
+      if (modeVal === 'single') {
+        const s = document.getElementById('singleDateSelect');
+        filterInfo = 'Harian: ' + (s.options[s.selectedIndex] ? s.options[s.selectedIndex].text : s.value);
+      } else if (modeVal === 'range') {
+        const s1 = document.getElementById('startDateSelect');
+        const s2 = document.getElementById('endDateSelect');
+        filterInfo = 'Rentang: ' + (s1.options[s1.selectedIndex] ? s1.options[s1.selectedIndex].text : s1.value) + ' s/d ' + (s2.options[s2.selectedIndex] ? s2.options[s2.selectedIndex].text : s2.value);
+      }
+      ws.mergeCells('A2:R2');
+      const subCell = ws.getCell('A2');
+      subCell.value = `Tanggal Export: ${todayStr}  |  Filter: ${filterInfo}  |  Jumlah Item: ${results.length} Produk  |  Basis Persentase: Hasil Finish Good Murni (Tanpa SBJ)`;
+      subCell.font = { name: 'Calibri', size: 10, italic: true, color: { argb: 'FF334155' } };
+      subCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEF2F7' } };
+      subCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+      ws.getRow(2).height = 20;
+
+      // Row 3: Section Group Banner
+      const groups = [
+        { range: 'A3:E3', label: 'IDENTITAS PRODUK', bg: 'FF1E293B' },
+        { range: 'F3:F3', label: 'OUTPUT', bg: 'FF065F46' },
+        { range: 'G3:K3', label: 'REJECT PILIHAN (SORTIR KOMPONEN)', bg: 'FF9A3412' },
+        { range: 'L3:P3', label: 'REJECT PROSES (PERAKITAN)', bg: 'FF5B21B6' },
+        { range: 'Q3:R3', label: 'TOTAL REJECT', bg: 'FF7F1D1D' }
+      ];
+      ws.getRow(3).height = 22;
+      for (const g of groups) {
+        if (g.range.split(':')[0] !== g.range.split(':')[1]) {
+          ws.mergeCells(g.range);
+        }
+        const cell = ws.getCell(g.range.split(':')[0]);
+        cell.value = g.label;
+        cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: g.bg } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      }
+      for (let c = 1; c <= 18; c++) {
+        ws.getCell(3, c).border = thinBorder;
+      }
+
+      // Row 4: Column Headers
+      const headers = [
+        'No', 'Kode Item FG', 'Nama Produk', 'Type Produk', 'Periode',
+        'Hasil Finish Good (pcs)',
+        'Reject Pilihan (pcs)', 'Reject Pilihan (% FG)', 'Top 1 Reject Pilihan', 'Top 2 Reject Pilihan', 'Top 3 Reject Pilihan',
+        'Reject Proses (pcs)', 'Reject Proses (% FG)', 'Top 1 Reject Proses', 'Top 2 Reject Proses', 'Top 3 Reject Proses',
+        'Total Reject (pcs)', 'Total Reject (% FG)'
+      ];
+      const headerRow = ws.getRow(4);
+      headerRow.height = 32;
+      headers.forEach((h, idx) => {
+        const colIdx = idx + 1;
+        const cell = headerRow.getCell(colIdx);
+        cell.value = h;
+        let bg = 'FF334155';
+        if (colIdx === 6) bg = 'FF047857';
+        else if (colIdx >= 7 && colIdx <= 11) bg = 'FFC2410C';
+        else if (colIdx >= 12 && colIdx <= 16) bg = 'FF6D28D9';
+        else if (colIdx >= 17) bg = 'FF991B1B';
+        cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        cell.border = thinBorder;
+      });
+
+      // Data Rows (starting at row 5) - dikelompokkan per Type Produk dengan pemisah 2 baris kosong
+      const firstDataRow = 5;
+      let currentRowNum = firstDataRow;
+      let prevType = null;
+      let groupRowIdx = 0;
+
+      results.forEach((r, idx) => {
+        if (prevType !== null && r.productType !== prevType) {
+          // Sisipkan 2 baris kosong bersih sebagai pemisah antar Type Produk
+          ws.getRow(currentRowNum).height = 16;
+          ws.getRow(currentRowNum + 1).height = 16;
+          currentRowNum += 2;
+          groupRowIdx = 0;
+        }
+        prevType = r.productType;
+
+        const rowNum = currentRowNum;
+        const periodeStr = r.dates.length > 0
+          ? (r.dates.length === 1 ? r.dates[0] : `${r.dates[0]} - ${r.dates[r.dates.length - 1]}`)
+          : '-';
+
+        const pil1 = r.top3Pilihan[0] ? `${r.top3Pilihan[0].defect} [${r.top3Pilihan[0].component}] (${fmt(r.top3Pilihan[0].qty)})` : '-';
+        const pil2 = r.top3Pilihan[1] ? `${r.top3Pilihan[1].defect} [${r.top3Pilihan[1].component}] (${fmt(r.top3Pilihan[1].qty)})` : '-';
+        const pil3 = r.top3Pilihan[2] ? `${r.top3Pilihan[2].defect} [${r.top3Pilihan[2].component}] (${fmt(r.top3Pilihan[2].qty)})` : '-';
+
+        const pro1 = r.top3Proses[0] ? `${r.top3Proses[0].defect} (${fmt(r.top3Proses[0].qty)})` : '-';
+        const pro2 = r.top3Proses[1] ? `${r.top3Proses[1].defect} (${fmt(r.top3Proses[1].qty)})` : '-';
+        const pro3 = r.top3Proses[2] ? `${r.top3Proses[2].defect} (${fmt(r.top3Proses[2].qty)})` : '-';
+
+        const row = ws.getRow(rowNum);
+        row.values = [
+          idx + 1,
+          r.fgCode,
+          r.productName,
+          r.productType,
+          periodeStr,
+          r.totalFg,
+          r.totalRejectPilihan,
+          { formula: `IF(F${rowNum}>0,G${rowNum}/F${rowNum},0)`, result: r.totalFg > 0 ? r.totalRejectPilihan / r.totalFg : 0 },
+          pil1, pil2, pil3,
+          r.totalRejectProses,
+          { formula: `IF(F${rowNum}>0,L${rowNum}/F${rowNum},0)`, result: r.totalFg > 0 ? r.totalRejectProses / r.totalFg : 0 },
+          pro1, pro2, pro3,
+          { formula: `G${rowNum}+L${rowNum}`, result: r.totalRejectAll },
+          { formula: `IF(F${rowNum}>0,Q${rowNum}/F${rowNum},0)`, result: r.totalFg > 0 ? r.totalRejectAll / r.totalFg : 0 }
+        ];
+
+        // Hitung estimasi tinggi baris agar tidak terpotong
+        const maxLen = Math.max(r.productName.length / 34, pil1.length / 26, pil2.length / 26, pro1.length / 28, pro2.length / 28);
+        row.height = Math.max(24, Math.min(54, Math.ceil(maxLen) * 15 + 8));
+
+        const zebraBg = groupRowIdx % 2 === 1 ? 'FFF8FAFC' : 'FFFFFFFF';
+        for (let c = 1; c <= 18; c++) {
+          const cell = row.getCell(c);
+          cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF0F172A' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: zebraBg } };
+          cell.border = thinBorder;
+
+          if (c === 1 || c === 4 || c === 5) {
+            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+          } else if (c === 2) {
+            cell.alignment = { vertical: 'middle', horizontal: 'left' };
+            cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF1E3A8A' } };
+          } else if (c === 6 || c === 7 || c === 12 || c === 17) {
+            cell.alignment = { vertical: 'middle', horizontal: 'right' };
+            cell.numFmt = '#,##0';
+            if (c === 6) cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF047857' } };
+            if (c === 17) cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF0F172A' } };
+          } else if (c === 8 || c === 13 || c === 18) {
+            cell.alignment = { vertical: 'middle', horizontal: 'right' };
+            cell.numFmt = '0.00%';
+          } else {
+            cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+          }
+        }
+
+        // Highlight Type Produk
+        const typeCell = row.getCell(4);
+        typeCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF1E3A8A' } };
+        typeCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
+
+        // Status highlight pada Total Reject (% FG)
+        const rateCell = row.getCell(18);
+        if (r.rejectRate >= 5.0) {
+          rateCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+          rateCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFB91C1C' } };
+        } else if (r.rejectRate >= 3.0) {
+          rateCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+          rateCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF92400E' } };
+        } else {
+          rateCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+          rateCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF047857' } };
+        }
+
+        currentRowNum += 1;
+        groupRowIdx += 1;
+      });
+
+      const lastDataRow = currentRowNum - 1;
+      const totRowNum = lastDataRow + 2;
+
+      // AutoFilter pada baris header sampai baris data terakhir
+      ws.autoFilter = { from: 'A4', to: `R${lastDataRow}` };
+
+      // Total Row dengan rumus live
+      const gFg = results.reduce((s, r) => s + r.totalFg, 0);
+      const gPil = results.reduce((s, r) => s + r.totalRejectPilihan, 0);
+      const gPro = results.reduce((s, r) => s + r.totalRejectProses, 0);
+      const gTot = gPil + gPro;
+
+      ws.mergeCells(`A${totRowNum}:E${totRowNum}`);
+      const totRow = ws.getRow(totRowNum);
+      totRow.height = 26;
+      totRow.getCell(1).value = 'TOTAL KESELURUHAN';
+      totRow.getCell(6).value = { formula: `SUM(F${firstDataRow}:F${lastDataRow})`, result: gFg };
+      totRow.getCell(7).value = { formula: `SUM(G${firstDataRow}:G${lastDataRow})`, result: gPil };
+      totRow.getCell(8).value = { formula: `IF(F${totRowNum}>0,G${totRowNum}/F${totRowNum},0)`, result: gFg > 0 ? gPil / gFg : 0 };
+      totRow.getCell(9).value = '';
+      totRow.getCell(10).value = '';
+      totRow.getCell(11).value = '';
+      totRow.getCell(12).value = { formula: `SUM(L${firstDataRow}:L${lastDataRow})`, result: gPro };
+      totRow.getCell(13).value = { formula: `IF(F${totRowNum}>0,L${totRowNum}/F${totRowNum},0)`, result: gFg > 0 ? gPro / gFg : 0 };
+      totRow.getCell(14).value = '';
+      totRow.getCell(15).value = '';
+      totRow.getCell(16).value = '';
+      totRow.getCell(17).value = { formula: `SUM(Q${firstDataRow}:Q${lastDataRow})`, result: gTot };
+      totRow.getCell(18).value = { formula: `IF(F${totRowNum}>0,Q${totRowNum}/F${totRowNum},0)`, result: gFg > 0 ? gTot / gFg : 0 };
+
+      for (let c = 1; c <= 18; c++) {
+        const cell = totRow.getCell(c);
+        cell.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: 'FF0F172A' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+        cell.border = totalBorder;
+        if (c === 1) {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        } else if (c === 6 || c === 7 || c === 12 || c === 17) {
+          cell.alignment = { vertical: 'middle', horizontal: 'right' };
+          cell.numFmt = '#,##0';
+        } else if (c === 8 || c === 13 || c === 18) {
+          cell.alignment = { vertical: 'middle', horizontal: 'right' };
+          cell.numFmt = '0.00%';
+        } else {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        }
+      }
+
+      ws.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+
+      // =========================================================
+      // SHEET 2: REKAP_PER_TYPE (Ringkasan Per Kategori Type Produk)
+      // =========================================================
+      const wsType = wb.addWorksheet('REKAP_PER_TYPE', {
+        views: [{ state: 'frozen', ySplit: 3, showGridLines: true }]
+      });
+
+      wsType.columns = [
+        { key: 'no', width: 6 },
+        { key: 'type', width: 22 },
+        { key: 'kodeRange', width: 24 },
+        { key: 'itemCnt', width: 15 },
+        { key: 'fg', width: 18 },
+        { key: 'pilQty', width: 17 },
+        { key: 'pilPct', width: 15 },
+        { key: 'proQty', width: 17 },
+        { key: 'proPct', width: 15 },
+        { key: 'totQty', width: 17 },
+        { key: 'totPct', width: 15 }
+      ];
+
+      wsType.mergeCells('A1:K1');
+      const tTitle = wsType.getCell('A1');
+      tTitle.value = 'RINGKASAN OUTPUT & REJECT PER TYPE PRODUK';
+      tTitle.font = { name: 'Calibri', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+      tTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+      tTitle.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+      wsType.getRow(1).height = 28;
+
+      wsType.mergeCells('A2:K2');
+      const tSub = wsType.getCell('A2');
+      tSub.value = `Otomatis terhubung ke sheet REKAP_REJECT_FG menggunakan rumus COUNTIF / SUMIF  |  Export: ${todayStr}`;
+      tSub.font = { name: 'Calibri', size: 9.5, italic: true, color: { argb: 'FF475569' } };
+      tSub.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEF2F7' } };
+      tSub.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+      wsType.getRow(2).height = 19;
+
+      const typeHeaders = [
+        'No', 'Type Produk', 'Rentang Kode Item', 'Jumlah Produk',
+        'Total Finish Good (pcs)', 'Reject Pilihan (pcs)', 'Reject Pilihan (% FG)',
+        'Reject Proses (pcs)', 'Reject Proses (% FG)', 'Total Reject (pcs)', 'Total Reject (% FG)'
+      ];
+      const tHeadRow = wsType.getRow(3);
+      tHeadRow.height = 30;
+      typeHeaders.forEach((h, idx) => {
+        const cell = tHeadRow.getCell(idx + 1);
+        cell.value = h;
+        cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        cell.border = thinBorder;
+      });
+
+      const typeRowsList = [...PRODUCT_TYPES_MASTER];
+      if (results.some(r => r.productType === 'Lainnya')) {
+        typeRowsList.push({ name: 'Lainnya', rangeLabel: 'Di luar kategori standar' });
+      }
+
+      const tFirstRow = 4;
+      typeRowsList.forEach((tp, idx) => {
+        const rNum = tFirstRow + idx;
+        const matched = results.filter(x => x.productType === tp.name);
+        const sFg = matched.reduce((a, b) => a + b.totalFg, 0);
+        const sPil = matched.reduce((a, b) => a + b.totalRejectPilihan, 0);
+        const sPro = matched.reduce((a, b) => a + b.totalRejectProses, 0);
+        const sTot = sPil + sPro;
+
+        const row = wsType.getRow(rNum);
+        row.height = 23;
+        row.values = [
+          idx + 1,
+          tp.name,
+          tp.rangeLabel,
+          { formula: `COUNTIF(REKAP_REJECT_FG!$D$${firstDataRow}:$D$${lastDataRow},B${rNum})`, result: matched.length },
+          { formula: `SUMIF(REKAP_REJECT_FG!$D$${firstDataRow}:$D$${lastDataRow},B${rNum},REKAP_REJECT_FG!$F$${firstDataRow}:$F$${lastDataRow})`, result: sFg },
+          { formula: `SUMIF(REKAP_REJECT_FG!$D$${firstDataRow}:$D$${lastDataRow},B${rNum},REKAP_REJECT_FG!$G$${firstDataRow}:$G$${lastDataRow})`, result: sPil },
+          { formula: `IF(E${rNum}>0,F${rNum}/E${rNum},0)`, result: sFg > 0 ? sPil / sFg : 0 },
+          { formula: `SUMIF(REKAP_REJECT_FG!$D$${firstDataRow}:$D$${lastDataRow},B${rNum},REKAP_REJECT_FG!$L$${firstDataRow}:$L$${lastDataRow})`, result: sPro },
+          { formula: `IF(E${rNum}>0,H${rNum}/E${rNum},0)`, result: sFg > 0 ? sPro / sFg : 0 },
+          { formula: `F${rNum}+H${rNum}`, result: sTot },
+          { formula: `IF(E${rNum}>0,J${rNum}/E${rNum},0)`, result: sFg > 0 ? sTot / sFg : 0 }
+        ];
+
+        const bg = idx % 2 === 1 ? 'FFF8FAFC' : 'FFFFFFFF';
+        for (let c = 1; c <= 11; c++) {
+          const cell = row.getCell(c);
+          cell.font = { name: 'Calibri', size: 10, color: { argb: matched.length > 0 ? 'FF0F172A' : 'FF94A3B8' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+          cell.border = thinBorder;
+          if (c === 1 || c === 3 || c === 4) {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            if (c === 4) cell.numFmt = '#,##0';
+          } else if (c === 2) {
+            cell.alignment = { vertical: 'middle', horizontal: 'left' };
+            if (matched.length > 0) cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF1E3A8A' } };
+          } else if (c === 5 || c === 6 || c === 8 || c === 10) {
+            cell.alignment = { vertical: 'middle', horizontal: 'right' };
+            cell.numFmt = '#,##0';
+          } else {
+            cell.alignment = { vertical: 'middle', horizontal: 'right' };
+            cell.numFmt = '0.00%';
+          }
+        }
+      });
+
+      const tLastRow = tFirstRow + typeRowsList.length - 1;
+      const tTotRowNum = tLastRow + 1;
+      wsType.mergeCells(`A${tTotRowNum}:C${tTotRowNum}`);
+      const tTotRow = wsType.getRow(tTotRowNum);
+      tTotRow.height = 25;
+      tTotRow.getCell(1).value = 'TOTAL KESELURUHAN';
+      tTotRow.getCell(4).value = { formula: `SUM(D${tFirstRow}:D${tLastRow})`, result: results.length };
+      tTotRow.getCell(5).value = { formula: `SUM(E${tFirstRow}:E${tLastRow})`, result: gFg };
+      tTotRow.getCell(6).value = { formula: `SUM(F${tFirstRow}:F${tLastRow})`, result: gPil };
+      tTotRow.getCell(7).value = { formula: `IF(E${tTotRowNum}>0,F${tTotRowNum}/E${tTotRowNum},0)`, result: gFg > 0 ? gPil / gFg : 0 };
+      tTotRow.getCell(8).value = { formula: `SUM(H${tFirstRow}:H${tLastRow})`, result: gPro };
+      tTotRow.getCell(9).value = { formula: `IF(E${tTotRowNum}>0,H${tTotRowNum}/E${tTotRowNum},0)`, result: gFg > 0 ? gPro / gFg : 0 };
+      tTotRow.getCell(10).value = { formula: `SUM(J${tFirstRow}:J${tLastRow})`, result: gTot };
+      tTotRow.getCell(11).value = { formula: `IF(E${tTotRowNum}>0,J${tTotRowNum}/E${tTotRowNum},0)`, result: gFg > 0 ? gTot / gFg : 0 };
+
+      for (let c = 1; c <= 11; c++) {
+        const cell = tTotRow.getCell(c);
+        cell.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: 'FF0F172A' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+        cell.border = totalBorder;
+        if (c === 1) cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        else if (c === 4) { cell.alignment = { vertical: 'middle', horizontal: 'center' }; cell.numFmt = '#,##0'; }
+        else if (c === 5 || c === 6 || c === 8 || c === 10) { cell.alignment = { vertical: 'middle', horizontal: 'right' }; cell.numFmt = '#,##0'; }
+        else { cell.alignment = { vertical: 'middle', horizontal: 'right' }; cell.numFmt = '0.00%'; }
+      }
+
+      wsType.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 1 };
+
+      // =========================================================
+      // SHEET 3: LAPORAN_COPY_PASTE (Format Siap Copy-Paste + Top 3 Reject)
+      // =========================================================
+      const wsCopy = wb.addWorksheet('LAPORAN_COPY_PASTE', {
+        views: [{ showGridLines: true }]
+      });
+
+      wsCopy.columns = [
+        { width: 20 }, // A: Tipe Produk
+        { width: 42 }, // B: Total Finish Good (Tabel 1) / Nama Produk (Tabel 2)
+        { width: 18 }, // C: Total Reject Qty (Tabel 1) / Total Finish Good (Tabel 2)
+        { width: 18 }, // D: Persentase Reject (Tabel 1) / Total Reject Qty (Tabel 2)
+        { width: 17 }, // E: Persentase Reject (Tabel 2)
+        { width: 46 }  // F: Top 3 Penyumbang Reject (Tabel 2)
+      ];
+
+      const copyHeaderBg = 'FF1E2A78';
+      const copyBorder = {
+        top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+        left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+        bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+        right: { style: 'thin', color: { argb: 'FFD1D5DB' } }
+      };
+
+      const activeTypesForCopy = typeRowsList.filter(tp => results.some(x => x.productType === tp.name));
+      const THRESHOLD_PCT = 2.5;
+
+      function formatTop3Stacked(items, totalFg, includeComp) {
+        if (!items || items.length === 0) return '-';
+        return items.slice(0, 3).map((item, i) => {
+          const pct = totalFg > 0 ? ((item.qty / totalFg) * 100).toFixed(2) : '0.00';
+          const compTag = includeComp && item.component ? ` [${item.component}]` : '';
+          return `${i + 1}. ${item.defect}${compTag}: ${fmt(item.qty)} pcs (${pct}%)`;
+        }).join('\n');
+      }
+
+      function buildCopyPasteSection(startRow, kind) {
+        const isPilihan = kind === 'PILIHAN';
+        const titleLabel = isPilihan
+          ? `Laporan Reject PILIHAN (${filterInfo})`
+          : `Laporan Reject PROSES (${filterInfo})`;
+        const sub2Label = isPilihan
+          ? '2. Reject PILIHAN Tertinggi (>= 2,5%) per Tipe Produk'
+          : '2. Reject PROSES Tertinggi (>= 2,5%) per Tipe Produk';
+
+        let rPtr = startRow;
+
+        // Judul Seksi Utama
+        wsCopy.mergeCells(`A${rPtr}:F${rPtr}`);
+        const mainTitle = wsCopy.getCell(`A${rPtr}`);
+        mainTitle.value = titleLabel;
+        mainTitle.font = { name: 'Calibri', size: 14, bold: true, color: { argb: 'FF1E293B' } };
+        mainTitle.alignment = { vertical: 'middle', horizontal: 'left' };
+        wsCopy.getRow(rPtr).height = 26;
+        rPtr += 1;
+
+        // Subjudul 1
+        wsCopy.mergeCells(`A${rPtr}:D${rPtr}`);
+        const sub1 = wsCopy.getCell(`A${rPtr}`);
+        sub1.value = '1. Keseluruhan Reject per Tipe Produk';
+        sub1.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF334155' } };
+        sub1.alignment = { vertical: 'middle', horizontal: 'left' };
+        wsCopy.getRow(rPtr).height = 22;
+        rPtr += 1;
+
+        // Header Tabel 1 (4 kolom: A-D)
+        const t1Headers = ['Tipe Produk', 'Total Finish Good', 'Total Reject (Qty)', 'Persentase Reject'];
+        const t1HeadRow = wsCopy.getRow(rPtr);
+        t1HeadRow.height = 26;
+        t1Headers.forEach((h, i) => {
+          const cell = t1HeadRow.getCell(i + 1);
+          cell.value = h;
+          cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: copyHeaderBg } };
+          cell.alignment = { vertical: 'middle', horizontal: i === 0 ? 'left' : 'right', indent: i === 0 ? 1 : 0 };
+          cell.border = copyBorder;
+        });
+        rPtr += 1;
+
+        const t1DataStart = rPtr;
+        const rejectColLetter = isPilihan ? 'G' : 'L';
+
+        activeTypesForCopy.forEach((tp, idx) => {
+          const matched = results.filter(x => x.productType === tp.name);
+          const sFg = matched.reduce((a, b) => a + b.totalFg, 0);
+          const sRej = matched.reduce((a, b) => a + (isPilihan ? b.totalRejectPilihan : b.totalRejectProses), 0);
+          const sRate = sFg > 0 ? sRej / sFg : 0;
+          const isAlert = sRate * 100 >= THRESHOLD_PCT;
+
+          const row = wsCopy.getRow(rPtr);
+          row.height = 22;
+          row.getCell(1).value = tp.name.toUpperCase();
+          row.getCell(2).value = {
+            formula: `SUMIF(REKAP_REJECT_FG!$D$${firstDataRow}:$D$${lastDataRow},A${rPtr},REKAP_REJECT_FG!$F$${firstDataRow}:$F$${lastDataRow})`,
+            result: sFg
+          };
+          row.getCell(3).value = {
+            formula: `SUMIF(REKAP_REJECT_FG!$D$${firstDataRow}:$D$${lastDataRow},A${rPtr},REKAP_REJECT_FG!$${rejectColLetter}$${firstDataRow}:$${rejectColLetter}$${lastDataRow})`,
+            result: sRej
+          };
+          row.getCell(4).value = {
+            formula: `IF(B${rPtr}>0,C${rPtr}/B${rPtr},0)`,
+            result: sRate
+          };
+
+          const rowBg = idx % 2 === 1 ? 'FFF8FAFC' : 'FFFFFFFF';
+          for (let c = 1; c <= 4; c++) {
+            const cell = row.getCell(c);
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowBg } };
+            cell.border = copyBorder;
+            if (c === 1) {
+              cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF0F172A' } };
+              cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+            } else if (c === 2 || c === 3) {
+              cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF0F172A' } };
+              cell.alignment = { vertical: 'middle', horizontal: 'right' };
+              cell.numFmt = '#,##0';
+            } else {
+              cell.font = { name: 'Calibri', size: 10, bold: isAlert, color: { argb: isAlert ? 'FFDC2626' : 'FF0F172A' } };
+              cell.alignment = { vertical: 'middle', horizontal: 'right' };
+              cell.numFmt = '0.00%';
+            }
+          }
+          rPtr += 1;
+        });
+
+        const t1DataEnd = rPtr - 1;
+        const totFgSection = results.reduce((a, b) => a + b.totalFg, 0);
+        const totRejSection = results.reduce((a, b) => a + (isPilihan ? b.totalRejectPilihan : b.totalRejectProses), 0);
+        const totRateSection = totFgSection > 0 ? totRejSection / totFgSection : 0;
+
+        // Baris Total Keseluruhan Tabel 1
+        const t1TotRow = wsCopy.getRow(rPtr);
+        t1TotRow.height = 24;
+        t1TotRow.getCell(1).value = 'TOTAL KESELURUHAN';
+        t1TotRow.getCell(2).value = { formula: `SUM(B${t1DataStart}:B${t1DataEnd})`, result: totFgSection };
+        t1TotRow.getCell(3).value = { formula: `SUM(C${t1DataStart}:C${t1DataEnd})`, result: totRejSection };
+        t1TotRow.getCell(4).value = { formula: `IF(B${rPtr}>0,C${rPtr}/B${rPtr},0)`, result: totRateSection };
+        for (let c = 1; c <= 4; c++) {
+          const cell = t1TotRow.getCell(c);
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
+          cell.border = totalBorder;
+          if (c === 1) {
+            cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF0F172A' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+          } else if (c === 2 || c === 3) {
+            cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF0F172A' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'right' };
+            cell.numFmt = '#,##0';
+          } else {
+            const isTotAlert = totRateSection * 100 >= THRESHOLD_PCT;
+            cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: isTotAlert ? 'FFDC2626' : 'FF0F172A' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'right' };
+            cell.numFmt = '0.00%';
+          }
+        }
+        rPtr += 2; // 1 baris kosong pemisah sebelum Subjudul 2
+
+        // Subjudul 2
+        wsCopy.mergeCells(`A${rPtr}:F${rPtr}`);
+        const sub2 = wsCopy.getCell(`A${rPtr}`);
+        sub2.value = sub2Label;
+        sub2.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF334155' } };
+        sub2.alignment = { vertical: 'middle', horizontal: 'left' };
+        wsCopy.getRow(rPtr).height = 22;
+        rPtr += 1;
+
+        // Header Tabel 2 (6 kolom: A-F, termasuk Top 3 Penyumbang Reject)
+        const t2Headers = [
+          'Tipe Produk', 'Nama Produk', 'Total Finish Good',
+          'Total Reject (Qty)', 'Persentase Reject', 'Top 3 Penyumbang Reject'
+        ];
+        const t2HeadRow = wsCopy.getRow(rPtr);
+        t2HeadRow.height = 26;
+        t2Headers.forEach((h, i) => {
+          const cell = t2HeadRow.getCell(i + 1);
+          cell.value = h;
+          cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: copyHeaderBg } };
+          const isNumCol = i >= 2 && i <= 4;
+          cell.alignment = { vertical: 'middle', horizontal: isNumCol ? 'right' : 'left', indent: isNumCol ? 0 : 1 };
+          cell.border = copyBorder;
+        });
+        rPtr += 1;
+
+        // Filter produk >= 2.5%, kelompokkan per Tipe Produk, urutkan % tertinggi ke terendah
+        const highItems = results
+          .filter(r => (isPilihan ? r.pilihanRateFg : r.prosesRateFg) >= THRESHOLD_PCT)
+          .sort((a, b) => {
+            const oDiff = getProductTypeOrder(a.productType) - getProductTypeOrder(b.productType);
+            if (oDiff !== 0) return oDiff;
+            const rateA = isPilihan ? a.pilihanRateFg : a.prosesRateFg;
+            const rateB = isPilihan ? b.pilihanRateFg : b.prosesRateFg;
+            return rateB - rateA;
+          });
+
+        if (highItems.length === 0) {
+          wsCopy.mergeCells(`A${rPtr}:F${rPtr}`);
+          const emptyCell = wsCopy.getCell(`A${rPtr}`);
+          emptyCell.value = `Tidak ada produk dengan Reject ${kind} >= 2,5% pada periode ini.`;
+          emptyCell.font = { name: 'Calibri', size: 10, italic: true, color: { argb: 'FF64748B' } };
+          emptyCell.alignment = { vertical: 'middle', horizontal: 'center' };
+          wsCopy.getRow(rPtr).height = 24;
+          for (let c = 1; c <= 6; c++) {
+            wsCopy.getCell(rPtr, c).border = copyBorder;
+          }
+          rPtr += 1;
+        } else {
+          highItems.forEach((item, idx) => {
+            const rejQty = isPilihan ? item.totalRejectPilihan : item.totalRejectProses;
+            const rejRate = item.totalFg > 0 ? rejQty / item.totalFg : 0;
+            const top3List = isPilihan ? item.top3Pilihan : item.top3Proses;
+            const top3Text = formatTop3Stacked(top3List, item.totalFg, isPilihan);
+            const lineCount = Math.max(
+              top3Text.split('\n').length,
+              Math.ceil((item.productName || '').length / 38)
+            );
+
+            const row = wsCopy.getRow(rPtr);
+            row.height = Math.max(26, lineCount * 15 + 10);
+            row.getCell(1).value = item.productType.toUpperCase();
+            row.getCell(2).value = item.productName;
+            row.getCell(3).value = item.totalFg;
+            row.getCell(4).value = rejQty;
+            row.getCell(5).value = { formula: `IF(C${rPtr}>0,D${rPtr}/C${rPtr},0)`, result: rejRate };
+            row.getCell(6).value = top3Text;
+
+            const rowBg = idx % 2 === 1 ? 'FFF8FAFC' : 'FFFFFFFF';
+            for (let c = 1; c <= 6; c++) {
+              const cell = row.getCell(c);
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowBg } };
+              cell.border = copyBorder;
+              if (c === 1) {
+                cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF0F172A' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1, wrapText: true };
+              } else if (c === 2) {
+                cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF0F172A' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+              } else if (c === 3) {
+                cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF0F172A' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                cell.numFmt = '#,##0';
+              } else if (c === 4) {
+                cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFDC2626' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                cell.numFmt = '#,##0';
+              } else if (c === 5) {
+                cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFDC2626' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                cell.numFmt = '0.00%';
+              } else {
+                cell.font = { name: 'Calibri', size: 9.5, color: { argb: 'FF1E293B' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+              }
+            }
+            rPtr += 1;
+          });
+        }
+
+        return rPtr;
+      }
+
+      const nextSectionRow = buildCopyPasteSection(1, 'PILIHAN');
+      // Beri 2 baris kosong pemisah antara Laporan Reject PILIHAN dan Laporan Reject PROSES
+      wsCopy.getRow(nextSectionRow).height = 16;
+      wsCopy.getRow(nextSectionRow + 1).height = 16;
+      buildCopyPasteSection(nextSectionRow + 2, 'PROSES');
+
+      wsCopy.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+
+      // Unduh file ExcelJS
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = outFileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('File Excel terformat rapi (3 sheet siap copy-paste) berhasil diunduh.');
+    } catch (err) {
+      console.error(err);
+      showToast('Gagal mengekspor Excel terformat. Cek konsol browser.');
+    }
   }
 </script>
 </body>
