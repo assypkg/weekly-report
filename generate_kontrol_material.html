@@ -998,3 +998,1151 @@
       if (parsed && parsed.y && parsed.m && parsed.d) {
         const dd = String(parsed.d).padStart(2, '0');
         const mm = String(parsed.m).padStart(2, '0');
+        return {
+          key: `${parsed.y}-${mm}-${dd}`,
+          label: `${dd} ${MONTHS_SHORT[parsed.m]} ${parsed.y}`,
+          year: parsed.y
+        };
+      }
+    }
+
+    let s = String(raw).toUpperCase().replace(/[\.\-\/]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!s || s === 'INVALID DATE' || s === 'NAN') return { key: '', label: '', year: null };
+
+    s = s.replace(/^([0-3])O\b/, '$10').replace(/^O([1-9])\b/, '0$1');
+
+    const mIso = s.match(/^(\d{4})\s+(\d{1,2})\s+(\d{1,2})$/);
+    if (mIso) {
+      const year = parseInt(mIso[1], 10);
+      const monNum = parseInt(mIso[2], 10);
+      const day = parseInt(mIso[3], 10);
+      if (monNum >= 1 && monNum <= 12 && day >= 1 && day <= 31) {
+        const dd = String(day).padStart(2, '0');
+        const mm = String(monNum).padStart(2, '0');
+        return { key: `${year}-${mm}-${dd}`, label: `${dd} ${MONTHS_SHORT[monNum]} ${year}`, year };
+      }
+    }
+
+    const m = s.match(/^(\d{1,2})\s*([A-Z]+)\s*(\d{2,4})$/);
+    if (m) {
+      const day = parseInt(m[1], 10);
+      const monNum = MONTHS_MAP[m[2]];
+      let year = parseInt(m[3], 10);
+      if (year < 100) year += 2000;
+      if (monNum && day >= 1 && day <= 31) {
+        const dd = String(day).padStart(2, '0');
+        const mm = String(monNum).padStart(2, '0');
+        return {
+          key: `${year}-${mm}-${dd}`,
+          label: `${dd} ${MONTHS_SHORT[monNum]} ${year}`,
+          year
+        };
+      }
+    }
+
+    const mNoYear = s.match(/^(\d{1,2})\s*([A-Z]+)$/);
+    if (mNoYear) {
+      const day = parseInt(mNoYear[1], 10);
+      const monNum = MONTHS_MAP[mNoYear[2]];
+      if (monNum && day >= 1 && day <= 31) {
+        const dd = String(day).padStart(2, '0');
+        const mm = String(monNum).padStart(2, '0');
+        if (defaultYear) {
+          return {
+            key: `${defaultYear}-${mm}-${dd}`,
+            label: `${dd} ${MONTHS_SHORT[monNum]} ${defaultYear}`,
+            year: defaultYear
+          };
+        }
+        return { key: `XXXX-${mm}-${dd}`, label: `${dd} ${MONTHS_SHORT[monNum]}`, year: null };
+      }
+    }
+
+    const m2 = s.match(/^(\d{1,2})\s+(\d{1,2})\s+(\d{2,4})$/);
+    if (m2) {
+      const day = parseInt(m2[1], 10);
+      const monNum = parseInt(m2[2], 10);
+      let year = parseInt(m2[3], 10);
+      if (year < 100) year += 2000;
+      if (monNum >= 1 && monNum <= 12 && day >= 1 && day <= 31) {
+        const dd = String(day).padStart(2, '0');
+        const mm = String(monNum).padStart(2, '0');
+        return {
+          key: `${year}-${mm}-${dd}`,
+          label: `${dd} ${MONTHS_SHORT[monNum]} ${year}`,
+          year
+        };
+      }
+    }
+
+    return { key: s, label: s, year: null };
+  }
+
+  function cleanDefectLabel(rawName, fixTypo = true) {
+    let s = String(sanitizeCell(rawName)).replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
+    if (!s) return '';
+    if (fixTypo) {
+      s = s
+        .replace(/BINITK/g, 'BINTIK')
+        .replace(/LUEMR/g, 'LUMER')
+        .replace(/APLIAKTOR/g, 'APLIKATOR')
+        .replace(/;IPSTICK/g, 'LIPSTICK')
+        .replace(/TEKHNISI/g, 'TEKNISI')
+        .replace(/TEKNSI/g, 'TEKNISI')
+        .replace(/MIIRNG/g, 'MIRING')
+        .replace(/WELDLIE/g, 'WELDLINE')
+        .replace(/WIDLINE/g, 'WELDLINE')
+        .replace(/BULU FLSH/g, 'BULU FLASH')
+        .replace(/\bBUBLE\b/g, 'BUBBLE')
+        .replace(/BASE GET TINGGI/g, 'BASE GATE TINGGI')
+        .replace(/\bLIBANG\b/g, 'LUBANG')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+    return s;
+  }
+
+  function extractCleanMetaText(row) {
+    if (!row) return '';
+    for (let i = 0; i < row.length; i++) {
+      const clean = sanitizeCell(row[i]);
+      const val = String(clean).trim();
+      if (!val) continue;
+      if (val.startsWith(':')) {
+        return val.replace(/^:\s*/, '').trim();
+      }
+    }
+    for (let i = 7; i < Math.min(row.length, 30); i++) {
+      const clean = sanitizeCell(row[i]);
+      const val = String(clean).trim();
+      if (val && !/^(BAGIAN|NAMA BARANG|KODE ITEM|KODE WIP)/i.test(val)) {
+        return val.replace(/^:\s*/, '').trim();
+      }
+    }
+    return '';
+  }
+
+  function deriveNameFromFileName(fileName) {
+    if (!fileName) return '';
+    return fileName
+      .replace(/\.[^.]+$/, '')
+      .replace(/\(\d+\)$/, '')
+      .trim();
+  }
+
+  function parseMatrixToSheetData(rawMatrix, sheetName, fallbackProdName = '', fallbackFgCode = '', merges = []) {
+    if (!rawMatrix || rawMatrix.length < 4) return null;
+
+    const matrix = rawMatrix.map(row => (row || []).map(cell => sanitizeCell(cell)));
+
+    let subHeaderIdx = -1;
+    for (let r = 0; r < Math.min(matrix.length, 15); r++) {
+      const joined = (matrix[r] || []).join(' ').toUpperCase();
+      if (FG_ROW_RE.test(joined) && (PILIHAN_RE.test(joined) || PROSES_RE.test(joined))) {
+        subHeaderIdx = r;
+        break;
+      }
+    }
+
+    let rawProdName = fallbackProdName || sheetName;
+    let rawFgCode = fallbackFgCode || '-';
+    let wipCode = '';
+
+    for (let r = 0; r < Math.min(matrix.length, 6); r++) {
+      const rText = (matrix[r] || []).join(' ').toUpperCase();
+      if (rText.includes('NAMA BARANG') || (r === 2 && subHeaderIdx >= 5)) {
+        const extracted = extractCleanMetaText(matrix[r]);
+        if (extracted && !extracted.includes('KONTROL MATERIAL')) rawProdName = extracted;
+      }
+      if (rText.includes('KODE ITEM') || (r === 3 && subHeaderIdx >= 5)) {
+        const extracted = extractCleanMetaText(matrix[r]);
+        if (extracted) rawFgCode = extracted;
+      }
+      if (rText.includes('KODE WIP') || (r === 4 && subHeaderIdx >= 5)) {
+        const extracted = extractCleanMetaText(matrix[r]);
+        if (extracted && /^WI-|^R\d+|^M\d+|^PZ/i.test(extracted)) wipCode = extracted.toUpperCase();
+      }
+    }
+
+    const isSortir = /SORTIR/i.test(rawProdName) || /SORTIR/i.test(sheetName);
+
+    let componentName = sheetName.replace(/--$/, '').replace(/_/g, ' ').trim();
+    if (/^sheet\d*$/i.test(componentName) && subHeaderIdx >= 2 && matrix[subHeaderIdx - 2]) {
+      for (let c = 11; c < Math.min(matrix[subHeaderIdx - 2].length, 20); c++) {
+        const v = String(matrix[subHeaderIdx - 2][c] || '').trim();
+        if (v) {
+          componentName = v;
+          break;
+        }
+      }
+    }
+
+    if (subHeaderIdx === -1) return null;
+
+    const topHeaderRow = subHeaderIdx > 0 ? (matrix[subHeaderIdx - 1] || []) : [];
+    const subHeaderRow = matrix[subHeaderIdx] || [];
+    const defectNameRow = matrix[subHeaderIdx + 1] || [];
+
+    let tglCol = -1, lineCol = -1, poCol = -1, durasiCol = -1, fgCol = -1;
+    let pilihanStartCol = -1, prosesStartCol = -1, totalRejectCol = -1;
+
+    const maxHeaderCol = Math.max(topHeaderRow.length, subHeaderRow.length, defectNameRow.length);
+    for (let c = 0; c < maxHeaderCol; c++) {
+      const topVal = String(topHeaderRow[c] || '').toUpperCase().trim();
+      const subVal = String(subHeaderRow[c] || '').toUpperCase().trim();
+
+      if (topVal === 'TANGGAL' || subVal === 'TANGGAL') tglCol = c;
+      if (topVal.includes('KP.') || topVal === 'LINE') lineCol = c;
+      if (topVal.includes('PO/JE')) poCol = c;
+      if (topVal === 'DURASI') durasiCol = c;
+      if ((TOT_REJ_RE.test(topVal) || TOT_REJ_RE.test(subVal)) && totalRejectCol === -1) totalRejectCol = c;
+
+      if (FG_HEADER_RE.test(subVal) || (fgCol === -1 && FG_ROW_RE.test(subVal))) fgCol = c;
+      if (PILIHAN_RE.test(subVal)) pilihanStartCol = c;
+      if (PROSES_RE.test(subVal)) prosesStartCol = c;
+    }
+
+    if (fgCol === -1 || totalRejectCol === -1 || (pilihanStartCol === -1 && prosesStartCol === -1)) {
+      return null;
+    }
+
+    let pilihanEndCol = -1;
+    let effectiveProsesStart = -1;
+
+    if (pilihanStartCol !== -1) {
+      // 1. Cek valid multi-column merge (hanya jika m.e.c > pilihanStartCol agar tidak terjebak 1-cell merge .ods)
+      let mergedPilihanEnd = -1;
+      if (Array.isArray(merges)) {
+        for (const m of merges) {
+          if (m && m.s && m.e && m.s.r <= subHeaderIdx && subHeaderIdx <= m.e.r) {
+            if (m.s.c <= pilihanStartCol && pilihanStartCol <= m.e.c && m.e.c > pilihanStartCol) {
+              mergedPilihanEnd = m.e.c;
+            }
+          }
+        }
+      }
+
+      if (mergedPilihanEnd !== -1 && mergedPilihanEnd < totalRejectCol) {
+        pilihanEndCol = mergedPilihanEnd;
+      } else if (prosesStartCol !== -1) {
+        // Cari kolom pertama antara pilihanStartCol+1 dan prosesStartCol-1 yang merupakan defect unit rakitan
+        let firstAssemblyCol = -1;
+        for (let c = pilihanStartCol + 1; c < prosesStartCol; c++) {
+          const dName = String(defectNameRow[c] || '').trim();
+          if (dName && ASSEMBLY_DEFECT_REGEX.test(dName)) {
+            firstAssemblyCol = c;
+            break;
+          }
+        }
+        pilihanEndCol = firstAssemblyCol !== -1 ? firstAssemblyCol - 1 : prosesStartCol - 1;
+      } else {
+        pilihanEndCol = totalRejectCol - 1;
+      }
+      effectiveProsesStart = pilihanEndCol + 1 < totalRejectCol ? pilihanEndCol + 1 : -1;
+    } else {
+      effectiveProsesStart = prosesStartCol;
+    }
+
+    const prosesEndCol = effectiveProsesStart !== -1 ? totalRejectCol - 1 : -1;
+
+    const pilihanCols = [];
+    if (pilihanStartCol !== -1 && pilihanEndCol >= pilihanStartCol) {
+      for (let c = pilihanStartCol; c <= pilihanEndCol; c++) {
+        const dName = String(defectNameRow[c] || '').trim();
+        if (dName) pilihanCols.push({ col: c, rawName: dName });
+      }
+    }
+
+    const prosesCols = [];
+    if (effectiveProsesStart !== -1) {
+      for (let c = effectiveProsesStart; c <= prosesEndCol; c++) {
+        const dName = String(defectNameRow[c] || '').trim();
+        if (dName) prosesCols.push({ col: c, rawName: dName });
+      }
+    }
+
+    let dominantYear = null;
+    for (let r = subHeaderIdx + 2; r < matrix.length; r++) {
+      const row = matrix[r] || [];
+      const firstCells = row.slice(0, 5).join(' ').toUpperCase();
+      if (firstCells.includes('PENGAMBILAN ASSY') || firstCells.includes('HASIL FG')) break;
+      const dObj = normalizeDate(tglCol !== -1 ? row[tglCol] : '');
+      if (dObj.year) {
+        dominantYear = dObj.year;
+        break;
+      }
+    }
+
+    const rows = [];
+    for (let r = subHeaderIdx + 2; r < matrix.length; r++) {
+      const row = matrix[r] || [];
+      const firstCells = row.slice(0, 5).join(' ').toUpperCase();
+
+      if (firstCells.includes('PENGAMBILAN ASSY') || firstCells.includes('HASIL FG')) {
+        break;
+      }
+
+      const rawDate = tglCol !== -1 ? row[tglCol] : '';
+      const rawLine = lineCol !== -1 ? String(row[lineCol] || '').trim() : '';
+      const rawPo = poCol !== -1 ? String(row[poCol] || '').trim() : '';
+      const rawDurasi = durasiCol !== -1 ? String(row[durasiCol] || '').trim() : '';
+      const fgVal = parseNum(row[fgCol]);
+
+      const dateObj = normalizeDate(rawDate, dominantYear);
+      if (dateObj.year) dominantYear = dateObj.year;
+      const hasIdentifier = Boolean(dateObj.key || rawLine || rawPo);
+
+      if (!hasIdentifier) {
+        continue;
+      }
+
+      const pilihanItems = [];
+      for (const pc of pilihanCols) {
+        const qty = parseNum(row[pc.col]);
+        if (qty > 0) {
+          pilihanItems.push({ rawName: pc.rawName, qty });
+        }
+      }
+
+      const prosesItems = [];
+      for (const pr of prosesCols) {
+        const qty = parseNum(row[pr.col]);
+        if (qty > 0) {
+          prosesItems.push({ rawName: pr.rawName, qty });
+        }
+      }
+
+      rows.push({
+        dateKey: dateObj.key || 'TANPA_TANGGAL',
+        dateLabel: dateObj.label || 'Tanpa Tanggal',
+        line: rawLine.toUpperCase(),
+        po: rawPo.toUpperCase().replace(/\//g, '-').replace(/\s+/g, ' '),
+        durasi: rawDurasi.toUpperCase(),
+        fg: fgVal,
+        pilihan: pilihanItems,
+        proses: prosesItems
+      });
+    }
+
+    return {
+      name: sheetName,
+      componentName,
+      wipCode,
+      isSortir,
+      isSuperseded: false,
+      isSubExtract: false,
+      enabled: !isSortir,
+      productName: rawProdName,
+      fgCode: rawFgCode,
+      rows
+    };
+  }
+
+  async function handleFiles(fileList) {
+    if (!window.XLSX) {
+      showToast('Library pembaca Excel belum termuat. Periksa koneksi internet.');
+      return;
+    }
+
+    let addedCount = 0;
+    for (const file of fileList) {
+      try {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        const fallbackFromFile = deriveNameFromFileName(file.name);
+        const parsedSheets = [];
+
+        for (const sheetName of workbook.SheetNames) {
+          const ws = workbook.Sheets[sheetName];
+          trimWorksheetRange(ws);
+          const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: true });
+          const parsed = parseMatrixToSheetData(matrix, sheetName, fallbackFromFile, '-', ws['!merges'] || []);
+          if (parsed && parsed.rows.length > 0) {
+            parsedSheets.push(parsed);
+          }
+        }
+
+        if (parsedSheets.length === 0) {
+          showToast(`File "${file.name}" tidak memiliki sheet Kontrol Material yang valid.`);
+          continue;
+        }
+
+        // Cross-sheet refinement: jika suatu defect tercatat di REJECT PROSES pada sheet lain di file yang sama,
+        // pastikan tidak ikut terhitung di REJECT PILIHAN
+        const knownProsesDefects = new Set();
+        for (const sh of parsedSheets) {
+          for (const r of sh.rows) {
+            for (const p of r.proses) {
+              knownProsesDefects.add(cleanDefectLabel(p.rawName, true));
+            }
+          }
+        }
+        if (knownProsesDefects.size > 0) {
+          for (const sh of parsedSheets) {
+            for (const r of sh.rows) {
+              const keepPilihan = [];
+              for (const item of r.pilihan) {
+                const norm = cleanDefectLabel(item.rawName, true);
+                if (knownProsesDefects.has(norm) && ASSEMBLY_DEFECT_REGEX.test(item.rawName)) {
+                  r.proses.push(item);
+                } else {
+                  keepPilihan.push(item);
+                }
+              }
+              r.pilihan = keepPilihan;
+            }
+          }
+        }
+
+        const sheetNamesLower = new Set(parsedSheets.map(s => s.name.trim().toLowerCase()));
+        for (const s of parsedSheets) {
+          const baseLower = s.name.trim().toLowerCase();
+          if (!baseLower.endsWith('--') && sheetNamesLower.has(baseLower + '--')) {
+            s.isSuperseded = true;
+            s.enabled = false;
+          }
+        }
+
+        const activeCandidates = parsedSheets.filter(s => !s.isSortir && !s.isSuperseded);
+        for (const s of activeCandidates) {
+          const sNorm = s.name.trim().toUpperCase();
+          const hasParentSheet = activeCandidates.some(other => {
+            if (other === s) return false;
+            const oNorm = other.name.trim().toUpperCase();
+            const isPrefix = sNorm.startsWith(oNorm + ' ') && sNorm.length > oNorm.length;
+            const sameWip = Boolean(s.wipCode && other.wipCode && s.wipCode === other.wipCode);
+            return isPrefix && (sameWip || other.rows.length > s.rows.length);
+          });
+          if (hasParentSheet) {
+            s.isSubExtract = true;
+            s.enabled = false;
+          }
+        }
+
+        const primarySheet = parsedSheets.find(s => s.enabled) || parsedSheets[0];
+
+        const existingIdx = loadedSources.findIndex(src => src.fileName === file.name);
+        const sourceObj = {
+          id: 'src_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          fileName: file.name,
+          productName: primarySheet.productName || fallbackFromFile,
+          fgCode: primarySheet.fgCode,
+          sheets: parsedSheets
+        };
+
+        if (existingIdx !== -1) {
+          loadedSources[existingIdx] = sourceObj;
+        } else {
+          loadedSources.push(sourceObj);
+        }
+        addedCount++;
+      } catch (err) {
+        console.error(err);
+        showToast(`Gagal membaca file "${file.name}".`);
+      }
+    }
+
+    if (addedCount > 0) {
+      if (loadedSources.length === addedCount) {
+        resetDateFilterToAll();
+      }
+      refreshSelectors();
+      renderFileList();
+      renderDashboard();
+      showToast(`${addedCount} file berhasil diproses (Filter: Semua Tanggal).`);
+    }
+  }
+
+  function processPastedData() {
+    const rawText = document.getElementById('pasteText').value;
+    if (!rawText.trim()) {
+      showToast('Tempel (Paste) data tabel Excel terlebih dahulu.');
+      return;
+    }
+    const prodName = document.getElementById('pasteProdName').value.trim() || 'PRODUK PASTE MANUAL';
+    const partName = document.getElementById('pastePartName').value.trim() || 'KOMPONEN';
+    const fgCode = document.getElementById('pasteFgCode').value.trim() || '-';
+
+    const lines = rawText.split(/\r?\n/).filter(l => l.trim() !== '');
+    const matrix = lines.map(line => line.split('\t'));
+
+    let parsed = parseMatrixToSheetData(matrix, partName, prodName, fgCode, []);
+    if (!parsed) {
+      const paddedMatrix = [
+        ['KONTROL MATERIAL ASSEMBLING'],
+        ['', '', '', '', '', '', '', '', ': ASSEMBLING'],
+        ['', '', '', '', '', '', '', '', ': ' + prodName],
+        ['', '', '', '', '', '', '', '', ': ' + fgCode],
+        ['', '', '', '', '', '', '', '', '', '', '', '', partName],
+        ...matrix
+      ];
+      parsed = parseMatrixToSheetData(paddedMatrix, partName, prodName, fgCode, []);
+    }
+
+    if (!parsed || parsed.rows.length === 0) {
+      showToast('Format tabel tidak dikenali. Pastikan baris header (TANGGAL, HASIL FINISHGOOD, REJECT PILIHAN/PROSES) ikut tersalin.');
+      return;
+    }
+
+    const sourceObj = {
+      id: 'paste_' + Date.now(),
+      fileName: `Paste: ${prodName} (${partName})`,
+      productName: parsed.productName,
+      fgCode: parsed.fgCode,
+      sheets: [parsed]
+    };
+
+    loadedSources.push(sourceObj);
+    document.getElementById('pasteText').value = '';
+    refreshSelectors();
+    renderFileList();
+    renderDashboard();
+    showToast('Data paste berhasil di-generate.');
+  }
+
+  function toggleSheet(sourceId, sheetIdx) {
+    const src = loadedSources.find(s => s.id === sourceId);
+    if (!src || !src.sheets[sheetIdx]) return;
+    src.sheets[sheetIdx].enabled = !src.sheets[sheetIdx].enabled;
+    refreshSelectors();
+    renderFileList();
+    renderDashboard();
+  }
+
+  function resetDateFilterToAll() {
+    document.getElementById('dateMode').value = 'all';
+    document.getElementById('singleDateSelect').style.display = 'none';
+    document.getElementById('rangeDateWrap').style.display = 'none';
+  }
+
+  function clearDateFilter() {
+    resetDateFilterToAll();
+    renderDashboard();
+    showToast('Filter tanggal direset ke Semua Tanggal.');
+  }
+
+  function removeSource(sourceId) {
+    const idx = loadedSources.findIndex(s => s.id === sourceId);
+    if (idx !== -1) {
+      loadedSources.splice(idx, 1);
+      if (loadedSources.length === 0) {
+        resetDateFilterToAll();
+      }
+      refreshSelectors();
+      renderFileList();
+      renderDashboard();
+    }
+  }
+
+  function resetAll() {
+    loadedSources.length = 0;
+    resetDateFilterToAll();
+    refreshSelectors();
+    renderFileList();
+    renderDashboard();
+    showToast('Semua data dan filter telah dibersihkan.');
+  }
+
+  function renderFileList() {
+    const container = document.getElementById('fileListContainer');
+    if (loadedSources.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    container.innerHTML = loadedSources.map(src => {
+      const pills = src.sheets.map((sh, idx) => {
+        const badge = sh.isSortir ? ' [Sortir]' : (sh.isSuperseded ? ' [Lama]' : (sh.isSubExtract ? ' [Sub-Tab]' : ''));
+        const cls = sh.enabled ? 'sheet-pill active' : 'sheet-pill ignored';
+        return `<span class="${cls}" onclick="toggleSheet('${src.id}', ${idx})" title="Klik untuk aktifkan/nonaktifkan sheet ini">${escapeHtml(sh.name)}${badge} (${sh.rows.length})</span>`;
+      }).join('');
+
+      return `
+        <div class="file-item">
+          <div class="file-meta">
+            <span class="file-tag">${escapeHtml(src.fgCode)}</span>
+            <div>
+              <div style="font-weight:700; font-size:13px; color:var(--slate-900);">${escapeHtml(src.productName)}</div>
+              <div style="font-size:11.5px; color:var(--slate-500);">${escapeHtml(src.fileName)}</div>
+            </div>
+          </div>
+          <div class="sheet-pills">
+            <span style="font-size:11px; color:var(--slate-500); margin-right:2px;">Komponen:</span>
+            ${pills}
+            <button class="remove-file" onclick="removeSource('${src.id}')">&times; Hapus</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function refreshSelectors() {
+    const hasData = loadedSources.length > 0;
+    document.getElementById('filterBar').style.display = hasData ? 'flex' : 'none';
+    document.getElementById('globalKpiGrid').style.display = hasData ? 'grid' : 'none';
+    document.getElementById('btnCopyWA').disabled = !hasData;
+    document.getElementById('btnExportXlsx').disabled = !hasData;
+    document.getElementById('btnPrint').disabled = !hasData;
+    document.getElementById('btnReset').disabled = !hasData;
+
+    const dateMap = new Map();
+    for (const src of loadedSources) {
+      for (const sh of src.sheets) {
+        if (!sh.enabled) continue;
+        for (const r of sh.rows) {
+          if (!dateMap.has(r.dateKey)) {
+            dateMap.set(r.dateKey, r.dateLabel);
+          }
+        }
+      }
+    }
+
+    const sortedDates = Array.from(dateMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    const prevSingle = document.getElementById('singleDateSelect').value;
+    const prevStart = document.getElementById('startDateSelect').value;
+    const prevEnd = document.getElementById('endDateSelect').value;
+
+    const optsHtml = sortedDates.map(([k, lbl]) => `<option value="${escapeHtml(k)}">${escapeHtml(lbl)}</option>`).join('');
+    document.getElementById('singleDateSelect').innerHTML = optsHtml;
+    document.getElementById('startDateSelect').innerHTML = optsHtml;
+    document.getElementById('endDateSelect').innerHTML = optsHtml;
+
+    if (sortedDates.length > 0) {
+      document.getElementById('singleDateSelect').value = dateMap.has(prevSingle) ? prevSingle : sortedDates[sortedDates.length - 1][0];
+      document.getElementById('startDateSelect').value = dateMap.has(prevStart) ? prevStart : sortedDates[0][0];
+      document.getElementById('endDateSelect').value = dateMap.has(prevEnd) ? prevEnd : sortedDates[sortedDates.length - 1][0];
+    }
+
+    const prodSelect = document.getElementById('productFilter');
+    const prevProd = prodSelect.value;
+    prodSelect.innerHTML = `<option value="ALL">Semua Produk (${loadedSources.length})</option>` +
+      loadedSources.map(s => `<option value="${s.id}">${escapeHtml(s.fgCode)} &mdash; ${escapeHtml(s.productName)}</option>`).join('');
+    if (loadedSources.some(s => s.id === prevProd)) {
+      prodSelect.value = prevProd;
+    }
+  }
+
+  function onDateModeChange() {
+    const mode = document.getElementById('dateMode').value;
+    document.getElementById('singleDateSelect').style.display = mode === 'single' ? 'inline-block' : 'none';
+    document.getElementById('rangeDateWrap').style.display = mode === 'range' ? 'inline-flex' : 'none';
+    renderDashboard();
+  }
+
+  function isDateAllowed(dateKey) {
+    const mode = document.getElementById('dateMode').value;
+    if (mode === 'all') return true;
+    if (mode === 'single') {
+      return dateKey === document.getElementById('singleDateSelect').value;
+    }
+    if (mode === 'range') {
+      const start = document.getElementById('startDateSelect').value;
+      const end = document.getElementById('endDateSelect').value;
+      const minD = start <= end ? start : end;
+      const maxD = start <= end ? end : start;
+      return dateKey >= minD && dateKey <= maxD;
+    }
+    return true;
+  }
+
+  function computeAggregatedData() {
+    const fixTypo = document.getElementById('chkNormalizeTypo').checked;
+    const selectedProdId = document.getElementById('productFilter').value;
+
+    const activeSources = selectedProdId === 'ALL'
+      ? loadedSources
+      : loadedSources.filter(s => s.id === selectedProdId);
+
+    const productResults = [];
+
+    for (const src of activeSources) {
+      const enabledSheets = src.sheets.filter(sh => sh.enabled);
+
+      const runSlots = [];
+      const slotByExactKey = new Map();
+
+      const pilihanMap = new Map();
+      const componentSummaries = [];
+
+      enabledSheets.forEach((sh, sheetIdx) => {
+        let compFg = 0;
+        let compPilihanTotal = 0;
+        let compProsesTotal = 0;
+        const compPilihanDefects = new Map();
+        const compProsesDefects = new Map();
+
+        const occCounter = new Map();
+
+        sh.rows.forEach((row) => {
+          if (!isDateAllowed(row.dateKey)) return;
+
+          const baseRunId = `${row.dateKey}|${row.line}|${row.durasi}`;
+          const occ = (occCounter.get(baseRunId) || 0) + 1;
+          occCounter.set(baseRunId, occ);
+
+          const exactKey = `${baseRunId}|${occ}`;
+          let slot = slotByExactKey.get(exactKey);
+
+          if (!slot && row.fg > 0) {
+            slot = runSlots.find(s =>
+              !s.claimedSheets.has(sheetIdx) &&
+              s.dateKey === row.dateKey &&
+              s.durasi === row.durasi &&
+              s.fg === row.fg
+            );
+          }
+          if (!slot && row.line && row.fg > 0) {
+            slot = runSlots.find(s =>
+              !s.claimedSheets.has(sheetIdx) &&
+              s.line === row.line &&
+              s.occ === occ &&
+              s.fg === row.fg
+            );
+          }
+
+          if (!slot) {
+            slot = {
+              dateKey: row.dateKey,
+              dateLabel: row.dateLabel,
+              line: row.line,
+              durasi: row.durasi,
+              occ,
+              fg: 0,
+              claimedSheets: new Set(),
+              prosesDefects: new Map()
+            };
+            runSlots.push(slot);
+            slotByExactKey.set(exactKey, slot);
+          }
+
+          slot.claimedSheets.add(sheetIdx);
+
+          if (row.fg > slot.fg) {
+            slot.fg = row.fg;
+          }
+          compFg += row.fg;
+
+          for (const item of row.pilihan) {
+            const cleanName = cleanDefectLabel(item.rawName, fixTypo);
+            const key = `${sh.componentName}|||${cleanName}`;
+            pilihanMap.set(key, (pilihanMap.get(key) || 0) + item.qty);
+
+            compPilihanTotal += item.qty;
+            compPilihanDefects.set(cleanName, (compPilihanDefects.get(cleanName) || 0) + item.qty);
+          }
+
+          const rowProsesGrouped = new Map();
+          for (const item of row.proses) {
+            const cleanName = cleanDefectLabel(item.rawName, fixTypo);
+            rowProsesGrouped.set(cleanName, (rowProsesGrouped.get(cleanName) || 0) + item.qty);
+          }
+
+          for (const [cleanName, qty] of rowProsesGrouped.entries()) {
+            const prevSlotQty = slot.prosesDefects.get(cleanName) || 0;
+            if (qty > prevSlotQty) {
+              slot.prosesDefects.set(cleanName, qty);
+            }
+            compProsesTotal += qty;
+            compProsesDefects.set(cleanName, (compProsesDefects.get(cleanName) || 0) + qty);
+          }
+        });
+
+        componentSummaries.push({
+          sheetName: sh.name,
+          componentName: sh.componentName,
+          fg: compFg,
+          pilihanTotal: compPilihanTotal,
+          prosesTotal: compProsesTotal,
+          pilihanList: Array.from(compPilihanDefects.entries()).sort((a, b) => b[1] - a[1]),
+          prosesList: Array.from(compProsesDefects.entries()).sort((a, b) => b[1] - a[1])
+        });
+      });
+
+      let totalFg = 0;
+      const prosesMap = new Map();
+      const activeDatesMap = new Map();
+
+      for (const slot of runSlots) {
+        totalFg += slot.fg;
+        if (slot.dateKey && slot.dateLabel) {
+          activeDatesMap.set(slot.dateKey, slot.dateLabel);
+        }
+        for (const [dName, qty] of slot.prosesDefects.entries()) {
+          prosesMap.set(dName, (prosesMap.get(dName) || 0) + qty);
+        }
+      }
+
+      const sortedDateLabels = Array.from(activeDatesMap.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(x => x[1]);
+
+      const pilihanRanking = Array.from(pilihanMap.entries())
+        .map(([compoundKey, qty]) => {
+          const [comp, defect] = compoundKey.split('|||');
+          return { component: comp, defect, qty };
+        })
+        .sort((a, b) => b.qty - a.qty);
+
+      const totalRejectPilihan = pilihanRanking.reduce((acc, x) => acc + x.qty, 0);
+
+      const prosesRanking = Array.from(prosesMap.entries())
+        .map(([defect, qty]) => ({ defect, qty }))
+        .sort((a, b) => b.qty - a.qty);
+
+      const totalRejectProses = prosesRanking.reduce((acc, x) => acc + x.qty, 0);
+      const totalRejectAll = totalRejectPilihan + totalRejectProses;
+
+      const pilihanRateFg = totalFg > 0 ? (totalRejectPilihan / totalFg) * 100 : 0;
+      const prosesRateFg = totalFg > 0 ? (totalRejectProses / totalFg) * 100 : 0;
+      const rejectRate = totalFg > 0 ? (totalRejectAll / totalFg) * 100 : 0;
+
+      productResults.push({
+        sourceId: src.id,
+        fileName: src.fileName,
+        productName: src.productName,
+        fgCode: src.fgCode,
+        dates: sortedDateLabels,
+        totalFg,
+        totalRejectPilihan,
+        pilihanRateFg,
+        top3Pilihan: pilihanRanking.slice(0, 3),
+        allPilihan: pilihanRanking,
+        totalRejectProses,
+        prosesRateFg,
+        top3Proses: prosesRanking.slice(0, 3),
+        allProses: prosesRanking,
+        totalRejectAll,
+        rejectRate,
+        componentSummaries
+      });
+    }
+
+    return productResults;
+  }
+
+  function fmt(num) {
+    return Math.round(num).toLocaleString('id-ID');
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function updateActiveFilterBanner() {
+    const banner = document.getElementById('activeFilterBanner');
+    const txt = document.getElementById('activeFilterText');
+    if (loadedSources.length === 0) {
+      banner.classList.remove('show');
+      return;
+    }
+    const mode = document.getElementById('dateMode').value;
+    if (mode === 'single') {
+      const sel = document.getElementById('singleDateSelect');
+      const lbl = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : sel.value;
+      txt.textContent = `Hanya menampilkan data 1 tanggal (${lbl}). Total di bawah BUKAN akumulasi seluruh file.`;
+      banner.classList.add('show');
+    } else if (mode === 'range') {
+      const sSel = document.getElementById('startDateSelect');
+      const eSel = document.getElementById('endDateSelect');
+      const sLbl = sSel.options[sSel.selectedIndex] ? sSel.options[sSel.selectedIndex].text : sSel.value;
+      const eLbl = eSel.options[eSel.selectedIndex] ? eSel.options[eSel.selectedIndex].text : eSel.value;
+      txt.textContent = `Hanya menampilkan rentang tanggal ${sLbl} s/d ${eLbl}. Total di bawah BUKAN akumulasi seluruh file.`;
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+
+  function renderDashboard() {
+    const container = document.getElementById('resultsContainer');
+    updateActiveFilterBanner();
+    if (loadedSources.length === 0) {
+      container.innerHTML = `
+        <div class="card empty-state">
+          <h3 style="font-size:15px; color:var(--slate-700); margin-bottom:6px;">Belum Ada Data Laporan Dimuat</h3>
+          <p style="font-size:13px;">Silakan tarik file laporan <strong>Kontrol Material Assembling</strong> (.ods / .xlsx) ke area di atas untuk langsung menghasilkan rekap Finish Good dan Top 3 Reject.</p>
+        </div>`;
+      return;
+    }
+
+    const results = computeAggregatedData();
+
+    const gFg = results.reduce((s, r) => s + r.totalFg, 0);
+    const gPilihan = results.reduce((s, r) => s + r.totalRejectPilihan, 0);
+    const gProses = results.reduce((s, r) => s + r.totalRejectProses, 0);
+    const gReject = gPilihan + gProses;
+
+    const gPilihanRateFg = gFg > 0 ? (gPilihan / gFg) * 100 : 0;
+    const gProsesRateFg = gFg > 0 ? (gProses / gFg) * 100 : 0;
+    const gRateFg = gFg > 0 ? (gReject / gFg) * 100 : 0;
+
+    document.getElementById('kpiTotalFg').textContent = fmt(gFg) + ' pcs';
+    document.getElementById('kpiSubFg').innerHTML = `Murni Finish Good (tanpa SBJ) &bull; ${results.length} produk`;
+    document.getElementById('kpiTotalPilihan').textContent = fmt(gPilihan) + ' pcs';
+    document.getElementById('kpiSubPilihan').textContent = `${gPilihanRateFg.toFixed(2)}% dari Finish Good`;
+    document.getElementById('kpiTotalProses').textContent = fmt(gProses) + ' pcs';
+    document.getElementById('kpiSubProses').textContent = `${gProsesRateFg.toFixed(2)}% dari Finish Good`;
+    document.getElementById('kpiTotalReject').textContent = fmt(gReject) + ' pcs';
+    document.getElementById('kpiSubRate').textContent = `${gRateFg.toFixed(2)}% dari Finish Good`;
+
+    const rateCard = document.getElementById('kpiRateCard');
+    rateCard.classList.toggle('alert', gRateFg >= 5.0);
+
+    container.innerHTML = results.map((prod, idx) => {
+      const isHighReject = prod.rejectRate >= 5.0;
+      const top1PilihanQty = prod.top3Pilihan.length > 0 ? prod.top3Pilihan[0].qty : 0;
+      const top1ProsesQty = prod.top3Proses.length > 0 ? prod.top3Proses[0].qty : 0;
+
+      const pilihanRows = prod.top3Pilihan.length > 0
+        ? prod.top3Pilihan.map((item, i) => {
+            const pctFg = prod.totalFg > 0 ? (item.qty / prod.totalFg) * 100 : 0;
+            const barWidth = top1PilihanQty > 0 ? (item.qty / top1PilihanQty) * 100 : 0;
+            return `
+              <tr>
+                <td style="width:38px;"><span class="rank-badge rank-${i + 1}">${i + 1}</span></td>
+                <td>
+                  <strong>${escapeHtml(item.defect)}</strong>
+                  <span class="part-chip">${escapeHtml(item.component)}</span>
+                  <div class="bar-wrap"><div class="bar-fill pilihan" style="width:${barWidth.toFixed(1)}%"></div></div>
+                </td>
+                <td class="num" style="text-align:right; font-weight:700; white-space:nowrap;">${fmt(item.qty)} pcs</td>
+                <td class="num" style="text-align:right; color:var(--slate-500); width:68px;">${pctFg.toFixed(2)}%</td>
+              </tr>`;
+          }).join('')
+        : `<tr><td colspan="4" style="text-align:center; color:var(--slate-500); padding:18px;">Tidak ada Reject Pilihan (0 pcs)</td></tr>`;
+
+      const prosesRows = prod.top3Proses.length > 0
+        ? prod.top3Proses.map((item, i) => {
+            const pctFg = prod.totalFg > 0 ? (item.qty / prod.totalFg) * 100 : 0;
+            const barWidth = top1ProsesQty > 0 ? (item.qty / top1ProsesQty) * 100 : 0;
+            return `
+              <tr>
+                <td style="width:38px;"><span class="rank-badge rank-${i + 1}">${i + 1}</span></td>
+                <td>
+                  <strong>${escapeHtml(item.defect)}</strong>
+                  <div class="bar-wrap"><div class="bar-fill proses" style="width:${barWidth.toFixed(1)}%"></div></div>
+                </td>
+                <td class="num" style="text-align:right; font-weight:700; white-space:nowrap;">${fmt(item.qty)} pcs</td>
+                <td class="num" style="text-align:right; color:var(--slate-500); width:68px;">${pctFg.toFixed(2)}%</td>
+              </tr>`;
+          }).join('')
+        : `<tr><td colspan="4" style="text-align:center; color:var(--slate-500); padding:18px;">Tidak ada Reject Proses (0 pcs)</td></tr>`;
+
+      const compTableRows = prod.componentSummaries.map(c => {
+        const cPilPct = prod.totalFg > 0 ? (c.pilihanTotal / prod.totalFg) * 100 : 0;
+        const cProPct = prod.totalFg > 0 ? (c.prosesTotal / prod.totalFg) * 100 : 0;
+        return `
+          <tr>
+            <td><strong>${escapeHtml(c.componentName)}</strong> <span style="font-size:11px; color:var(--slate-500);">(${escapeHtml(c.sheetName)})</span></td>
+            <td class="num" style="text-align:right;">${fmt(c.fg)}</td>
+            <td class="num" style="text-align:right; color:var(--orange-600); font-weight:600;">${fmt(c.pilihanTotal)} <span style="font-size:11px; font-weight:400;">(${cPilPct.toFixed(2)}%)</span></td>
+            <td class="num" style="text-align:right; color:var(--purple-700); font-weight:600;">${fmt(c.prosesTotal)} <span style="font-size:11px; font-weight:400;">(${cProPct.toFixed(2)}%)</span></td>
+            <td style="font-size:12px; color:var(--slate-700);">
+              ${c.pilihanList.length > 0 ? c.pilihanList.map(([d, q]) => `${escapeHtml(d)} (${fmt(q)})`).join(', ') : '-'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const allProsesSummary = prod.allProses.length > 0
+        ? prod.allProses.map(p => `${escapeHtml(p.defect)}: <strong>${fmt(p.qty)}</strong>`).join(' &bull; ')
+        : 'Tidak ada data';
+
+      const dateRangeLabel = prod.dates.length > 0
+        ? (prod.dates.length === 1 ? prod.dates[0] : `${prod.dates[0]} s/d ${prod.dates[prod.dates.length - 1]} (${prod.dates.length} hari)`)
+        : 'Tidak ada data pada filter tanggal';
+
+      return `
+        <article class="product-card">
+          <div class="product-header">
+            <div class="product-title-wrap">
+              <span class="fg-code-badge">${escapeHtml(prod.fgCode)}</span>
+              <span class="product-name">${escapeHtml(prod.productName)}</span>
+            </div>
+            <div class="product-submeta">
+              Periode: <strong>${escapeHtml(dateRangeLabel)}</strong> &bull; Komponen Aktif: <strong>${prod.componentSummaries.length} part</strong>
+            </div>
+          </div>
+
+          <div class="product-body">
+            <div class="summary-strip">
+              <div class="strip-box fg">
+                <div class="strip-label">Hasil Finish Good</div>
+                <div class="strip-val num">${fmt(prod.totalFg)} <span style="font-size:13px; font-weight:600;">pcs</span></div>
+                <div class="strip-note">Murni kolom Finishgood (tanpa SBJ)</div>
+              </div>
+              <div class="strip-box pilihan">
+                <div class="strip-label">Jumlah Reject Pilihan</div>
+                <div class="strip-val num">${fmt(prod.totalRejectPilihan)} <span style="font-size:13px; font-weight:600;">(${prod.pilihanRateFg.toFixed(2)}%)</span></div>
+                <div class="strip-note">Dari Finish Good &bull; ${prod.componentSummaries.length} komponen</div>
+              </div>
+              <div class="strip-box proses">
+                <div class="strip-label">Jumlah Reject Proses</div>
+                <div class="strip-val num">${fmt(prod.totalRejectProses)} <span style="font-size:13px; font-weight:600;">(${prod.prosesRateFg.toFixed(2)}%)</span></div>
+                <div class="strip-note">Dari Finish Good &bull; ${prod.allProses.length} jenis defect</div>
+              </div>
+              <div class="strip-box ${isHighReject ? 'alert' : ''}">
+                <div class="strip-label">Total Reject & Rasio NG</div>
+                <div class="strip-val num">${fmt(prod.totalRejectAll)} <span style="font-size:13px; font-weight:600;">(${prod.rejectRate.toFixed(2)}%)</span></div>
+                <div class="strip-note">Dari Finish Good (Pilihan + Proses)</div>
+              </div>
+            </div>
+
+            <div class="top3-grid">
+              <div class="top3-panel">
+                <div class="top3-head pilihan">
+                  <span>TOP 3 PENYUMBANG REJECT PILIHAN</span>
+                  <span class="num">${fmt(prod.totalRejectPilihan)} pcs (${prod.pilihanRateFg.toFixed(2)}%)</span>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Jenis Defect & Komponen</th>
+                      <th style="text-align:right;">Qty</th>
+                      <th style="text-align:right;">% FG</th>
+                    </tr>
+                  </thead>
+                  <tbody>${pilihanRows}</tbody>
+                </table>
+              </div>
+
+              <div class="top3-panel">
+                <div class="top3-head proses">
+                  <span>TOP 3 PENYUMBANG REJECT PROSES</span>
+                  <span class="num">${fmt(prod.totalRejectProses)} pcs (${prod.prosesRateFg.toFixed(2)}%)</span>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Jenis Defect Proses</th>
+                      <th style="text-align:right;">Qty</th>
+                      <th style="text-align:right;">% FG</th>
+                    </tr>
+                  </thead>
+                  <tbody>${prosesRows}</tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="detail-toggle no-print">
+              <button class="btn btn-outline" onclick="toggleDrawer('drawer_${idx}')">Lihat Rincian Per Komponen & Semua Defect</button>
+              <button class="btn btn-outline" onclick="copySingleProductWA(${idx})">Salin WA Produk Ini</button>
+            </div>
+
+            <div class="detail-drawer" id="drawer_${idx}">
+              <h4 style="font-family:'Montserrat',sans-serif; font-size:12px; text-transform:uppercase; color:var(--slate-700); margin-bottom:8px;">Rincian Per Komponen (Sheet Aktif)</h4>
+              <div style="overflow-x:auto; border:1px solid var(--slate-200); border-radius:8px; margin-bottom:12px;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Komponen</th>
+                      <th style="text-align:right;">FG Sheet</th>
+                      <th style="text-align:right;">Reject Pilihan (% FG)</th>
+                      <th style="text-align:right;">Reject Proses (% FG)</th>
+                      <th>Detail Reject Pilihan Komponen</th>
+                    </tr>
+                  </thead>
+                  <tbody>${compTableRows}</tbody>
+                </table>
+              </div>
+              <div style="font-size:12px; color:var(--slate-700); background:var(--slate-50); padding:10px 12px; border-radius:8px; border:1px solid var(--slate-200);">
+                <strong>Seluruh Reject Proses (Deduplikasi):</strong> ${allProsesSummary}
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function toggleDrawer(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  }
+
+  function formatProductWAText(prod) {
+    const periode = prod.dates.length > 0
+      ? (prod.dates.length === 1 ? prod.dates[0] : `${prod.dates[0]} s/d ${prod.dates[prod.dates.length - 1]}`)
+      : '-';
+
+    const topPilihanLines = prod.top3Pilihan.length > 0
+      ? prod.top3Pilihan.map((x, i) => {
+          const pctFg = prod.totalFg > 0 ? (x.qty / prod.totalFg) * 100 : 0;
+          return `   ${i + 1}. ${x.defect} [${x.component}]: ${fmt(x.qty)} pcs (${pctFg.toFixed(2)}%)`;
+        }).join('\n')
+      : '   - Nihil (0 pcs)';
+
+    const topProsesLines = prod.top3Proses.length > 0
+      ? prod.top3Proses.map((x, i) => {
+          const pctFg = prod.totalFg > 0 ? (x.qty / prod.totalFg) * 100 : 0;
+          return `   ${i + 1}. ${x.defect}: ${fmt(x.qty)} pcs (${pctFg.toFixed(2)}%)`;
+        }).join('\n')
+      : '   - Nihil (0 pcs)';
+
+    return [
+      `*${prod.productName}* (${prod.fgCode})`,
+      `Periode: ${periode}`,
+      `- Hasil Finish Good: *${fmt(prod.totalFg)} pcs*`,
+      `- Jumlah Reject Pilihan: *${fmt(prod.totalRejectPilihan)} pcs* (${prod.pilihanRateFg.toFixed(2)}% dari FG)`,
+      `  Top 3 Reject Pilihan:`,
+      topPilihanLines,
+      `- Jumlah Reject Proses: *${fmt(prod.totalRejectProses)} pcs* (${prod.prosesRateFg.toFixed(2)}% dari FG)`,
+      `  Top 3 Reject Proses:`,
+      topProsesLines,
+      `- Total Reject: *${fmt(prod.totalRejectAll)} pcs* (${prod.rejectRate.toFixed(2)}% dari FG)`
+    ].join('\n');
+  }
+
+  function copySingleProductWA(idx) {
+    const results = computeAggregatedData();
+    if (!results[idx]) return;
+    const text = `*LAPORAN OUTPUT & REJECT ASSEMBLY*\n\n` + formatProductWAText(results[idx]);
+    navigator.clipboard.writeText(text).then(() => showToast('Laporan produk disalin ke clipboard (siap paste ke WA).'));
+  }
+
+  function copyWhatsAppReport() {
+    const results = computeAggregatedData();
+    if (results.length === 0) return;
+    const blocks = results.map(r => formatProductWAText(r)).join('\n\n------------------------\n\n');
+    const text = `*REKAP OUTPUT & REJECT ASSEMBLING*\n\n${blocks}`;
+    navigator.clipboard.writeText(text).then(() => showToast('Seluruh rekap berhasil disalin ke clipboard!'));
+  }
+
+  function exportSummaryExcel() {
+    const results = computeAggregatedData();
+    if (results.length === 0 || !window.XLSX) return;
+
+    const summaryRows = results.map(r => ({
+      'Kode Item FG': r.fgCode,
+      'Nama Produk': r.productName,
+      'Periode': r.dates.length > 0 ? (r.dates.length === 1 ? r.dates[0] : `${r.dates[0]} - ${r.dates[r.dates.length - 1]}`) : '-',
+      'Hasil Finish Good (pcs)': r.totalFg,
+      'Jumlah Reject Pilihan (pcs)': r.totalRejectPilihan,
+      'Reject Pilihan (% FG)': Number(r.pilihanRateFg.toFixed(2)),
+      'Top 1 Reject Pilihan': r.top3Pilihan[0] ? `${r.top3Pilihan[0].defect} [${r.top3Pilihan[0].component}] (${r.top3Pilihan[0].qty})` : '-',
+      'Top 2 Reject Pilihan': r.top3Pilihan[1] ? `${r.top3Pilihan[1].defect} [${r.top3Pilihan[1].component}] (${r.top3Pilihan[1].qty})` : '-',
+      'Top 3 Reject Pilihan': r.top3Pilihan[2] ? `${r.top3Pilihan[2].defect} [${r.top3Pilihan[2].component}] (${r.top3Pilihan[2].qty})` : '-',
+      'Jumlah Reject Proses (pcs)': r.totalRejectProses,
+      'Reject Proses (% FG)': Number(r.prosesRateFg.toFixed(2)),
+      'Top 1 Reject Proses': r.top3Proses[0] ? `${r.top3Proses[0].defect} (${r.top3Proses[0].qty})` : '-',
+      'Top 2 Reject Proses': r.top3Proses[1] ? `${r.top3Proses[1].defect} (${r.top3Proses[1].qty})` : '-',
+      'Top 3 Reject Proses': r.top3Proses[2] ? `${r.top3Proses[2].defect} (${r.top3Proses[2].qty})` : '-',
+      'Total Reject (pcs)': r.totalRejectAll,
+      'Total Reject (% FG)': Number(r.rejectRate.toFixed(2))
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(summaryRows);
+    XLSX.utils.book_append_sheet(wb, ws, 'REKAP_REJECT_FG');
+    XLSX.writeFile(wb, `Rekap_Reject_Assembly_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    showToast('File Excel rekap berhasil diunduh.');
+  }
+</script>
+</body>
+</html>
