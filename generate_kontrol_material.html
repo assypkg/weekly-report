@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assembly Reject & Output Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --navy-950: #091124;
+      --navy-900: #0F172A;
+      --navy-800: #1E293B;
+      --navy-700: #1E3A8A;
+      --navy-600: #2563EB;
+      --emerald-700: #047857;
+      --emerald-600: #059669;
+      --emerald-500: #10B981;
+      --emerald-50: #ECFDF5;
+      --orange-600: #EA580C;
+      --orange-50: #FFF7ED;
+      --purple-700: #6D28D9;
+      --purple-600: #7C3AED;
+      --purple-50: #F5F3FF;
+      --red-600: #DC2626;
+      --red-50: #FEF2F2;
+      --slate-50: #F8FAFC;
+      --slate-100: #F1F5F9;
+      --slate-200: #E2E8F0;
+      --slate-300: #CBD5E1;
+      --slate-500: #64748B;
+      --slate-700: #334155;
+      --slate-900: #0F172A;
+      --white: #FFFFFF;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--slate-100);
+      color: var(--slate-900);
+      line-height: 1.5;
+      padding-bottom: 48px;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .num {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Top Header */
+    .topbar {
+      background: linear-gradient(135deg, var(--navy-950) 0%, var(--navy-700) 100%);
+      color: var(--white);
+      padding: 18px 24px;
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .topbar-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--emerald-500);
+      color: var(--navy-950);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+
+    .brand p {
+      font-size: 12px;
+      color: #CBD5E1;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-emerald {
+      background: var(--emerald-600);
+      color: var(--white);
+    }
+    .btn-emerald:hover:not(:disabled) { background: var(--emerald-700); }
+
+    .btn-navy {
+      background: var(--navy-700);
+      color: var(--white);
+    }
+    .btn-navy:hover:not(:disabled) { background: #172554; }
+
+    .btn-outline-light {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+    .btn-outline-light:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+
+    .btn-outline {
+      background: var(--white);
+      color: var(--slate-700);
+      border: 1px solid var(--slate-300);
+    }
+    .btn-outline:hover:not(:disabled) { background: var(--slate-50); border-color: var(--slate-500); }
+
+    .container {
+      max-width: 1360px;
+      margin: 22px auto 0;
+      padding: 0 20px;
+    }
+
+    /* Input Panel */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--slate-200);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .mode-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--slate-200);
+      padding-bottom: 10px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--slate-500);
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--navy-900);
+      color: var(--white);
+    }
+
+    .dropzone {
+      border: 2px dashed #93C5FD;
+      background: #F8FAFC;
+      border-radius: 12px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--navy-600);
+      background: #EFF6FF;
+    }
+
+    .dropzone-icon {
+      width: 46px;
+      height: 46px;
+      margin: 0 auto 10px;
+      background: #DBEAFE;
+      color: var(--navy-700);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .dropzone h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin-bottom: 4px;
+    }
+
+    .dropzone p {
+      font-size: 12.5px;
+      color: var(--slate-500);
+    }
+
+    .paste-area {
+      display: none;
+    }
+
+    .paste-area.active {
+      display: block;
+    }
+
+    .paste-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 2fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .input-ctrl {
+      width: 100%;
+      padding: 8px 11px;
+      border: 1px solid var(--slate-300);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    textarea.input-ctrl {
+      min-height: 120px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .filter-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--slate-500);
+      letter-spacing: 0.4px;
+    }
+
+    /* File & Sheet Pills */
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .file-item {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .file-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-tag {
+      background: var(--navy-900);
+      color: var(--white);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .sheet-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .sheet-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--slate-300);
+      background: var(--white);
+      color: var(--slate-500);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .sheet-pill.active {
+      background: #EFF6FF;
+      border-color: var(--navy-600);
+      color: var(--navy-700);
+      font-weight: 700;
+    }
+
+    .sheet-pill.ignored {
+      opacity: 0.6;
+      text-decoration: line-through;
+    }
+
+    .remove-file {
+      background: none;
+      border: none;
+      color: var(--red-600);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    /* Active Filter Banner */
+    .filter-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: #FEF3C7;
+      border: 1px solid #F59E0B;
+      border-left: 5px solid #D97706;
+      color: #92400E;
+      border-radius: 10px;
+      padding: 11px 16px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .filter-banner.show {
+      display: flex;
+    }
+
+    .filter-banner-btn {
+      background: #D97706;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 7px;
+      padding: 6px 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .filter-banner-btn:hover {
+      background: #B45309;
+    }
+
+    /* Global KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .paste-grid { grid-template-columns: 1fr; }
+    }
+
+    .kpi-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+      border-top: 4px solid var(--navy-700);
+    }
+
+    .kpi-card.fg { border-top-color: var(--emerald-600); }
+    .kpi-card.pilihan { border-top-color: var(--orange-600); }
+    .kpi-card.proses { border-top-color: var(--purple-600); }
+    .kpi-card.rate { border-top-color: var(--navy-700); }
+    .kpi-card.rate.alert { border-top-color: var(--red-600); background: var(--red-50); }
+
+    .kpi-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--slate-500);
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--slate-900);
+      line-height: 1.15;
+    }
+
+    .kpi-card.fg .kpi-value { color: var(--emerald-700); }
+    .kpi-card.pilihan .kpi-value { color: var(--orange-600); }
+    .kpi-card.proses .kpi-value { color: var(--purple-700); }
+    .kpi-card.rate.alert .kpi-value { color: var(--red-600); }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--slate-500);
+      margin-top: 6px;
+    }
+
+    /* Product Report Cards */
+    .product-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .product-header {
+      background: var(--navy-900);
+      color: var(--white);
+      padding: 14px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .product-title-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .fg-code-badge {
+      background: var(--emerald-500);
+      color: var(--navy-950);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .product-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .product-submeta {
+      font-size: 12px;
+      color: #94A3B8;
+    }
+
+    .product-body {
+      padding: 20px;
+    }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .summary-strip { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .strip-box {
+      border-radius: 10px;
+      padding: 12px 14px;
+      border: 1px solid var(--slate-200);
+      background: var(--slate-50);
+    }
+
+    .strip-box.fg { background: var(--emerald-50); border-color: #A7F3D0; }
+    .strip-box.pilihan { background: var(--orange-50); border-color: #FED7AA; }
+    .strip-box.proses { background: var(--purple-50); border-color: #DDD6FE; }
+    .strip-box.alert { background: var(--red-50); border-color: #FECACA; }
+
+    .strip-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--slate-500);
+    }
+
+    .strip-val {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 21px;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+
+    .strip-box.fg .strip-val { color: var(--emerald-700); }
+    .strip-box.pilihan .strip-val { color: var(--orange-600); }
+    .strip-box.proses .strip-val { color: var(--purple-700); }
+    .strip-box.alert .strip-val { color: var(--red-600); }
+
+    .strip-note {
+      font-size: 11px;
+      color: var(--slate-500);
+      margin-top: 2px;
+    }
+
+    /* Top 3 Columns */
+    .top3-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 820px) {
+      .top3-grid { grid-template-columns: 1fr; }
+    }
+
+    .top3-panel {
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .top3-head {
+      padding: 10px 14px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .top3-head.pilihan {
+      background: var(--orange-50);
+      color: var(--orange-600);
+      border-bottom: 1px solid #FED7AA;
+    }
+
+    .top3-head.proses {
+      background: var(--purple-50);
+      color: var(--purple-700);
+      border-bottom: 1px solid #DDD6FE;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--slate-500);
+      background: var(--slate-50);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--slate-100);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .rank-1 { background: #FEF3C7; color: #B45309; }
+    .rank-2 { background: #E2E8F0; color: #334155; }
+    .rank-3 { background: #FFEDD5; color: #9A3412; }
+
+    .part-chip {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: var(--slate-100);
+      color: var(--slate-700);
+      border: 1px solid var(--slate-200);
+      margin-left: 6px;
+    }
+
+    .bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: var(--slate-100);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .bar-fill.pilihan { background: var(--orange-600); height: 100%; }
+    .bar-fill.proses { background: var(--purple-600); height: 100%; }
+
+    /* Expandable Full Breakdown */
+    .detail-toggle {
+      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .detail-drawer {
+      display: none;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--slate-300);
+    }
+
+    .detail-drawer.open {
+      display: block;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--slate-500);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      background: var(--navy-950);
+      color: var(--white);
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s ease;
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media print {
+      .topbar, .no-print, .filter-bar { display: none !important; }
+      body { background: #fff; padding: 0; }
+      .container { max-width: 100%; margin: 0; padding: 0; }
+      .product-card { break-inside: avoid; box-shadow: none; border: 1px solid #cbd5e1; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-badge">QC</div>
+      <div>
+        <h1>ASSEMBLY REJECT & OUTPUT GENERATOR</h1>
+        <p>Rekap Finish Good Murni, Reject Pilihan & Reject Proses Lintas Komponen &bull; v5</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn btn-emerald" id="btnCopyWA" disabled onclick="copyWhatsAppReport()">Salin Laporan WA</button>
+      <button class="btn btn-outline-light" id="btnExportXlsx" disabled onclick="exportSummaryExcel()">Export Excel (.xlsx)</button>
+      <button class="btn btn-outline-light" id="btnPrint" disabled onclick="window.print()">Cetak / PDF</button>
+      <button class="btn btn-outline-light" id="btnReset" disabled onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- Upload / Input Section -->
+  <section class="card no-print">
+    <div class="mode-tabs">
+      <button class="tab-btn active" id="tabUpload" onclick="switchTab('upload')">1. Upload / Drag File Laporan (.ods / .xlsx / .xls)</button>
+      <button class="tab-btn" id="tabPaste" onclick="switchTab('paste')">2. Paste Data Tabel Excel (Cadangan)</button>
+    </div>
+
+    <div id="panelUpload">
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">&#8679;</div>
+        <h2>Tarik & Lepas File Kontrol Material Assembling di Sini</h2>
+        <p>Mendukung upload 1 file maupun banyak file sekaligus (<strong>.ods, .xlsx, .xls</strong>) &mdash; hasil langsung muncul otomatis</p>
+        <input type="file" id="fileInput" multiple accept=".ods,.xlsx,.xls,.csv" style="display:none" />
+      </div>
+    </div>
+
+    <div id="panelPaste" class="paste-area">
+      <div class="paste-grid">
+        <input type="text" id="pasteProdName" class="input-ctrl" placeholder="Nama Produk (cth: 8604 WARDAH MATTE)" />
+        <input type="text" id="pastePartName" class="input-ctrl" placeholder="Nama Komponen (cth: BASE)" />
+        <input type="text" id="pasteFgCode" class="input-ctrl" placeholder="Kode FG (opsional, cth: FG-C8604-0001)" />
+      </div>
+      <textarea id="pasteText" class="input-ctrl" placeholder="Copy tabel dari Excel/Calc (mulai dari baris header/defect sampai baris data) lalu Paste di sini..."></textarea>
+      <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+        <button class="btn btn-navy" onclick="processPastedData()">Generate Data dari Teks</button>
+      </div>
+    </div>
+
+    <div id="fileListContainer" class="file-list"></div>
+  </section>
+
+  <!-- Filter Bar -->
+  <section class="filter-bar" id="filterBar" style="display:none;">
+    <div class="filter-group">
+      <span class="filter-label">Filter Periode:</span>
+      <select id="dateMode" class="input-ctrl" style="width:auto;" onchange="onDateModeChange()">
+        <option value="all">Semua Tanggal dalam File</option>
+        <option value="single">1 Tanggal Spesifik (Harian)</option>
+        <option value="range">Rentang Tanggal (Mingguan)</option>
+      </select>
+      <select id="singleDateSelect" class="input-ctrl" style="width:auto; display:none;" onchange="renderDashboard()"></select>
+      <div id="rangeDateWrap" style="display:none; align-items:center; gap:6px;">
+        <select id="startDateSelect" class="input-ctrl" style="width:auto;" onchange="renderDashboard()"></select>
+        <span style="font-size:12px; color:var(--slate-500);">s/d</span>
+        <select id="endDateSelect" class="input-ctrl" style="width:auto;" onchange="renderDashboard()"></select>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Filter Produk:</span>
+      <select id="productFilter" class="input-ctrl" style="width:auto;" onchange="renderDashboard()">
+        <option value="ALL">Semua Produk Terunggah</option>
+      </select>
+      <label style="font-size:12px; color:var(--slate-700); display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
+        <input type="checkbox" id="chkNormalizeTypo" checked onchange="renderDashboard()" />
+        Rapikan Typo Nama Defect
+      </label>
+    </div>
+  </section>
+
+  <!-- Active Date Filter Warning Banner -->
+  <section class="filter-banner no-print" id="activeFilterBanner">
+    <div>
+      <strong>PERHATIAN &mdash; FILTER TANGGAL AKTIF:</strong>
+      <span id="activeFilterText">Menampilkan sebagian data saja.</span>
+    </div>
+    <button class="filter-banner-btn" onclick="clearDateFilter()">Tampilkan Semua Tanggal</button>
+  </section>
+
+  <!-- Global Summary KPIs -->
+  <section class="kpi-grid" id="globalKpiGrid" style="display:none;">
+    <div class="kpi-card fg">
+      <div class="kpi-title">Total Hasil Finish Good (Murni)</div>
+      <div class="kpi-value num" id="kpiTotalFg">0</div>
+      <div class="kpi-sub" id="kpiSubFg">Tanpa SBJ &bull; 0 produk</div>
+    </div>
+    <div class="kpi-card pilihan">
+      <div class="kpi-title">Total Reject Pilihan</div>
+      <div class="kpi-value num" id="kpiTotalPilihan">0</div>
+      <div class="kpi-sub" id="kpiSubPilihan">0.00% dari Finish Good</div>
+    </div>
+    <div class="kpi-card proses">
+      <div class="kpi-title">Total Reject Proses</div>
+      <div class="kpi-value num" id="kpiTotalProses">0</div>
+      <div class="kpi-sub" id="kpiSubProses">0.00% dari Finish Good</div>
+    </div>
+    <div class="kpi-card rate" id="kpiRateCard">
+      <div class="kpi-title">Total Reject & Rasio NG</div>
+      <div class="kpi-value num" id="kpiTotalReject">0</div>
+      <div class="kpi-sub" id="kpiSubRate">0.00% dari Finish Good</div>
+    </div>
+  </section>
+
+  <!-- Dynamic Product Results -->
+  <section id="resultsContainer">
+    <div class="card empty-state">
+      <h3 style="font-size:15px; color:var(--slate-700); margin-bottom:6px;">Belum Ada Data Laporan Dimuat</h3>
+      <p style="font-size:13px;">Silakan tarik file laporan <strong>Kontrol Material Assembling</strong> (`.ods` / `.xlsx`) ke area di atas untuk langsung menghasilkan rekap Finish Good dan Top 3 Reject.</p>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const loadedSources = [];
+
+  const MONTHS_MAP = {
+    'JAN': 1, 'JANUARI': 1, 'JANUARY': 1, 'JANURI': 1,
+    'FEB': 2, 'FEBRUARI': 2, 'FEBRUARY': 2, 'FEBUARI': 2,
+    'MAR': 3, 'MARET': 3, 'MARCH': 3,
+    'APR': 4, 'APRIL': 4,
+    'MEI': 5, 'MAY': 5,
+    'JUN': 6, 'JUNI': 6, 'JUNE': 6,
+    'JUL': 7, 'JULI': 7, 'JULY': 7,
+    'AGU': 8, 'AGUS': 8, 'AGUSTUS': 8, 'AGUTUS': 8, 'AGUST': 8, 'AUG': 8, 'AUGUST': 8,
+    'SEP': 9, 'SEPT': 9, 'SEPTEMBER': 9, 'SEPTMBER': 9,
+    'OKT': 10, 'OKTOBER': 10, 'OKTOER': 10, 'OCT': 10, 'OCTOBER': 10,
+    'NOV': 11, 'NOVEMBER': 11, 'NOP': 11, 'NOPEMBER': 11,
+    'DES': 12, 'DESEMBER': 12, 'DEC': 12, 'DECEMBER': 12
+  };
+
+  const MONTHS_SHORT = ['', 'JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+
+  // Pola ciri khas defect unit rakitan (Reject Proses) untuk deteksi otomatis jika merge header tergeser
+  const FG_HEADER_RE = /^(HASIL\s*)?(FINISH\s*GOOD|FG)$/i;
+  const FG_ROW_RE = /(HASIL\s*(FINISH\s*GOOD|FG)|FINISH\s*GOOD)/i;
+  const PILIHAN_RE = /R[EI]JEC?E?K?T\s*PILIHAN/i;
+  const PROSES_RE = /R[EI]JEC?E?K?T\s*(PROSES|BONGKARAN)/i;
+  const TOT_REJ_RE = /^TOT(AL)?\s*(R[EI]JEC?E?K?T|NG)$/i;
+
+  const ASSEMBLY_DEFECT_REGEX = /(\+\s*IN\b|\+\s*BS\b|\+\s*CV\b|\+\s*COVER\b|\+\s*BASE\b|\+\s*WIPPER|\+\s*ROD|\+\s*HP\b|\+\s*KARET|\(BS\s*\+|\(BASE\s*\+|\(COMPACT|\(COMP\s|\(LIPSTICK|\(IN\s*BS\)|BONGKARAN|TES\s*TEKH?NISI|TEST2AN|TEST-TESTAN|PUTARAN\s+(DOL|NGENDET)|RING\s+(COATING|TERBALIK)|LOCK\s+(MEMBAL|LEMAH)|KACA\s+(GORES|BINTIK|GOMPEL)|INNER\s+(NAIK|MENDEM|RENGGANG|LEPAS)|METAL\s+(TINGGI|KEMPOT|KENA\s+LEM|ADA\s+LEM|BS\s+PISAH))/i;
+
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  });
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+      fileInput.value = '';
+    }
+  });
+
+  function switchTab(mode) {
+    document.getElementById('tabUpload').classList.toggle('active', mode === 'upload');
+    document.getElementById('tabPaste').classList.toggle('active', mode === 'paste');
+    document.getElementById('panelUpload').style.display = mode === 'upload' ? 'block' : 'none';
+    document.getElementById('panelPaste').classList.toggle('active', mode === 'paste');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  function sanitizeCell(val) {
+    if (val === null || val === undefined) return '';
+    if (val instanceof Date) {
+      return isNaN(val.getTime()) ? '' : val;
+    }
+    if (typeof val === 'number') {
+      return Number.isFinite(val) ? val : '';
+    }
+    const str = String(val).trim();
+    if (/^invalid\s*date$/i.test(str) || str === 'NaN') return '';
+    return val;
+  }
+
+  function trimWorksheetRange(ws) {
+    if (!ws || !ws['!ref']) return;
+    let maxR = 0;
+    let maxC = 0;
+    for (const addr of Object.keys(ws)) {
+      if (addr.startsWith('!')) continue;
+      const cell = ws[addr];
+      if (!cell || cell.v === undefined || cell.v === null || cell.v === '') continue;
+      const decoded = XLSX.utils.decode_cell(addr);
+      if (decoded.r > maxR && decoded.r <= 5000) maxR = decoded.r;
+      if (decoded.c > maxC && decoded.c <= 250) maxC = decoded.c;
+    }
+
+    const safeRange = {
+      s: { r: 0, c: 0 },
+      e: { r: Math.max(maxR, 10), c: Math.max(maxC, 30) }
+    };
+    ws['!ref'] = XLSX.utils.encode_range(safeRange);
+  }
+
+  function parseNum(val) {
+    val = sanitizeCell(val);
+    if (val === '' || val instanceof Date) return 0;
+    if (typeof val === 'number') return val;
+    const str = String(val).trim();
+    if (!str || str.startsWith('#')) return 0;
+    const cleaned = str.replace(/,/g, '').replace(/\s+/g, '');
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function normalizeDate(raw, defaultYear = null) {
+    raw = sanitizeCell(raw);
+    if (raw === '') return { key: '', label: '', year: null };
+
+    if (raw instanceof Date && !isNaN(raw.getTime())) {
+      const y = raw.getFullYear();
+      const m = raw.getMonth() + 1;
+      const d = raw.getDate();
+      const dd = String(d).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      return { key: `${y}-${mm}-${dd}`, label: `${dd} ${MONTHS_SHORT[m]} ${y}`, year: y };
+    }
+
+    if (typeof raw === 'number' && raw > 30000 && raw < 75000 && window.XLSX && XLSX.SSF) {
+      const parsed = XLSX.SSF.parse_date_code(raw);
+      if (parsed && parsed.y && parsed.m && parsed.d) {
+        const dd = String(parsed.d).padStart(2, '0');
+        const mm = String(parsed.m).padStart(2, '0');
