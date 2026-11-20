@@ -280,6 +280,110 @@
     .top3-report-text strong { white-space: nowrap; }
     .top3-empty { color: #94a3b8; font-style: italic; }
 
+    /* Tampilan tabel Top Reject Section D & E: netral, seragam, dan mudah dibaca */
+    .week-subtable-wrap .sub-table-header {
+      background: #eaf0f6 !important;
+      color: #34465d !important;
+      border-left: 3px solid #647d99;
+      border-bottom: 1px solid #d5dee8;
+      border-radius: 0;
+      padding: 6px 9px;
+      letter-spacing: 0.35px;
+    }
+    .data-table.top3-report-table {
+      border: 1px solid #d5dee8;
+      border-top: 0;
+      color: #334155;
+      font-size: var(--table-font-size);
+    }
+    .data-table.top3-report-table thead th {
+      background: #33465d !important;
+      color: #ffffff !important;
+      border-color: #52657b !important;
+      padding: calc(var(--table-cell-padding) + 2px) 5px;
+      line-height: 1.25;
+    }
+    .data-table.top3-report-table tbody tr {
+      background: #ffffff !important;
+    }
+    .data-table.top3-report-table tbody tr:nth-child(even) {
+      background: #f5f8fb !important;
+    }
+    .data-table.top3-report-table tbody td,
+    .data-table.top3-report-table tbody td.col-type,
+    .data-table.top3-report-table tbody td.top3-report-cell {
+      background: transparent !important;
+      color: #334155 !important;
+      border-color: #dbe3ec !important;
+      font-weight: 500;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    .data-table.top3-report-table tbody td.col-type {
+      text-align: left;
+      font-weight: 700;
+      padding-left: 6px;
+    }
+    .data-table.top3-report-table tbody td.product-name-cell {
+      text-align: left;
+      font-weight: 600;
+      padding-left: 6px;
+    }
+    .data-table.top3-report-table tbody td.pct-main-cell {
+      font-weight: 700;
+      color: #334155 !important;
+    }
+    .data-table.top3-report-table tbody td.top3-report-cell {
+      text-align: left !important;
+      vertical-align: top !important;
+      white-space: normal !important;
+      text-overflow: clip !important;
+      padding-left: 7px;
+      padding-right: 7px;
+    }
+    .data-table.top3-report-table .top3-report-list {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .data-table.top3-report-table .top3-report-item {
+      display: grid;
+      grid-template-columns: 13px minmax(0, 1fr);
+      gap: 3px;
+      align-items: start;
+      color: #475569;
+      line-height: 1.3;
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+    .data-table.top3-report-table .top3-report-rank {
+      color: #64748b;
+      font-weight: 700;
+    }
+    .data-table.top3-report-table .top3-report-text {
+      color: #475569;
+      font-weight: 500;
+    }
+    .data-table.top3-report-table .top3-report-text strong {
+      color: #26384d;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .data-table.top3-report-table .top3-report-pct {
+      color: #64748b;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .data-table.top3-report-table tfoot th,
+    .data-table.top3-report-table tfoot td {
+      background: #26364a !important;
+      color: #ffffff !important;
+      border-color: #52657b !important;
+    }
+    .data-table.top3-report-table tfoot td.tfoot-pct {
+      color: #dbeafe !important;
+    }
+
     /* ================= POP-UP MODAL EDITOR ================= */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(2, 6, 23, 0.82); backdrop-filter: blur(3px);
@@ -1771,7 +1875,7 @@
       activeWeeks.forEach(w => {
         html += `<div class="week-subtable-wrap">
           <div class="sub-table-header" style="background:${themeColor};">${secLetter}. PRODUK REJECT ${typeName} TERTINGGI WEEK ${w + 1}</div>
-          <table class="data-table" style="border-top:none; margin-bottom: 0;">
+          <table class="data-table top3-report-table" style="border-top:none; margin-bottom: 0;">
             <colgroup>
               <col style="width:12%;"><col style="width:25%;"><col style="width:12%;">
               <col style="width:12%;"><col style="width:12%;"><col style="width:27%;">
@@ -1791,28 +1895,28 @@
           const ord = safeNum(item.order);
           const rej = safeNum(item.reject);
           const pct = calcPct(rej, ord);
-          const top3Entries = safeArr(item.top3).slice(0, 3).filter(entry => safeStr(entry && entry.name, '') || safeNum(entry && entry.qty) > 0).sort((a, b) => safeNum(b.qty) - safeNum(a.qty));
+          const top3Entries = safeArr(item.top3).slice(0, 3)
+            .filter(entry => safeStr(entry && entry.name, '') || safeNum(entry && entry.qty) > 0)
+            .sort((a, b) => safeNum(b.qty) - safeNum(a.qty));
+
           const top3Html = top3Entries.map((entry, index) => {
             const defectName = escapeHTML(safeStr(entry.name, 'Penyumbang tidak diberi nama'));
             const defectQty = safeNum(entry.qty);
             return `<div class="top3-report-item">
               <span class="top3-report-rank">${index + 1}.</span>
-              <span class="top3-report-text">${defectName}: <strong>${fmtInt(defectQty)} pcs</strong> (${fmtPct(calcPct(defectQty, ord))})</span>
+              <span class="top3-report-text">${defectName}: <strong>${fmtInt(defectQty)} pcs</strong> <span class="top3-report-pct">(${fmtPct(calcPct(defectQty, ord))})</span></span>
             </div>`;
           }).join('');
 
-          weekSumOrd += ord; weekSumRej += rej;
-
-          const isAlert = pct >= 2.5;
-          const textClass = isAlert ? 'text-red-alert bg-red-alert' : '';
-          const nameAlign = 'text-align:left; font-weight:600; padding-left:5px;';
+          weekSumOrd += ord;
+          weekSumRej += rej;
 
           html += `<tr>
-            <td class="col-type ${textClass}">${escapeHTML(safeStr(item.type))}</td>
-            <td class="${textClass}" style="${nameAlign}">${escapeHTML(name)}</td>
-            <td class="${textClass}">${fmtInt(ord)}</td>
-            <td class="${textClass}">${fmtInt(rej)}</td>
-            <td class="${textClass}" style="font-weight:700;">${fmtPct(pct)}</td>
+            <td class="col-type">${escapeHTML(safeStr(item.type))}</td>
+            <td class="product-name-cell">${escapeHTML(name)}</td>
+            <td>${fmtInt(ord)}</td>
+            <td>${fmtInt(rej)}</td>
+            <td class="pct-main-cell">${fmtPct(pct)}</td>
             <td class="top3-report-cell">${top3Html || '<span class="top3-empty">—</span>'}</td>
           </tr>`;
         });
