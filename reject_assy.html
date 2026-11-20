@@ -1724,7 +1724,7 @@
           const ord = safeNum(item.order);
           const rej = safeNum(item.reject);
           const pct = calcPct(rej, ord);
-          const top3Entries = safeArr(item.top3).slice(0, 3).filter(entry => safeStr(entry && entry.name, '') || safeNum(entry && entry.qty) > 0);
+          const top3Entries = safeArr(item.top3).slice(0, 3).filter(entry => safeStr(entry && entry.name, '') || safeNum(entry && entry.qty) > 0).sort((a, b) => safeNum(b.qty) - safeNum(a.qty));
           const top3Html = top3Entries.map((entry, index) => {
             const defectName = escapeHTML(safeStr(entry.name, 'Penyumbang tidak diberi nama'));
             const defectQty = safeNum(entry.qty);
