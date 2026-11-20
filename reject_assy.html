@@ -637,7 +637,7 @@
           </div>
           <div class="week-toggle-bar" id="weekToggleBar_sec3"></div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Mapping (Sec D):</strong> Kolom paste: Type Produk | Nama Produk | Order | Qty Reject | Defect 1 | Qty 1 | Defect 2 | Qty 2 | Defect 3 | Qty 3. Top 3 juga bisa diisi lewat editor.</div>
+            <div class="helper-text"><strong>Smart Mapping (Sec D):</strong> Bisa paste langsung dari tabel laporan: Type Produk | Nama Produk | Total Order | Qty Reject | % Reject | Top 3 Penyumbang. Persentase akan dilewati otomatis dan tiga defect di kolom Top 3 dipisahkan. Format Defect 1 | Qty 1 | Defect 2 | Qty 2 | Defect 3 | Qty 3 juga tetap didukung.</div>
             <textarea id="pasteSec3" placeholder="Paste data Excel Section D di sini..." oninput="handleExcelPasteTopProduct('sec3', this.value)"></textarea>
           </div>
           <div class="editor-table-wrap" id="editorSec3"></div>
@@ -660,7 +660,7 @@
           </div>
           <div class="week-toggle-bar" id="weekToggleBar_sec4"></div>
           <div class="excel-paste-box">
-            <div class="helper-text"><strong>Smart Mapping (Sec E):</strong> Kolom paste: Type Produk | Nama Produk | Order | Qty Reject | Defect 1 | Qty 1 | Defect 2 | Qty 2 | Defect 3 | Qty 3. Top 3 juga bisa diisi lewat editor.</div>
+            <div class="helper-text"><strong>Smart Mapping (Sec E):</strong> Bisa paste langsung dari tabel laporan: Type Produk | Nama Produk | Total Order | Qty Reject | % Reject | Top 3 Penyumbang. Persentase akan dilewati otomatis dan tiga defect di kolom Top 3 dipisahkan. Format Defect 1 | Qty 1 | Defect 2 | Qty 2 | Defect 3 | Qty 3 juga tetap didukung.</div>
             <textarea id="pasteSec4" placeholder="Paste data Excel Section E di sini..." oninput="handleExcelPasteTopProduct('sec4', this.value)"></textarea>
           </div>
           <div class="editor-table-wrap" id="editorSec4"></div>
@@ -1498,66 +1498,133 @@
       if(parsedDataCount > 0) showToast('Smart Map: Data di-paste sesuai Type Produk!');
     }
 
+    function parseTop3ContributorText(rawText) {
+      const source = String(rawText || '').replace(/\r/g, '\n').trim();
+      if (!source) return [];
+
+      // Pisahkan nomor urut (1. Nama) tanpa memecah angka ribuan (2.967 pcs).
+      const chunks = source
+        .split(/\n+/)
+        .flatMap(line => line.split(/\s(?=\d{1,2}[.)]\s+[^0-9])/))
+        .map(part => part.trim())
+        .filter(Boolean);
+
+      const parsed = [];
+      chunks.forEach(chunk => {
+        const clean = chunk.replace(/^["'\s]+|["'\s]+$/g, '');
+        const match = clean.match(/^(?:\d{1,2}\s*[.)]\s*)?(.+?)\s*:\s*([\d][\d.,]*)\s*(?:pcs?|buah|unit)?\s*(?:\(\s*[\d.,]+\s*%\s*\))?$/i);
+        if (match) {
+          const name = match[1].trim();
+          const qty = safeNum(match[2]);
+          if (name && qty >= 0) parsed.push({ name, qty });
+        }
+      });
+      return parsed.slice(0, 3);
+    }
+
     function handleExcelPasteTopProduct(secKey, rawText) {
       if (!rawText || !rawText.trim()) return;
-      const lines = rawText.trim().split(/\r?\n/).filter(l => l.trim().length > 0);
-      
+      const lines = rawText.replace(/\r/g, '').split('\n').filter(line => line.trim().length > 0);
       const activeWeeks = getActiveWeekIndices(secKey);
-      if(activeWeeks.length === 0) return;
+      if (activeWeeks.length === 0) return;
 
-      let activeWeekParse = activeWeeks[0]; 
+      let activeWeekParse = activeWeeks[0];
       let newWeekData = [];
+      let currentRecord = null;
+
+      const matchProductType = value => {
+        const typeText = String(value || '').trim().toUpperCase();
+        if (!typeText) return '';
+        return PRODUCT_TYPES.find(type => typeText === type) ||
+          PRODUCT_TYPES.find(type => type === 'MASCARA/EYELINER'
+            ? typeText.includes('MASCARA') || typeText.includes('EYELINER')
+            : typeText.includes(type) || type.includes(typeText)) || '';
+      };
+
+      const isHeaderOrTotal = rowText => {
+        const upper = String(rowText || '').toUpperCase();
+        return upper.includes('TYPE PRODUK') || upper.includes('TIPE PRODUK') ||
+          upper.includes('NAMA PRODUK') || upper.includes('TOTAL ORDER') ||
+          upper.includes('PERSENTASE REJECT') || upper.includes('TOP 3 PENYUMBANG') ||
+          upper.includes('SUBTOTAL') || upper.includes('GRAND TOTAL') ||
+          upper.includes('TOTAL WEEK');
+      };
 
       lines.forEach(line => {
-        let cols = line.split('\t').map(c => c.trim());
-        if (cols.length === 0) return;
+        const cols = line.split('\t').map(col => col.trim());
+        const firstUp = String(cols[0] || '').toUpperCase();
 
-        const firstUp = cols[0].toUpperCase();
-        
-        const wkMatch = firstUp.match(/WEEK\s*(\d)/);
-        if (wkMatch) {
-            const wkNum = Math.max(0, Math.min(4, parseInt(wkMatch[1], 10) - 1));
-            if (activeWeeks.includes(wkNum)) activeWeekParse = wkNum;
-            return;
+        const weekMatch = firstUp.match(/WEEK\s*(\d)/);
+        if (weekMatch) {
+          const weekNumber = Math.max(0, Math.min(4, parseInt(weekMatch[1], 10) - 1));
+          if (activeWeeks.includes(weekNumber)) activeWeekParse = weekNumber;
+          currentRecord = null;
+          return;
         }
-
-        if (firstUp.includes('TYPE PRODUK') || firstUp.includes('TIPE PRODUK') || firstUp.includes('WEEK') || firstUp.includes('NAMA PRODUK') || firstUp.includes('TOTAL ORDER') || firstUp.includes('SUBTOTAL')) {
+        if (isHeaderOrTotal(line)) {
+          currentRecord = null;
           return;
         }
 
-        if (cols.length < 3) return;
+        const matchedType = matchProductType(cols[0]);
+        if (matchedType && cols.length >= 4) {
+          const order = safeNum(cols[2]);
+          const reject = safeNum(cols[3]);
+          const top3 = [];
+          let contributorText = '';
 
-        let typeStr = cols[0];
-        let name = cols[1];
-        let orderStr = cols[2];
-        let rejectStr = cols[3];
+          // Format tabel laporan: Type | Nama | Order | Reject | % Reject | Top 3.
+          // Kolom persen produk tidak dianggap sebagai nama defect atau Qty.
+          if (isPercentageToken(cols[4])) {
+            contributorText = cols.slice(5).join(' ');
+          } else if (cols.length >= 10) {
+            // Format input rinci: Type | Nama | Order | Reject | Defect 1 | Qty 1 | ...
+            for (let t = 0; t < 3; t++) {
+              const defectName = String(cols[4 + (t * 2)] || '').trim();
+              const defectQty = safeNum(cols[5 + (t * 2)]);
+              if (defectName || defectQty > 0) top3.push({ name: defectName, qty: defectQty });
+            }
+          } else if (cols.length > 4) {
+            contributorText = cols.slice(4).join(' ');
+          }
 
-        let matchedType = typeStr;
-        const foundType = PRODUCT_TYPES.find(p => typeStr.toUpperCase().includes(p) || p.includes(typeStr.toUpperCase()));
-        if (foundType) matchedType = foundType;
+          if (contributorText) top3.push(...parseTop3ContributorText(contributorText));
+          currentRecord = {
+            type: matchedType,
+            name: safeStr(cols[1], '-'),
+            order,
+            reject,
+            top3: top3.slice(0, 3),
+            _top3Text: ''
+          };
+          newWeekData.push(currentRecord);
 
-        let order = safeNum(orderStr);
-        let reject = safeNum(rejectStr);
-        const top3 = [];
-        for (let t = 0; t < 3; t++) {
-          const defectName = String(cols[4 + (t * 2)] || '').trim();
-          const defectQty = safeNum(cols[5 + (t * 2)]);
-          if (defectName || defectQty > 0) top3.push({ name: defectName, qty: defectQty });
+          if (!appState.settings.prodVisible) appState.settings.prodVisible = PRODUCT_TYPES.map(() => true);
+          const pIdx = PRODUCT_TYPES.indexOf(matchedType);
+          if (pIdx >= 0 && !appState.settings.prodVisible[pIdx]) appState.settings.prodVisible[pIdx] = true;
+          return;
         }
 
-        newWeekData.push({ type: matchedType, name: safeStr(name, '-'), order, reject, top3 });
+        // Baris lanjut dari satu sel Top 3 digabung ke produk sebelumnya.
+        if (currentRecord && (cols.length === 1 || !matchProductType(cols[0]))) {
+          const continuation = cols.join(' ').trim();
+          if (/^(?:\d{1,2}\s*[.)]\s*)?.+?:\s*[\d][\d.,]*/.test(continuation)) {
+            currentRecord._top3Text += (currentRecord._top3Text ? '\n' : '') + continuation;
+            currentRecord.top3 = parseTop3ContributorText(currentRecord._top3Text);
+          }
+        }
       });
 
       if (newWeekData.length > 0) {
-         appState[secKey][activeWeekParse] = newWeekData;
-         newWeekData.forEach(item => {
-             const pIdx = PRODUCT_TYPES.indexOf(item.type);
-             if (pIdx !== -1 && !appState.settings.prodVisible[pIdx]) {
-                 appState.settings.prodVisible[pIdx] = true;
-             }
-         });
-         saveToStorage(); buildProductToggleBar(); buildAllSidebarEditors(); renderAll();
-         showToast('Data Top Reject dinamis di-paste ke W' + (activeWeekParse + 1));
+        newWeekData.forEach(item => { delete item._top3Text; });
+        appState[secKey][activeWeekParse] = newWeekData;
+        saveToStorage();
+        buildProductToggleBar();
+        buildAllSidebarEditors();
+        renderAll();
+        showToast('Data Top Reject dan Top 3 berhasil dibaca ke W' + (activeWeekParse + 1));
+      } else {
+        showToast('Format paste belum dikenali. Cek kolom Type | Nama | Order | Reject | % | Top 3.');
       }
     }
 
