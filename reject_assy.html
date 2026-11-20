@@ -274,10 +274,22 @@
     .top3-editor-row input.top3-qty { text-align: right !important; }
     .top3-editor-hint { display: block; color: #94a3b8; font-size: 8px; margin-top: 3px; }
     .top3-report-cell { text-align: left !important; vertical-align: top !important; padding: 4px 5px !important; white-space: normal !important; text-overflow: clip !important; }
-    .top3-report-list { display: flex; flex-direction: column; gap: 2px; }
-    .top3-report-item { display: grid; grid-template-columns: 11px minmax(0, 1fr); gap: 2px; line-height: 1.2; text-align: left; overflow-wrap: anywhere; }
-    .top3-report-rank { font-weight: 800; color: #334155; }
-    .top3-report-text strong { white-space: nowrap; }
+    /* Grid 5 kolom agar nomor, nama defect, titik dua, Qty, dan persen sejajar */
+    .top3-report-list {
+      display: grid;
+      grid-template-columns: 13px minmax(0, 1fr) 4px max-content max-content;
+      column-gap: 3px;
+      row-gap: 2px;
+      align-items: baseline;
+      text-align: left;
+      min-width: 0;
+    }
+    .top3-report-item { display: contents; }
+    .top3-report-rank { grid-column: 1; font-weight: 800; color: #64748b; }
+    .top3-report-name { grid-column: 2; min-width: 0; color: #475569; overflow-wrap: anywhere; }
+    .top3-report-colon { grid-column: 3; color: #64748b; text-align: center; }
+    .top3-report-qty { grid-column: 4; color: #26384d; font-weight: 700; white-space: nowrap; }
+    .top3-report-pct { grid-column: 5; color: #64748b; font-weight: 500; white-space: nowrap; }
     .top3-empty { color: #94a3b8; font-style: italic; }
 
     /* Tampilan tabel Top Reject Section D & E: netral, seragam, dan mudah dibaca */
@@ -1904,7 +1916,10 @@
             const defectQty = safeNum(entry.qty);
             return `<div class="top3-report-item">
               <span class="top3-report-rank">${index + 1}.</span>
-              <span class="top3-report-text">${defectName}: <strong>${fmtInt(defectQty)} pcs</strong> <span class="top3-report-pct">(${fmtPct(calcPct(defectQty, ord))})</span></span>
+              <span class="top3-report-name">${defectName}</span>
+              <span class="top3-report-colon">:</span>
+              <strong class="top3-report-qty">${fmtInt(defectQty)} pcs</strong>
+              <span class="top3-report-pct">(${fmtPct(calcPct(defectQty, ord))})</span>
             </div>`;
           }).join('');
 
