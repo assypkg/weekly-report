@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rekap laporan fg WA</title>
+
+  <!-- Google Fonts: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Montserrat', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              DEFAULT: '#1a237e',
+              dark: '#121858',
+              light: '#303f9f',
+              soft: '#e8eaf6',
+            },
+            emeraldExec: {
+              DEFAULT: '#2e7d32',
+              dark: '#1b5e20',
+              soft: '#e8f5e9',
+            },
+            surface: '#f4f6f9',
+            danger: {
+              DEFAULT: '#c62828',
+              soft: '#ffebee',
+            },
+            warning: {
+              DEFAULT: '#ef6c00',
+              soft: '#fff3e0',
+            },
+          },
+          boxShadow: {
+            card: '0 4px 20px -2px rgba(26, 35, 126, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04)',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- SheetJS for Excel (.xlsx) Export -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <!-- html2canvas for High-Res PNG Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Top Executive Header -->
+  <header class="bg-navy text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0">
+          <!-- Factory / Analytics Icon -->
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18m6 0V11l-6-3M9 9v.01M9 12v.01M9 15v.01M9 18v.01" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight leading-tight">
+            Rekapitulasi Job Order Mingguan
+          </h1>
+          <p class="text-xs sm:text-sm text-indigo-200 font-normal mt-0.5">
+            Smart-Factory Executive Dashboard &bull; Plant Alpha &amp; Plant Beta
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 self-start sm:self-center">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 border border-white/15 text-indigo-100">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          Parser Multi-Plant &amp; Auto-Audit
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Input Panel -->
+    <section class="bg-white rounded-xl shadow-card border border-slate-200/70 p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+        <div>
+          <h2 class="text-sm sm:text-base font-bold text-navy flex items-center gap-2">
+            <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Input Laporan Grup WhatsApp
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Tempel (Ctrl+V) laporan harian Plant Alpha &amp; Beta dari beberapa hari sekaligus, lalu tekan <kbd class="px-1.5 py-0.5 text-[11px] font-bold bg-slate-100 border border-slate-300 rounded text-slate-700">Enter</kbd> untuk langsung merekap.
+          </p>
+        </div>
+        <span class="text-[11px] font-semibold text-slate-400">
+          Shift + Enter = baris baru
+        </span>
+      </div>
+
+      <textarea
+        id="wa-input"
+        rows="6"
+        class="w-full rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white focus:border-navy focus:ring-2 focus:ring-navy/20 outline-none p-3.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 transition resize-y font-sans leading-relaxed"
+        placeholder="Tempel laporan hasil produksi WhatsApp (Plant Alpha &amp; Plant Beta) di sini, lalu tekan Enter..."
+      ></textarea>
+
+      <!-- Action Buttons -->
+      <div class="mt-3.5 flex flex-wrap items-center justify-between gap-3">
+        <div id="input-meta-badge" class="text-xs text-slate-500 font-medium">
+          Siap menerima laporan WhatsApp.
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <button
+            id="btn-clear"
+            type="button"
+            class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-700 text-xs sm:text-sm font-semibold transition"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Bersihkan
+          </button>
+          <button
+            id="btn-process"
+            type="button"
+            class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-navy hover:bg-navy-dark active:scale-[0.99] text-white text-xs sm:text-sm font-bold shadow-sm transition"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Proses Rekap (Enter)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Duplicate / Info Banner (hidden by default) -->
+    <div id="duplicate-banner" class="hidden rounded-xl bg-warning-soft border border-amber-300 px-4 py-3 flex items-start gap-3 text-xs sm:text-sm text-amber-900">
+      <svg class="w-5 h-5 text-warning shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div id="duplicate-banner-text" class="font-medium"></div>
+    </div>
+
+    <!-- Empty State (shown before first successful parse) -->
+    <section id="empty-state" class="bg-white rounded-xl shadow-card border border-slate-200/70 p-8 sm:p-12 text-center">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-navy-soft text-navy flex items-center justify-center mb-4">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <h3 class="text-base sm:text-lg font-bold text-slate-800">Belum Ada Data Rekapitulasi</h3>
+      <p class="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto mt-1.5 leading-relaxed">
+        Tempel teks laporan harian dari grup WhatsApp pada kolom di atas lalu tekan <strong class="text-navy">Enter</strong>. Sistem otomatis mengelompokkan berdasarkan <strong>Nomor Job Order (JO)</strong>, memisahkan blok multi-JO, menggabungkan lintas plant, dan mengaudit perkalian box.
+      </p>
+    </section>
+
+    <!-- Results Dashboard Area (Captured by html2canvas) -->
+    <div id="results-wrapper" class="hidden space-y-6">
+      <div id="export-dashboard-area" class="space-y-6 bg-surface p-1 sm:p-2 rounded-xl">
+
+        <!-- Export Header Banner (subtle executive title inside captured area) -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-navy tracking-tight">
+              Ringkasan Eksekutif Rekapitulasi JO
+            </h2>
+            <p id="report-subtitle" class="text-xs text-slate-500 font-medium mt-0.5"></p>
+          </div>
+          <!-- Action & Export Toolbar (ignored in PNG export via data-html2canvas-ignore) -->
+          <div data-html2canvas-ignore="true" class="flex flex-wrap items-center gap-2">
+            <button
+              id="btn-copy-wa"
+              type="button"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-bold shadow-sm transition active:scale-[0.98]"
+            >
+              <svg class="w-4 h-4 text-emeraldExec" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+              Salin Teks WA
+            </button>
+            <button
+              id="btn-export-xlsx"
+              type="button"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emeraldExec hover:bg-emeraldExec-dark text-white text-xs font-bold shadow-sm transition active:scale-[0.98]"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export Excel (.xlsx)
+            </button>
+            <button
+              id="btn-export-png"
+              type="button"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-navy hover:bg-navy-dark text-white text-xs font-bold shadow-sm transition active:scale-[0.98]"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Simpan PNG
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- KPI 1: Periode Laporan -->
+          <div class="bg-white rounded-xl shadow-card border border-slate-200/70 p-4 sm:p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Periode Laporan</span>
+              <span class="w-8 h-8 rounded-lg bg-navy-soft text-navy flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </span>
+            </div>
+            <div class="mt-3">
+              <div id="kpi-period" class="text-sm sm:text-base font-extrabold text-slate-800 leading-snug">-</div>
+              <div id="kpi-days" class="text-xs font-semibold text-navy mt-1">0 hari terdeteksi</div>
+            </div>
+          </div>
+
+          <!-- KPI 2: Total JO Aktif -->
+          <div class="bg-white rounded-xl shadow-card border border-slate-200/70 p-4 sm:p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Job Order Aktif</span>
+              <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </span>
+            </div>
+            <div class="mt-3">
+              <div id="kpi-total-jo" class="text-2xl sm:text-3xl font-extrabold text-navy">0</div>
+              <div id="kpi-jo-sub" class="text-xs font-medium text-slate-500 mt-1">0 lintas plant</div>
+            </div>
+          </div>
+
+          <!-- KPI 3: Total Output -->
+          <div class="bg-white rounded-xl shadow-card border border-slate-200/70 p-4 sm:p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Output (PCS)</span>
+              <span class="w-8 h-8 rounded-lg bg-emeraldExec-soft text-emeraldExec flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </span>
+            </div>
+            <div class="mt-3">
+              <div id="kpi-total-qty" class="text-2xl sm:text-3xl font-extrabold text-emeraldExec">0</div>
+              <div id="kpi-qty-breakdown" class="text-[11px] font-semibold text-slate-500 mt-1">
+                Alpha: 0 &bull; Beta: 0
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 4: Status Audit Hitungan -->
+          <div id="kpi-audit-card" class="bg-white rounded-xl shadow-card border border-slate-200/70 p-4 sm:p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Status Audit Hitungan</span>
+              <span id="kpi-audit-icon" class="w-8 h-8 rounded-lg bg-emeraldExec-soft text-emeraldExec flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </span>
+            </div>
+            <div class="mt-3">
+              <div id="kpi-audit-status" class="text-base sm:text-lg font-extrabold text-emeraldExec">Semua Valid</div>
+              <div id="kpi-audit-sub" class="text-xs font-medium text-slate-500 mt-1">Tidak ada selisih hitung box</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Filter & Table Card -->
+        <section class="bg-white rounded-xl shadow-card border border-slate-200/70 overflow-hidden">
+          <!-- Filter Bar -->
+          <div data-html2canvas-ignore="true" class="p-4 sm:p-5 border-b border-slate-200/80 bg-slate-50/50 flex flex-col md:flex-row md:items-center gap-3">
+            <!-- Search -->
+            <div class="relative flex-1">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                id="filter-search"
+                type="text"
+                placeholder="Cari No. JO atau Nama Produk..."
+                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white focus:border-navy focus:ring-2 focus:ring-navy/15 outline-none text-xs sm:text-sm font-medium transition"
+              />
+            </div>
+
+            <!-- Plant Filter -->
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
+              <select
+                id="filter-plant"
+                class="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:border-navy focus:ring-2 focus:ring-navy/15 outline-none text-xs sm:text-sm font-semibold text-slate-700"
+              >
+                <option value="ALL">Semua Plant</option>
+                <option value="ALPHA">Plant Alpha</option>
+                <option value="BETA">Plant Beta</option>
+                <option value="BOTH">Lintas Plant</option>
+              </select>
+
+              <!-- Sort Select -->
+              <select
+                id="filter-sort"
+                class="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:border-navy focus:ring-2 focus:ring-navy/15 outline-none text-xs sm:text-sm font-semibold text-slate-700"
+              >
+                <option value="QTY_DESC">Urutkan: Total Qty Terbesar</option>
+                <option value="JO_ASC">Urutkan: No. JO (A–Z)</option>
+                <option value="NAME_ASC">Urutkan: Nama Produk (A–Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Hint bar -->
+          <div class="px-4 sm:px-5 py-2 bg-indigo-50/40 border-b border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+            <span>Klik baris Job Order untuk melihat rincian harian, operator, dan hasil audit box.</span>
+            <span id="table-count-info" class="font-bold text-navy"></span>
+          </div>
+
+          <!-- Responsive Table Container -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[820px]">
+              <thead>
+                <tr class="bg-navy text-white text-[11px] uppercase tracking-wider font-bold">
+                  <th class="py-3.5 px-4 w-12 text-center">No</th>
+                  <th class="py-3.5 px-4 w-32">No. JO</th>
+                  <th class="py-3.5 px-4">Nama Produk</th>
+                  <th class="py-3.5 px-4 w-32 text-center">Plant</th>
+                  <th class="py-3.5 px-4 w-24 text-center">Hari Aktif</th>
+                  <th class="py-3.5 px-4 w-28 text-right">Qty Alpha</th>
+                  <th class="py-3.5 px-4 w-28 text-right">Qty Beta</th>
+                  <th class="py-3.5 px-4 w-32 text-right">Total Qty (PCS)</th>
+                  <th class="py-3.5 px-4 w-36 text-center">Status Audit</th>
+                </tr>
+              </thead>
+              <tbody id="recap-tbody" class="divide-y divide-slate-200/80 text-xs sm:text-sm">
+                <!-- Populated dynamically -->
+              </tbody>
+              <tfoot id="recap-tfoot" class="bg-slate-100/90 border-t-2 border-navy/20 font-extrabold text-xs sm:text-sm text-navy">
+                <!-- Grand Total populated dynamically -->
+              </tfoot>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto py-4 text-center text-[11px] text-slate-400 font-medium border-t border-slate-200/70 bg-white">
+    Rekapitulasi Job Order Mingguan &bull; Plant Alpha &amp; Beta &bull; Berjalan 100% Lokal di Browser
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================================
+      // 1. CONSTANTS & STATE
+      // =========================================================================
+      const MONTH_MAP = {
+        JANUARI: 1, JAN: 1,
+        FEBRUARI: 2, FEB: 2, PEBRUARI: 2, PEB: 2,
+        MARET: 3, MAR: 3,
+        APRIL: 4, APR: 4,
+        MEI: 5, MAY: 5,
+        JUNI: 6, JUN: 6,
+        JULI: 7, JUL: 7,
+        AGUSTUS: 8, AGS: 8, AGU: 8, AUG: 8,
+        SEPTEMBER: 9, SEP: 9, SEPT: 9,
+        OKTOBER: 10, OKT: 10, OCT: 10,
+        NOVEMBER: 11, NOV: 11, NOP: 11,
+        DESEMBER: 12, DES: 12, DEC: 12
+      };
+
+      const MONTH_SHORT_ID = [
+        '', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'
+      ];
+
+      // Regex for Job Order code (e.g. JD26-0961, JE26-0640, ST26-0173)
+      const JO_REGEX = /\b([A-Z]{2}\d{2}-\d{4})\b/gi;
+
+      // Global application state
+      let appState = {
+        aggregated: [],       // Aggregated JO records
+        rawEntries: [],       // Flat daily/operator entries for Excel Detail sheet
+        datesDetected: [],    // Sorted unique ISO dates
+        duplicateSkipped: 0,  // Count of duplicate reports skipped
+        expandedJOs: new Set()
+      };
+
+      // =========================================================================
+      // 2. DOM REFERENCES
+      // =========================================================================
+      const els = {
+        textarea: document.getElementById('wa-input'),
+        btnProcess: document.getElementById('btn-process'),
+        btnClear: document.getElementById('btn-clear'),
+        inputMetaBadge: document.getElementById('input-meta-badge'),
+        duplicateBanner: document.getElementById('duplicate-banner'),
+        duplicateBannerText: document.getElementById('duplicate-banner-text'),
+        emptyState: document.getElementById('empty-state'),
+        resultsWrapper: document.getElementById('results-wrapper'),
+        exportDashboardArea: document.getElementById('export-dashboard-area'),
+        reportSubtitle: document.getElementById('report-subtitle'),
+        kpiPeriod: document.getElementById('kpi-period'),
+        kpiDays: document.getElementById('kpi-days'),
+        kpiTotalJo: document.getElementById('kpi-total-jo'),
+        kpiJoSub: document.getElementById('kpi-jo-sub'),
+        kpiTotalQty: document.getElementById('kpi-total-qty'),
+        kpiQtyBreakdown: document.getElementById('kpi-qty-breakdown'),
+        kpiAuditCard: document.getElementById('kpi-audit-card'),
+        kpiAuditIcon: document.getElementById('kpi-audit-icon'),
+        kpiAuditStatus: document.getElementById('kpi-audit-status'),
+        kpiAuditSub: document.getElementById('kpi-audit-sub'),
+        filterSearch: document.getElementById('filter-search'),
+        filterPlant: document.getElementById('filter-plant'),
+        filterSort: document.getElementById('filter-sort'),
+        tableCountInfo: document.getElementById('table-count-info'),
+        tbody: document.getElementById('recap-tbody'),
+        tfoot: document.getElementById('recap-tfoot'),
+        btnCopyWa: document.getElementById('btn-copy-wa'),
+        btnExportXlsx: document.getElementById('btn-export-xlsx'),
+        btnExportPng: document.getElementById('btn-export-png'),
+        toastContainer: document.getElementById('toast-container')
+      };
+
+      // =========================================================================
+      // 3. UTILITY FUNCTIONS
+      // =========================================================================
+
+      /**
+       * Display a non-blocking toast notification.
+       * @param {string} message
+       * @param {'success'|'warning'|'error'|'info'} type
+       */
+      function showToast(message, type = 'info') {
+        const colors = {
+          success: 'bg-emeraldExec text-white border-emerald-700',
+          warning: 'bg-warning text-white border-amber-700',
+          error: 'bg-danger text-white border-red-800',
+          info: 'bg-navy text-white border-indigo-900'
+        };
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto rounded-xl border px-4 py-3 text-xs sm:text-sm font-semibold shadow-lg transition-all duration-300 transform translate-y-0 opacity-100 ${colors[type] || colors.info}`;
+        toast.textContent = message;
+        els.toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+          toast.classList.add('opacity-0', '-translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }, 3200);
+      }
+
+      /**
+       * Format integer with Indonesian dot thousands separator.
+       */
+      function formatNumber(num) {
+        return Number(num || 0).toLocaleString('id-ID');
+      }
+
+      /**
+       * Parse Indonesian formatted integer string (dots as thousands separator).
+       * Example: "22.550" -> 22550, "1.344" -> 1344
+       */
+      function parseIdNumber(str) {
+        if (!str) return 0;
+        const cleaned = String(str).replace(/\./g, '').replace(/,/g, '').trim();
+        const parsed = parseInt(cleaned, 10);
+        return isNaN(parsed) ? 0 : parsed;
+      }
+
+      /**
+       * Format ISO date "YYYY-MM-DD" to readable Indonesian date "19 Nov 2026".
+       */
+      function formatIsoDate(iso) {
+        if (!iso || iso === 'UNKNOWN') return 'Tanggal Tdk Terdeteksi';
+        const parts = iso.split('-');
+        if (parts.length !== 3) return iso;
+        const y = parts[0];
+        const m = parseInt(parts[1], 10);
+        const d = parseInt(parts[2], 10);
+        return `${d} ${MONTH_SHORT_ID[m] || parts[1]} ${y}`;
+      }
+
+      /**
+       * Escape HTML special chars to prevent XSS when rendering user-pasted text.
+       */
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      /**
+       * Strip WhatsApp copy-paste metadata prefix and markdown characters.
+       */
+      function stripWaPrefix(line) {
+        let s = line;
+        // Format: [17.15, 19/11/2026] Nama Admin: ... or [19/11/26, 17:15:00] Nama: ...
+        s = s.replace(/^\s*\[\s*[\d./:, -]+\s*\]\s*[^:\n]{1,60}:\s*/i, '');
+        // Format: 19/11/2026, 17.15 - Nama Admin: ...
+        s = s.replace(/^\s*\d{1,2}\/\d{1,2}\/\d{2,4}[,\s]+\d{1,2}[.:]\d{2}(?:[.:]\d{2})?\s*-\s*[^:\n]{1,60}:\s*/i, '');
+        return s;
+      }
+
+      function stripMarkdown(line) {
+        return line.replace(/[*`_~]/g, '').trim();
+      }
+
+      /**
+       * Extract unique JO codes from a string (uppercase).
+       */
+      function extractJOCodes(text) {
+        const matches = text.match(JO_REGEX);
+        if (!matches) return [];
+        const unique = [];
+        const seen = new Set();
+        for (const m of matches) {
+          const upper = m.toUpperCase();
+          if (!seen.has(upper)) {
+            seen.add(upper);
+            unique.push(upper);
+          }
+        }
+        return unique;
+      }
+
+      /**
+       * Clean product name by removing JO codes, leftover empty parentheses, and excess spaces.
+       */
+      function cleanProductName(rawLine) {
+        let name = stripMarkdown(rawLine);
+        // Remove JO codes
+        name = name.replace(JO_REGEX, '');
+        // Remove empty parentheses or brackets left behind
+        name = name.replace(/\(\s*\)/g, '');
+        name = name.replace(/\[\s*\]/g, '');
+        // Remove trailing/leading dashes or stray punctuation
+        name = name.replace(/^[\s\-:]+/, '').replace(/[\s\-:]+$/, '');
+        // Collapse multiple spaces
+        name = name.replace(/\s{2,}/g, ' ').trim();
+        return name || 'Produk Tanpa Nama';
+      }
+
+      /**
+       * Extract Indonesian date (DD BULAN YYYY) from a header line -> ISO YYYY-MM-DD.
+       */
+      function extractDateFromHeader(cleanLine) {
+        const upper = cleanLine.toUpperCase();
+        const monthKeys = Object.keys(MONTH_MAP).join('|');
+        const dateRegex = new RegExp(`\\b(\\d{1,2})\\s+(${monthKeys})\\s+(\\d{4})\\b`, 'i');
+        const match = upper.match(dateRegex);
+        if (!match) return null;
+
+        const day = parseInt(match[1], 10);
+        const month = MONTH_MAP[match[2].toUpperCase()];
+        const year = parseInt(match[3], 10);
+
+        if (!month || day < 1 || day > 31) return null;
+        const mm = String(month).padStart(2, '0');
+        const dd = String(day).padStart(2, '0');
+        return `${year}-${mm}-${dd}`;
+      }
+
+      /**
+       * Check if a line is a report header (contains PLANT ALPHA or PLANT BETA).
+       */
+      function detectReportHeader(cleanLine) {
+        const upper = cleanLine.toUpperCase();
+        const hasAlpha = /\bPLANT\s+ALPHA\b/.test(upper);
+        const hasBeta = /\bPLANT\s+BETA\b/.test(upper);
+        if (!hasAlpha && !hasBeta) return null;
+
+        // Avoid matching random notes unless it looks like a header (contains PRODUKSI, HASIL, LAPORAN, JAM, TANGGAL, or a date)
+        const isoDate = extractDateFromHeader(cleanLine);
+        const looksLikeHeader = /(HASIL|PRODUKSI|LAPORAN|TANGGAL|JAM|SHIFT)/.test(upper) || Boolean(isoDate);
+        if (!looksLikeHeader) return null;
+
+        return {
+          plant: hasAlpha ? 'ALPHA' : 'BETA',
+          dateIso: isoDate || 'UNKNOWN'
+        };
+      }
+
+      /**
+       * Check if a line is a result breakdown line (A:, B:, C:, RECEH:).
+       */
+      function isDetailResultLine(cleanLine) {
+        return /^(?:(?:SHIFT\s*)?[A-D]|RECEH(?:\s*[A-D])?)\s*:/i.test(cleanLine);
+      }
+
+      /**
+       * Check if a line is a TOTAL line.
+       */
+      function isTotalLine(cleanLine) {
+        return /^TOTAL\b\s*[:=]/i.test(cleanLine);
+      }
+
+      /**
+       * Parse numeric total from a TOTAL line.
+       * Examples:
+       *   "TOTAL : 26.775" -> 26775
+       *   "TOTAL : 41 BOX @550 = 22.550 PCS | 100.49%" -> 22550
+       *   "TOTAL : 8 BOX (7 BOX + 1 RECEH) = 9.744 PCS | 118.11%" -> 9744
+       */
+      function parseTotalLineQty(cleanLine) {
+        const eqMatch = cleanLine.match(/=\s*([\d.]+)/);
+        if (eqMatch) {
+          return parseIdNumber(eqMatch[1]);
+        }
+        const colonMatch = cleanLine.match(/^TOTAL\b\s*:\s*([\d.]+)/i);
+        if (colonMatch) {
+          return parseIdNumber(colonMatch[1]);
+        }
+        return null;
+      }
+
+      /**
+       * Parse a detail result line (A:, B:, RECEH:) and perform box arithmetic auto-audit.
+       */
+      function parseDetailResultLine(cleanLine) {
+        const eqMatch = cleanLine.match(/=\s*([\d.]+)/);
+        const writtenQty = eqMatch ? parseIdNumber(eqMatch[1]) : null;
+        const lineJOs = extractJOCodes(cleanLine);
+
+        // Extract left-hand side before '=' for formula calculation
+        const lhs = eqMatch ? cleanLine.slice(0, eqMatch.index) : cleanLine;
+
+        let expectedQty = 0;
+        let hasFormula = false;
+
+        // Pattern 1: N BOX @M (e.g. 28 BOX @140, 7 BOX @1.344, 1 BOX @100)
+        const boxAtRegex = /([\d.]+)\s*BOX\s*@\s*([\d.]+)/gi;
+        let m;
+        while ((m = boxAtRegex.exec(lhs)) !== null) {
+          hasFormula = true;
+          expectedQty += parseIdNumber(m[1]) * parseIdNumber(m[2]);
+        }
+
+        // Pattern 2: N BOX (M) for receh (e.g. 1 BOX (336))
+        const boxParenRegex = /([\d.]+)\s*BOX\s*\(\s*([\d.]+)\s*\)/gi;
+        while ((m = boxParenRegex.exec(lhs)) !== null) {
+          hasFormula = true;
+          expectedQty += parseIdNumber(m[1]) * parseIdNumber(m[2]);
+        }
+
+        // Build audit warning if formula exists and doesn't match writtenQty
+        let warning = null;
+        if (hasFormula && writtenQty !== null && expectedQty !== writtenQty) {
+          const diff = writtenQty - expectedQty;
+          const sign = diff > 0 ? '+' : '';
+          warning = {
+            line: cleanLine,
+            expected: expectedQty,
+            written: writtenQty,
+            diff: diff,
+            message: `Selisih hitung box: seharusnya ${formatNumber(expectedQty)} pcs, tertulis ${formatNumber(writtenQty)} pcs (${sign}${formatNumber(diff)} pcs)`
+          };
+        }
+
+        return {
+          raw: cleanLine,
+          writtenQty: writtenQty !== null ? writtenQty : 0,
+          hasWrittenQty: writtenQty !== null,
+          expectedQty,
+          hasFormula,
+          lineJOs,
+          warning
+        };
+      }
+
+      // =========================================================================
+      // 4. CORE WHATSAPP REPORT PARSER
+      // =========================================================================
+
+      /**
+       * Parse full raw pasted text into aggregated weekly JO recap & flat daily entries.
+       */
+      function parseWhatsAppReports(rawText) {
+        const rawLines = rawText.replace(/\r\n/g, '\n').split('\n');
+
+        // Step 1: Split into report sections by header (Plant + Date) for duplicate detection
+        const sections = [];
+        let currentSection = {
+          plant: 'UNKNOWN',
+          dateIso: 'UNKNOWN',
+          lines: []
+        };
+
+        for (const rawLine of rawLines) {
+          const noPrefix = stripWaPrefix(rawLine);
+          const clean = stripMarkdown(noPrefix);
+          const headerInfo = detectReportHeader(clean);
+
+          if (headerInfo) {
+            // Save previous section if it has meaningful lines
+            if (currentSection.lines.length > 0) {
+              sections.push(currentSection);
+            }
+            currentSection = {
+              plant: headerInfo.plant,
+              dateIso: headerInfo.dateIso,
+              lines: []
+            };
+          } else {
+            if (clean.length > 0) {
+              currentSection.lines.push(clean);
+            }
+          }
+        }
+        if (currentSection.lines.length > 0) {
+          sections.push(currentSection);
+        }
+
+        // Step 2: Deduplicate identical reports (same Plant + Date + normalized body)
+        const seenFingerprints = new Set();
+        const uniqueSections = [];
+        let duplicateSkipped = 0;
+
+        for (const sec of sections) {
+          // Ignore sections that contain zero JO codes (e.g. random chat chatter)
+          const joined = sec.lines.join('\n');
+          if (!JO_REGEX.test(joined)) {
+            JO_REGEX.lastIndex = 0;
+            continue;
+          }
+          JO_REGEX.lastIndex = 0;
+
+          const fingerprint = `${sec.plant}|${sec.dateIso}|${joined.replace(/\s+/g, ' ').toUpperCase()}`;
+          if (seenFingerprints.has(fingerprint)) {
+            duplicateSkipped++;
+            continue;
+          }
+          seenFingerprints.add(fingerprint);
+          uniqueSections.push(sec);
+        }
+
+        // Step 3: Parse product blocks within each unique report section
+        const entries = [];
+        const datesSet = new Set();
+
+        for (const sec of uniqueSections) {
+          if (sec.dateIso !== 'UNKNOWN') {
+            datesSet.add(sec.dateIso);
+          }
+
+          let currentOperator = 'Tanpa Nama Operator';
+          let currentBlock = null;
+
+          const finalizeBlock = () => {
+            if (!currentBlock) return;
+
+            if (currentBlock.headerJOs.length > 1) {
+              // CRITICAL: Multi-JO block (e.g., JE26-0650 & JE26-0663)
+              // Sum only detail result lines tagged with each JO; DO NOT add TOTAL line.
+              const perJoQty = {};
+              const perJoWarnings = {};
+              const perJoLines = {};
+
+              for (const jo of currentBlock.headerJOs) {
+                perJoQty[jo] = 0;
+                perJoWarnings[jo] = [];
+                perJoLines[jo] = [];
+              }
+
+              for (const res of currentBlock.resultLines) {
+                if (res.lineJOs.length > 0) {
+                  // Assign to the JO mentioned on that result line
+                  const targetJo = res.lineJOs[0];
+                  if (!(targetJo in perJoQty)) {
+                    perJoQty[targetJo] = 0;
+                    perJoWarnings[targetJo] = [];
+                    perJoLines[targetJo] = [];
+                  }
+                  perJoQty[targetJo] += res.writtenQty;
+                  perJoLines[targetJo].push(res.raw);
+                  if (res.warning) {
+                    perJoWarnings[targetJo].push(res.warning);
+                  }
+                }
+              }
+
+              for (const jo of Object.keys(perJoQty)) {
+                entries.push({
+                  joCode: jo,
+                  productName: currentBlock.productName,
+                  plant: sec.plant,
+                  dateIso: sec.dateIso,
+                  dateDisplay: formatIsoDate(sec.dateIso),
+                  operator: currentBlock.operator,
+                  qty: perJoQty[jo],
+                  warnings: perJoWarnings[jo],
+                  rawLines: perJoLines[jo]
+                });
+              }
+            } else if (currentBlock.headerJOs.length === 1) {
+              // Single-JO block (with or without TOTAL line)
+              const jo = currentBlock.headerJOs[0];
+              const sumDetailLines = currentBlock.resultLines.reduce((acc, r) => acc + r.writtenQty, 0);
+              const warnings = currentBlock.resultLines
+                .filter(r => r.warning !== null)
+                .map(r => r.warning);
+
+              let finalQty = 0;
+              if (currentBlock.totalQty !== null) {
+                finalQty = currentBlock.totalQty;
+                // Also audit if sum of detail lines != written TOTAL (when detail lines exist)
+                if (currentBlock.resultLines.length > 0 && sumDetailLines !== currentBlock.totalQty) {
+                  const diff = currentBlock.totalQty - sumDetailLines;
+                  const sign = diff > 0 ? '+' : '';
+                  warnings.push({
+                    line: currentBlock.totalRawLine || 'TOTAL',
+                    expected: sumDetailLines,
+                    written: currentBlock.totalQty,
+                    diff: diff,
+                    message: `Selisih penjumlahan TOTAL: jumlah rincian ${formatNumber(sumDetailLines)} pcs, tertulis TOTAL ${formatNumber(currentBlock.totalQty)} pcs (${sign}${formatNumber(diff)} pcs)`
+                  });
+                }
+              } else {
+                // No TOTAL line -> sum automatically from detail result lines
+                finalQty = sumDetailLines;
+              }
+
+              entries.push({
+                joCode: jo,
+                productName: currentBlock.productName,
+                plant: sec.plant,
+                dateIso: sec.dateIso,
+                dateDisplay: formatIsoDate(sec.dateIso),
+                operator: currentBlock.operator,
+                qty: finalQty,
+                warnings,
+                rawLines: currentBlock.resultLines.map(r => r.raw)
+              });
+            }
+
+            currentBlock = null;
+          };
+
+          for (const line of sec.lines) {
+            // Skip decorative divider lines (e.g., ━━━━━━━━━━) or thank you closings
+            if (/^[━─═\-_=*]{3,}$/.test(line) || /^TERIMA\s*KASIH/i.test(line)) {
+              continue;
+            }
+
+            // 1. Check if line is TOTAL
+            if (isTotalLine(line)) {
+              if (currentBlock) {
+                const parsedTotal = parseTotalLineQty(line);
+                if (parsedTotal !== null) {
+                  currentBlock.totalQty = parsedTotal;
+                  currentBlock.totalRawLine = line;
+                }
+              }
+              continue;
+            }
+
+            // 2. Check if line is a detail result line (A :, B :, RECEH :)
+            if (isDetailResultLine(line)) {
+              if (currentBlock) {
+                const parsedDetail = parseDetailResultLine(line);
+                if (parsedDetail.hasWrittenQty) {
+                  currentBlock.resultLines.push(parsedDetail);
+                }
+              }
+              continue;
+            }
+
+            // 3. Check if line contains JO code(s) -> starts a new product block
+            const lineJOs = extractJOCodes(line);
+            if (lineJOs.length > 0) {
+              finalizeBlock();
+              currentBlock = {
+                headerJOs: lineJOs,
+                productName: cleanProductName(line),
+                operator: currentOperator,
+                resultLines: [],
+                totalQty: null,
+                totalRawLine: null
+              };
+              continue;
+            }
+
+            // 4. Check if line is a numbered operator header (e.g., "1. WAHYUNINGSIH", "6.SULISTIYANI")
+            const opMatch = line.match(/^\d+\.\s*([A-Z].*)$/i);
+            if (opMatch) {
+              finalizeBlock();
+              currentOperator = opMatch[1].trim();
+              continue;
+            }
+
+            // Other lines (DURASI, TARGET, HASIL, NOTE, etc.) are ignored for qty aggregation
+          }
+
+          // Finalize last open block in this section
+          finalizeBlock();
+        }
+
+        // Step 4: Aggregate entries by JO Code (Primary Key)
+        const joMap = new Map();
+
+        for (const entry of entries) {
+          if (!joMap.has(entry.joCode)) {
+            joMap.set(entry.joCode, {
+              joCode: entry.joCode,
+              productName: entry.productName,
+              qtyAlpha: 0,
+              qtyBeta: 0,
+              totalQty: 0,
+              activeDates: new Set(),
+              details: [],
+              warningsCount: 0
+            });
+          }
+
+          const agg = joMap.get(entry.joCode);
+
+          // Keep the longest/most descriptive product name
+          if (entry.productName.length > agg.productName.length) {
+            agg.productName = entry.productName;
+          }
+
+          if (entry.plant === 'ALPHA') {
+            agg.qtyAlpha += entry.qty;
+          } else if (entry.plant === 'BETA') {
+            agg.qtyBeta += entry.qty;
+          }
+          agg.totalQty += entry.qty;
+
+          if (entry.dateIso !== 'UNKNOWN') {
+            agg.activeDates.add(entry.dateIso);
+          }
+
+          agg.warningsCount += entry.warnings.length;
+          agg.details.push(entry);
+        }
+
+        // Convert Map to array and compute plantType + sort details chronologically
+        const aggregated = Array.from(joMap.values()).map(item => {
+          let plantType = 'UNKNOWN';
+          if (item.qtyAlpha > 0 && item.qtyBeta > 0) {
+            plantType = 'BOTH';
+          } else if (item.qtyAlpha > 0) {
+            plantType = 'ALPHA';
+          } else if (item.qtyBeta > 0) {
+            plantType = 'BETA';
+          } else if (item.details.length > 0) {
+            plantType = item.details[0].plant;
+          }
+
+          item.details.sort((a, b) => {
+            if (a.dateIso !== b.dateIso) return a.dateIso.localeCompare(b.dateIso);
+            return a.plant.localeCompare(b.plant);
+          });
+
+          return {
+            ...item,
+            plantType,
+            activeDaysCount: item.activeDates.size
+          };
+        });
+
+        const datesDetected = Array.from(datesSet).sort();
+
+        return {
+          aggregated,
+          rawEntries: entries,
+          datesDetected,
+          duplicateSkipped
+        };
+      }
+
+      // =========================================================================
+      // 5. RENDERING & UI UPDATES
+      // =========================================================================
+
+      function getFilteredAndSortedData() {
+        const searchTerm = els.filterSearch.value.trim().toLowerCase();
+        const plantFilter = els.filterPlant.value;
+        const sortBy = els.filterSort.value;
+
+        let list = appState.aggregated.filter(item => {
+          if (plantFilter !== 'ALL' && item.plantType !== plantFilter) {
+            return false;
+          }
+          if (searchTerm) {
+            const matchJo = item.joCode.toLowerCase().includes(searchTerm);
+            const matchName = item.productName.toLowerCase().includes(searchTerm);
+            if (!matchJo && !matchName) return false;
+          }
+          return true;
+        });
+
+        list.sort((a, b) => {
+          if (sortBy === 'QTY_DESC') return b.totalQty - a.totalQty || a.joCode.localeCompare(b.joCode);
+          if (sortBy === 'JO_ASC') return a.joCode.localeCompare(b.joCode);
+          if (sortBy === 'NAME_ASC') return a.productName.localeCompare(b.productName);
+          return 0;
+        });
+
+        return list;
+      }
+
+      function renderKPIs() {
+        const { aggregated, datesDetected } = appState;
+
+        // Period
+        if (datesDetected.length === 0) {
+          els.kpiPeriod.textContent = 'Tanggal Tidak Terdeteksi';
+          els.kpiDays.textContent = '0 hari terdeteksi';
+          els.reportSubtitle.textContent = 'Periode tidak terdeteksi pada header laporan';
+        } else if (datesDetected.length === 1) {
+          const dStr = formatIsoDate(datesDetected[0]);
+          els.kpiPeriod.textContent = dStr;
+          els.kpiDays.textContent = '1 hari laporan terdeteksi';
+          els.reportSubtitle.textContent = `Periode: ${dStr} (1 hari)`;
+        } else {
+          const first = formatIsoDate(datesDetected[0]);
+          const last = formatIsoDate(datesDetected[datesDetected.length - 1]);
+          els.kpiPeriod.textContent = `${first} – ${last}`;
+          els.kpiDays.textContent = `${datesDetected.length} hari laporan terdeteksi`;
+          els.reportSubtitle.textContent = `Periode: ${first} s/d ${last} (${datesDetected.length} hari)`;
+        }
+
+        // Total JO Aktif
+        const lintasCount = aggregated.filter(x => x.plantType === 'BOTH').length;
+        els.kpiTotalJo.textContent = formatNumber(aggregated.length);
+        els.kpiJoSub.textContent = lintasCount > 0
+          ? `${lintasCount} JO berjalan lintas plant`
+          : 'Tidak ada JO lintas plant';
+
+        // Total Output
+        const sumAlpha = aggregated.reduce((acc, x) => acc + x.qtyAlpha, 0);
+        const sumBeta = aggregated.reduce((acc, x) => acc + x.qtyBeta, 0);
+        const sumTotal = aggregated.reduce((acc, x) => acc + x.totalQty, 0);
+        els.kpiTotalQty.textContent = formatNumber(sumTotal);
+        els.kpiQtyBreakdown.textContent = `Alpha: ${formatNumber(sumAlpha)} • Beta: ${formatNumber(sumBeta)}`;
+
+        // Audit Status
+        const totalWarnings = aggregated.reduce((acc, x) => acc + x.warningsCount, 0);
+        const affectedJOs = aggregated.filter(x => x.warningsCount > 0).length;
+
+        if (totalWarnings === 0) {
+          els.kpiAuditCard.className = 'bg-white rounded-xl shadow-card border border-slate-200/70 p-4 sm:p-5 flex flex-col justify-between';
+          els.kpiAuditIcon.className = 'w-8 h-8 rounded-lg bg-emeraldExec-soft text-emeraldExec flex items-center justify-center';
+          els.kpiAuditIcon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+          els.kpiAuditStatus.className = 'text-base sm:text-lg font-extrabold text-emeraldExec';
+          els.kpiAuditStatus.textContent = 'Semua Valid';
+          els.kpiAuditSub.textContent = 'Semua perkalian box sesuai';
+        } else {
+          els.kpiAuditCard.className = 'bg-warning-soft/50 rounded-xl shadow-card border border-amber-300 p-4 sm:p-5 flex flex-col justify-between';
+          els.kpiAuditIcon.className = 'w-8 h-8 rounded-lg bg-warning text-white flex items-center justify-center';
+          els.kpiAuditIcon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
+          els.kpiAuditStatus.className = 'text-base sm:text-lg font-extrabold text-warning';
+          els.kpiAuditStatus.textContent = `${totalWarnings} Temuan Selisih`;
+          els.kpiAuditSub.textContent = `Terdeteksi pada ${affectedJOs} Job Order`;
+        }
+      }
+
+      function renderPlantBadge(plantType) {
+        if (plantType === 'ALPHA') {
+          return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-navy">Plant Alpha</span>`;
+        }
+        if (plantType === 'BETA') {
+          return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-100 text-sky-800">Plant Beta</span>`;
+        }
+        if (plantType === 'BOTH') {
+          return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800">Lintas Plant</span>`;
+        }
+        return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">-</span>`;
+      }
+
+      function renderTable() {
+        const list = getFilteredAndSortedData();
+        els.tableCountInfo.textContent = `Menampilkan ${list.length} dari ${appState.aggregated.length} JO`;
+
+        if (list.length === 0) {
+          els.tbody.innerHTML = `
+            <tr>
+              <td colspan="9" class="py-10 text-center text-slate-400 font-medium">
+                Tidak ada Job Order yang cocok dengan filter pencarian.
+              </td>
+            </tr>
+          `;
+          els.tfoot.innerHTML = '';
+          return;
+        }
+
+        let html = '';
+        let grandAlpha = 0;
+        let grandBeta = 0;
+        let grandTotal = 0;
+
+        list.forEach((item, idx) => {
+          grandAlpha += item.qtyAlpha;
+          grandBeta += item.qtyBeta;
+          grandTotal += item.totalQty;
+
+          const isExpanded = appState.expandedJOs.has(item.joCode);
+          const hasWarning = item.warningsCount > 0;
+          const rowBg = hasWarning
+            ? 'bg-amber-50/50 hover:bg-amber-50'
+            : (idx % 2 === 0 ? 'bg-white hover:bg-slate-50' : 'bg-slate-50/40 hover:bg-slate-100/60');
+
+          const auditBadge = hasWarning
+            ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-warning-soft text-warning border border-amber-300">
+                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                 Selisih (${item.warningsCount})
+               </span>`
+            : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emeraldExec-soft text-emeraldExec">
+                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                 Valid
+               </span>`;
+
+          // Main Row
+          html += `
+            <tr data-jo="${escapeHtml(item.joCode)}" class="jo-row cursor-pointer transition ${rowBg}">
+              <td class="py-3.5 px-4 text-center font-semibold text-slate-400">${idx + 1}</td>
+              <td class="py-3.5 px-4 font-extrabold text-navy whitespace-nowrap">
+                <div class="flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-slate-400 transition-transform ${isExpanded ? 'rotate-90 text-navy' : ''}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                  ${escapeHtml(item.joCode)}
+                </div>
+              </td>
+              <td class="py-3.5 px-4 font-semibold text-slate-800 leading-snug">${escapeHtml(item.productName)}</td>
+              <td class="py-3.5 px-4 text-center whitespace-nowrap">${renderPlantBadge(item.plantType)}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-slate-600">${item.activeDaysCount || '-'} Hari</td>
+              <td class="py-3.5 px-4 text-right font-semibold text-slate-600 tabular-nums">${item.qtyAlpha > 0 ? formatNumber(item.qtyAlpha) : '-'}</td>
+              <td class="py-3.5 px-4 text-right font-semibold text-slate-600 tabular-nums">${item.qtyBeta > 0 ? formatNumber(item.qtyBeta) : '-'}</td>
+              <td class="py-3.5 px-4 text-right font-extrabold text-slate-900 tabular-nums">${formatNumber(item.totalQty)}</td>
+              <td class="py-3.5 px-4 text-center whitespace-nowrap">${auditBadge}</td>
+            </tr>
+          `;
+
+          // Expandable Detail Row
+          if (isExpanded) {
+            let detailItemsHtml = item.details.map(d => {
+              const warnHtml = d.warnings.length > 0
+                ? d.warnings.map(w => `
+                    <div class="mt-1.5 rounded-lg bg-warning-soft border border-amber-300 px-2.5 py-1.5 text-[11px] text-amber-900 font-semibold flex items-start gap-1.5">
+                      <span class="text-warning font-bold">⚠</span>
+                      <span><strong>${escapeHtml(w.line)}</strong> &rarr; ${escapeHtml(w.message)}</span>
+                    </div>
+                  `).join('')
+                : '';
+
+              return `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2.5 px-3 rounded-lg bg-white border border-slate-200/80">
+                  <div class="space-y-0.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="text-xs font-bold text-navy">${escapeHtml(d.dateDisplay)}</span>
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold ${d.plant === 'ALPHA' ? 'bg-indigo-100 text-navy' : 'bg-sky-100 text-sky-800'}">Plant ${escapeHtml(d.plant)}</span>
+                      <span class="text-xs font-semibold text-slate-700">${escapeHtml(d.operator)}</span>
+                    </div>
+                    ${warnHtml}
+                  </div>
+                  <div class="text-right shrink-0">
+                    <span class="text-xs sm:text-sm font-extrabold text-slate-800 tabular-nums">${formatNumber(d.qty)} PCS</span>
+                  </div>
+                </div>
+              `;
+            }).join('');
+
+            html += `
+              <tr class="bg-slate-50/90">
+                <td colspan="9" class="px-4 sm:px-8 py-4 border-b border-slate-200">
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+                    Rincian Harian &amp; Operator — ${escapeHtml(item.joCode)} (${item.details.length} entri)
+                  </div>
+                  <div class="space-y-2">
+                    ${detailItemsHtml}
+                  </div>
+                </td>
+              </tr>
+            `;
+          }
+        });
+
+        els.tbody.innerHTML = html;
+
+        // Render Grand Total Footer
+        els.tfoot.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-3.5 px-4 text-right uppercase tracking-wider text-xs">
+              Grand Total (${list.length} JO)
+            </td>
+            <td class="py-3.5 px-4 text-right tabular-nums">${formatNumber(grandAlpha)}</td>
+            <td class="py-3.5 px-4 text-right tabular-nums">${formatNumber(grandBeta)}</td>
+            <td class="py-3.5 px-4 text-right text-emeraldExec text-sm sm:text-base tabular-nums">${formatNumber(grandTotal)}</td>
+            <td class="py-3.5 px-4 text-center text-[11px] font-bold text-slate-500">PCS</td>
+          </tr>
+        `;
+      }
+
+      // =========================================================================
+      // 6. MAIN PROCESSING FLOW
+      // =========================================================================
+
+      function processInput() {
+        try {
+          const text = els.textarea.value.trim();
+          if (!text) {
+            showToast('Tempel laporan WhatsApp terlebih dahulu sebelum memproses.', 'warning');
+            return;
+          }
+
+          const result = parseWhatsAppReports(text);
+
+          if (result.aggregated.length === 0) {
+            showToast('Tidak ditemukan kode Job Order (misal JD26-0961, JE26-0640) pada teks yang ditempel.', 'error');
+            return;
+          }
+
+          appState.aggregated = result.aggregated;
+          appState.rawEntries = result.rawEntries;
+          appState.datesDetected = result.datesDetected;
+          appState.duplicateSkipped = result.duplicateSkipped;
+          appState.expandedJOs.clear();
+
+          // Duplicate banner
+          if (result.duplicateSkipped > 0) {
+            els.duplicateBannerText.textContent = `${result.duplicateSkipped} laporan duplikat (Plant, Tanggal, dan isi identik) terdeteksi dan otomatis dilewati agar tidak terjadi penghitungan ganda.`;
+            els.duplicateBanner.classList.remove('hidden');
+          } else {
+            els.duplicateBanner.classList.add('hidden');
+          }
+
+          // Toggle visibility
+          els.emptyState.classList.add('hidden');
+          els.resultsWrapper.classList.remove('hidden');
+
+          // Update meta badge
+          els.inputMetaBadge.textContent = `Berhasil memproses ${result.aggregated.length} Job Order dari ${result.rawEntries.length} catatan produksi.`;
+
+          // Render dashboard
+          renderKPIs();
+          renderTable();
+
+          showToast(`Rekap selesai: ${result.aggregated.length} JO aktif berhasil diringkas.`, 'success');
+
+          // Smooth scroll to results on mobile/smaller screens
+          els.resultsWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (err) {
+          console.error('Parser Error:', err);
+          showToast('Terjadi kesalahan saat memproses teks laporan. Periksa format laporan Anda.', 'error');
+        }
+      }
+
+      function clearAll() {
+        els.textarea.value = '';
+        els.filterSearch.value = '';
+        els.filterPlant.value = 'ALL';
+        els.filterSort.value = 'QTY_DESC';
+        appState = {
+          aggregated: [],
+          rawEntries: [],
+          datesDetected: [],
+          duplicateSkipped: 0,
+          expandedJOs: new Set()
+        };
+        els.duplicateBanner.classList.add('hidden');
+        els.resultsWrapper.classList.add('hidden');
+        els.emptyState.classList.remove('hidden');
+        els.inputMetaBadge.textContent = 'Siap menerima laporan WhatsApp.';
+        els.textarea.focus();
+        showToast('Data dan input telah dibersihkan.', 'info');
+      }
+
+      // =========================================================================
+      // 7. EXPORT FEATURES (WA TEXT, EXCEL XLSX, PNG)
+      // =========================================================================
+
+      /**
+       * Copy clean weekly recap formatted for WhatsApp (using execCommand for iFrame compatibility).
+       */
+      function copyWhatsAppSummary() {
+        try {
+          const list = getFilteredAndSortedData();
+          if (list.length === 0) {
+            showToast('Tidak ada data untuk disalin.', 'warning');
+            return;
+          }
+
+          const { datesDetected } = appState;
+          let periodeStr = 'Tidak Terdeteksi';
+          if (datesDetected.length === 1) {
+            periodeStr = formatIsoDate(datesDetected[0]);
+          } else if (datesDetected.length > 1) {
+            periodeStr = `${formatIsoDate(datesDetected[0])} s/d ${formatIsoDate(datesDetected[datesDetected.length - 1])} (${datesDetected.length} hari)`;
+          }
+
+          const sumAlpha = list.reduce((acc, x) => acc + x.qtyAlpha, 0);
+          const sumBeta = list.reduce((acc, x) => acc + x.qtyBeta, 0);
+          const sumTotal = list.reduce((acc, x) => acc + x.totalQty, 0);
+
+          const lines = [];
+          lines.push('*REKAPITULASI JOB ORDER MINGGUAN (PLANT ALPHA & BETA)*');
+          lines.push(`Periode : ${periodeStr}`);
+          lines.push(`Total JO Aktif : ${list.length} JO`);
+          lines.push(`Total Output : ${formatNumber(sumTotal)} PCS (Alpha: ${formatNumber(sumAlpha)} | Beta: ${formatNumber(sumBeta)})`);
+          lines.push('━━━━━━━━━━━━━━━━━━━━');
+
+          list.forEach((item, idx) => {
+            const plantLabel = item.plantType === 'BOTH'
+              ? `Alpha: ${formatNumber(item.qtyAlpha)} + Beta: ${formatNumber(item.qtyBeta)}`
+              : `Plant ${item.plantType === 'ALPHA' ? 'Alpha' : 'Beta'}`;
+            const warnFlag = item.warningsCount > 0 ? ' [⚠ Cek Selisih Box]' : '';
+            lines.push(`${idx + 1}. *${item.joCode}* — ${item.productName}`);
+            lines.push(`   Qty: *${formatNumber(item.totalQty)} PCS* (${plantLabel})${warnFlag}`);
+          });
+
+          lines.push('━━━━━━━━━━━━━━━━━━━━');
+          lines.push(`*GRAND TOTAL : ${formatNumber(sumTotal)} PCS*`);
+
+          const finalText = lines.join('\n');
+
+          // Reliable clipboard copy via temporary textarea + document.execCommand('copy')
+          const tempTa = document.createElement('textarea');
+          tempTa.value = finalText;
+          tempTa.setAttribute('readonly', '');
+          tempTa.style.position = 'fixed';
+          tempTa.style.left = '-9999px';
+          document.body.appendChild(tempTa);
+          tempTa.select();
+          const copied = document.execCommand('copy');
+          document.body.removeChild(tempTa);
+
+          if (copied) {
+            showToast('Ringkasan rekap berhasil disalin dan siap tempel ke WhatsApp.', 'success');
+          } else {
+            showToast('Gagal menyalin otomatis. Silakan coba lagi.', 'error');
+          }
+        } catch (err) {
+          console.error('Copy Error:', err);
+          showToast('Gagal menyalin teks WhatsApp.', 'error');
+        }
+      }
+
+      /**
+       * Export 2-sheet Excel (.xlsx) workbook using SheetJS.
+       */
+      function exportExcel() {
+        try {
+          if (typeof XLSX === 'undefined') {
+            showToast('Library SheetJS belum termuat. Periksa koneksi internet Anda.', 'error');
+            return;
+          }
+          if (appState.aggregated.length === 0) {
+            showToast('Tidak ada data untuk diekspor.', 'warning');
+            return;
+          }
+
+          const list = getFilteredAndSortedData();
+
+          // Sheet 1: Rekap Mingguan JO
+          const recapRows = list.map((item, idx) => ({
+            'No': idx + 1,
+            'No. JO': item.joCode,
+            'Nama Produk': item.productName,
+            'Plant': item.plantType === 'BOTH' ? 'Lintas Plant (Alpha & Beta)' : `Plant ${item.plantType}`,
+            'Hari Aktif': item.activeDaysCount,
+            'Qty Alpha (PCS)': item.qtyAlpha,
+            'Qty Beta (PCS)': item.qtyBeta,
+            'Total Qty (PCS)': item.totalQty,
+            'Status Audit': item.warningsCount > 0 ? `Selisih (${item.warningsCount} temuan)` : 'Valid'
+          }));
+
+          // Append Grand Total row
+          recapRows.push({
+            'No': '',
+            'No. JO': 'GRAND TOTAL',
+            'Nama Produk': '',
+            'Plant': '',
+            'Hari Aktif': '',
+            'Qty Alpha (PCS)': list.reduce((a, b) => a + b.qtyAlpha, 0),
+            'Qty Beta (PCS)': list.reduce((a, b) => a + b.qtyBeta, 0),
+            'Total Qty (PCS)': list.reduce((a, b) => a + b.totalQty, 0),
+            'Status Audit': ''
+          });
+
+          // Sheet 2: Detail Harian
+          const detailRows = appState.rawEntries.map((entry, idx) => ({
+            'No': idx + 1,
+            'Tanggal (ISO)': entry.dateIso,
+            'Tanggal': entry.dateDisplay,
+            'Plant': `Plant ${entry.plant}`,
+            'Operator / Line': entry.operator,
+            'No. JO': entry.joCode,
+            'Nama Produk': entry.productName,
+            'Qty (PCS)': entry.qty,
+            'Status Audit': entry.warnings.length > 0 ? 'Selisih' : 'Valid',
+            'Catatan Audit': entry.warnings.map(w => w.message).join(' | ')
+          }));
+
+          const wb = XLSX.utils.book_new();
+          const wsRecap = XLSX.utils.json_to_sheet(recapRows);
+          const wsDetail = XLSX.utils.json_to_sheet(detailRows);
+
+          // Set readable column widths
+          wsRecap['!cols'] = [
+            { wch: 5 }, { wch: 14 }, { wch: 46 }, { wch: 24 },
+            { wch: 12 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 22 }
+          ];
+          wsDetail['!cols'] = [
+            { wch: 5 }, { wch: 14 }, { wch: 16 }, { wch: 13 },
+            { wch: 26 }, { wch: 14 }, { wch: 44 }, { wch: 14 }, { wch: 12 }, { wch: 50 }
+          ];
+
+          XLSX.utils.book_append_sheet(wb, wsRecap, 'Rekap Mingguan JO');
+          XLSX.utils.book_append_sheet(wb, wsDetail, 'Detail Harian');
+
+          const suffix = appState.datesDetected.length > 0
+            ? `${appState.datesDetected[0]}_sd_${appState.datesDetected[appState.datesDetected.length - 1]}`
+            : 'Rekap';
+          XLSX.writeFile(wb, `Rekap_JO_Mingguan_${suffix}.xlsx`);
+
+          showToast('File Excel (.xlsx) berhasil diunduh.', 'success');
+        } catch (err) {
+          console.error('Excel Export Error:', err);
+          showToast('Gagal mengekspor file Excel.', 'error');
+        }
+      }
+
+      /**
+       * Export dashboard recap area as high-resolution PNG (scale: 2) using html2canvas.
+       */
+      async function exportPNG() {
+        try {
+          if (typeof html2canvas === 'undefined') {
+            showToast('Library html2canvas belum termuat. Periksa koneksi internet Anda.', 'error');
+            return;
+          }
+          if (appState.aggregated.length === 0) {
+            showToast('Tidak ada data untuk disimpan sebagai PNG.', 'warning');
+            return;
+          }
+
+          showToast('Menyiapkan gambar PNG resolusi tinggi...', 'info');
+
+          const canvas = await html2canvas(els.exportDashboardArea, {
+            scale: 2,
+            backgroundColor: '#f4f6f9',
+            useCORS: true,
+            logging: false
+          });
+
+          const link = document.createElement('a');
+          const suffix = appState.datesDetected.length > 0
+            ? `${appState.datesDetected[0]}_sd_${appState.datesDetected[appState.datesDetected.length - 1]}`
+            : 'Rekap';
+          link.download = `Rekap_JO_Mingguan_${suffix}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+
+          showToast('Gambar PNG berhasil disimpan.', 'success');
+        } catch (err) {
+          console.error('PNG Export Error:', err);
+          showToast('Gagal menyimpan gambar PNG.', 'error');
+        }
+      }
+
+      // =========================================================================
+      // 8. EVENT LISTENERS
+      // =========================================================================
+
+      // Enter key triggers immediate recap; Shift+Enter inserts newline
+      els.textarea.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          processInput();
+        }
+      });
+
+      els.btnProcess.addEventListener('click', processInput);
+      els.btnClear.addEventListener('click', clearAll);
+
+      // Filters & Sorting
+      els.filterSearch.addEventListener('input', renderTable);
+      els.filterPlant.addEventListener('change', renderTable);
+      els.filterSort.addEventListener('change', renderTable);
+
+      // Expand / Collapse Detail Row via Event Delegation
+      els.tbody.addEventListener('click', function (e) {
+        const row = e.target.closest('tr.jo-row');
+        if (!row) return;
+        const jo = row.getAttribute('data-jo');
+        if (!jo) return;
+
+        if (appState.expandedJOs.has(jo)) {
+          appState.expandedJOs.delete(jo);
+        } else {
+          appState.expandedJOs.add(jo);
+        }
+        renderTable();
+      });
+
+      // Exports
+      els.btnCopyWa.addEventListener('click', copyWhatsAppSummary);
+      els.btnExportXlsx.addEventListener('click', exportExcel);
+      els.btnExportPng.addEventListener('click', exportPNG);
+
+    })();
+  </script>
+</body>
+</html>
