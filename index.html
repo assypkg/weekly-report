@@ -142,6 +142,36 @@
             background: rgba(16, 185, 129, 0.08);
         }
 
+        .performance-submenu {
+            display: none;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px 10px;
+            background: #0b2040;
+            border-top: 1px solid rgba(255,255,255,.08);
+        }
+        .performance-submenu.open { display: flex; }
+        .nav-subitem {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            padding: 7px 13px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,.18);
+            color: #cbd5e1;
+            font-size: .76rem;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+        .nav-subitem:hover { color: #fff; background: rgba(255,255,255,.08); }
+        .nav-subitem.active {
+            color: #fff;
+            background: rgba(16,185,129,.15);
+            border-color: var(--emerald-green);
+        }
+        .submenu-chevron { margin-left: 5px; font-size: .7rem; }
+
         /* Area Konten Aplikasi Utama */
         .app-workspace {
             flex: 1;
@@ -181,46 +211,49 @@
 
         <ul class="nav-menu-top">
             <li>
-                <a href="performance_plant_beta.html" class="nav-item-top active" onclick="loadApp(event, 'performance_plant_beta.html', this)">
-                    ⚙️ 1. Performance Assembly
-                </a>
-            </li>
-            <li>
-                <a href="performance.html" class="nav-item-top" onclick="loadApp(event, 'performance.html', this)">
-                    ⚙️ 2. Performance
-                </a>
+                <button type="button" id="performanceMenuBtn" class="nav-item-top active" aria-expanded="true" aria-controls="performanceSubmenu" onclick="togglePerformanceMenu(event)">
+                    ⚙️ 1. Performance Assembly <span class="submenu-chevron">▾</span>
+                </button>
             </li>
             <li>
                 <a href="reject_assy.html?v=444869c" class="nav-item-top" onclick="loadApp(event, 'reject_assy.html?v=444869c', this)">
-                    📊 3. Reject Assembly
+                    📊 2. Reject Assembly
                 </a>
             </li>
             <li>
                 <a href="dashboard_lhpr.html" class="nav-item-top" onclick="loadApp(event, 'dashboard_lhpr.html', this)">
-                    📈 4. Dashboard LHPR
+                    📈 3. Dashboard LHPR
                 </a>
             </li>
             <li>
                 <a href="generate_lhpr.html" class="nav-item-top" onclick="loadApp(event, 'generate_lhpr.html', this)">
-                    ☁️ 5. Generate LHPR
+                    ☁️ 4. Generate LHPR
                 </a>
             </li>
             <li>
                 <a href="laporan_fg.html" class="nav-item-top" onclick="loadApp(event, 'laporan_fg.html', this)">
-                    🖼️ 6. laporan fg whatsapp
+                    🖼️ 5. Laporan FG WhatsApp
                 </a>
             </li>
             <li>
                 <a href="generate_kontrol_material.html" class="nav-item-top" onclick="loadApp(event, 'generate_kontrol_material.html', this)">
-                    📦 7. Generate Kontrol Material
+                    📦 6. Generate Kontrol Material
                 </a>
             </li>
             <li>
                 <a href="generate_lmp.html" class="nav-item-top" onclick="loadApp(event, 'generate_lmp.html', this)">
-                    📋 8. Generator LMP
+                    📋 7. Generator LMP
                 </a>
             </li>
         </ul>
+        <div id="performanceSubmenu" class="performance-submenu open" aria-label="Submenu Performance Assembly">
+            <a href="performance_plant_alpha.html" class="nav-subitem" onclick="loadApp(event, 'performance_plant_alpha.html', this)">
+                Assembly Plant Alpha
+            </a>
+            <a href="performance_plant_beta.html" class="nav-subitem active" onclick="loadApp(event, 'performance_plant_beta.html', this)">
+                Assembly Plant Beta
+            </a>
+        </div>
     </header>
 
     <!-- Workspace Utama -->
@@ -230,32 +263,47 @@
     </main>
 
     <script>
+        function togglePerformanceMenu(event) {
+            event.preventDefault();
+            const submenu = document.getElementById('performanceSubmenu');
+            const button = document.getElementById('performanceMenuBtn');
+            if (!submenu || !button) return;
+            const shouldOpen = !submenu.classList.contains('open');
+            submenu.classList.toggle('open', shouldOpen);
+            button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        }
+
         function loadApp(event, url, element) {
-            // Mencegah link pindah halaman agar tidak me-refresh portal utama
             event.preventDefault();
 
-            // 1. Perbarui status menu aktif pada bagian atas
-            document.querySelectorAll('.nav-item-top').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item-top, .nav-subitem').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
 
-            // 2. Sembunyikan semua iframe yang ada tanpa menghapus halamannya
-            const allIframes = document.querySelectorAll('.app-workspace iframe');
-            allIframes.forEach(iframe => {
+            const submenu = document.getElementById('performanceSubmenu');
+            const parentButton = document.getElementById('performanceMenuBtn');
+            if (element.classList.contains('nav-subitem')) {
+                if (parentButton) parentButton.classList.add('active');
+                if (submenu) submenu.classList.add('open');
+                if (parentButton) parentButton.setAttribute('aria-expanded', 'true');
+            } else {
+                if (submenu) submenu.classList.remove('open');
+                if (parentButton) {
+                    parentButton.classList.remove('active');
+                    parentButton.setAttribute('aria-expanded', 'false');
+                }
+            }
+
+            document.querySelectorAll('.app-workspace iframe').forEach(iframe => {
                 iframe.style.display = 'none';
             });
 
-            // 3. Cek apakah iframe untuk menu yang dituju sudah dibuat sebelumnya
             let targetIframe = document.getElementById('iframe-' + url);
-            
             if (!targetIframe) {
-                // Jika belum ada (pertama kali diklik), buat iframe baru
                 targetIframe = document.createElement('iframe');
                 targetIframe.id = 'iframe-' + url;
                 targetIframe.src = url;
                 document.getElementById('workspace').appendChild(targetIframe);
             }
-
-            // 4. Munculkan kembali iframe yang dipilih (data input Anda akan tetap aman di sini)
             targetIframe.style.display = 'block';
         }
     </script>
