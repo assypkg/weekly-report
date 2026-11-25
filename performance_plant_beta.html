@@ -301,7 +301,9 @@
               </div>
             </div>
 
-            <!-- Tabel cuplikan 5 baris pertama -->
+            <div id="prevCauseAudit" class="rounded-xl border border-indigo-200 bg-white p-3 space-y-2"></div>
+
+            <!-- Tabel cuplikan 6 baris pertama -->
             <div class="overflow-x-auto custom-scroll bg-white rounded-xl border border-slate-200">
               <table class="min-w-full text-xs">
                 <thead class="bg-slate-100 text-slate-700 font-semibold">
@@ -614,16 +616,17 @@
               Drill-Down: &lt; 85%
             </span>
           </div>
+          <p class="px-1 pb-2 text-[11px] text-slate-500">Total Kasus selalu menghitung semua baris pada kategori. Dua kolom cutoff hanya menghitung bagian yang berada di bawah ambang. Actual Units dan Avg. Prod Ratio mengikuti Mode Breakdown.</p>
           <div class="overflow-x-auto custom-scroll">
             <table class="min-w-full text-xs sm:text-sm">
               <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                 <tr>
-                  <th class="px-4 py-3 text-left">Primary Cause Category</th>
-                  <th class="px-3 py-3 text-center">% Plan vs Hasil &lt; <span class="lblCutoff">85%</span></th>
-                  <th class="px-3 py-3 text-center">Prod. Ratio &lt; <span class="lblCutoff">85%</span></th>
+                  <th class="px-4 py-3 text-left">Masalah Utama</th>
                   <th class="px-3 py-3 text-center">Total Kasus (Semua)</th>
-                  <th class="px-3 py-3 text-right">Actual Units Produced</th>
-                  <th class="px-3 py-3 text-right">Avg. Prod Ratio</th>
+                  <th class="px-3 py-3 text-center">Prod. Ratio &lt; <span class="lblCutoff">85%</span></th>
+                  <th class="px-3 py-3 text-center">% Plan vs Hasil &lt; <span class="lblCutoff">85%</span></th>
+                  <th class="px-3 py-3 text-right">Actual Units (Mode)</th>
+                  <th class="px-3 py-3 text-right">Avg. Prod Ratio (Mode)</th>
                 </tr>
               </thead>
               <tbody id="primaryCauseTableBody" class="divide-y divide-slate-100"></tbody>
@@ -1272,9 +1275,16 @@
       return [
         job.date || '',
         normalizeLeaderName(job.kpLine),
-        String(job.shift || '').trim(),
+        String(job.lineNo || '').trim().toUpperCase(),
+        String(job.shift || '').trim().toUpperCase(),
         String(job.itemCode || '').trim().toUpperCase(),
-        String(Number(job.actQty) || 0)
+        String(job.countryPo || '').trim().toUpperCase(),
+        String(job.jeNo || '').trim().toUpperCase(),
+        String(Number(job.stdQty) || 0),
+        String(Number(job.actQty) || 0),
+        String(job.primaryCause || '').trim().toLowerCase(),
+        String(job.machineIssue || '').trim().toLowerCase(),
+        String(job.remarks || '').trim().toLowerCase()
       ].join('|');
     }
 
@@ -1525,6 +1535,46 @@
     /* =========================================================================
        5. IMPORT EXCEL / ODS TIM & SMART PASTE EXCEL
        ========================================================================= */
+    function normalizeExcelHeader(value) {
+      return String(value ?? '')
+        .normalize('NFKD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\\s+/g, ' ')
+        .trim();
+    }
+
+    function findPerformanceHeaderRow(matrix) {
+      if (!Array.isArray(matrix)) return -1;
+      for (let i = 0; i < Math.min(20, matrix.length); i++) {
+        const headers = (matrix[i] || []).map(normalizeExcelHeader);
+        const hasDate = headers.some(h => /^(tanggal|tgl|date)$/.test(h));
+        const hasLeader = headers.some(h => /kp\\s+line|leader|nama\\s+operator/.test(h));
+        const hasItem = headers.some(h => /item\\s+code|kode\\s+item|part\\s+no/.test(h));
+        if (hasDate && hasLeader && hasItem) return i;
+      }
+      return -1;
+    }
+
+    function sheetToPerformanceMatrix(sheet) {
+      if (!sheet || !sheet['!ref']) throw new Error('Sheet tidak memiliki rentang data yang dapat dibaca.');
+      const usedRange = XLSX.utils.decode_range(sheet['!ref']);
+      // Template memiliki kolom bantu hingga XEZ. Data input performance hanya memakai A:S;
+      // dibatasi sampai AN untuk tetap mendukung variasi urutan kolom tanpa membaca ribuan kolom bantu.
+      const safeEndCol = Math.min(Math.max(usedRange.e.c, 18), 39);
+      const safeRange = {
+        s: { r: 0, c: 0 },
+        e: { r: usedRange.e.r, c: safeEndCol }
+      };
+      return XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        defval: '',
+        raw: true,
+        range: safeRange
+      });
+    }
+
     function handleFileSelect(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
@@ -1544,29 +1594,38 @@
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array', cellDates: false });
 
-            // Cari sheet "Assembly Line Template" terlebih dahulu
-            let targetSheetName = workbook.SheetNames.find(name => /assembly\s*line/i.test(name));
+            // Prioritas utama: sheet sumber data, bukan sheet rekap/formula bantu.
+            let targetSheetName = workbook.SheetNames.find(name =>
+              /^assembly\\s*line\\s*template$/i.test(String(name).trim())
+            );
+            let matrix = null;
 
-            // Jika tidak ada, cari sheet pertama yang mengandung header TANGGAL & ITEM CODE
+            // Jika nama sheet berbeda, cari sheet dengan header performance yang valid.
             if (!targetSheetName) {
+              const excludedSheet = /^(machine|reference|pencapaian|detail|kpi|dashboard|tblrawdata)/i;
               for (const name of workbook.SheetNames) {
-                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[name], { header: 1, defval: '' });
-                const previewText = rows.slice(0, 15).map(r => r.join(' ').toLowerCase()).join(' ');
-                if (previewText.includes('tanggal') && (previewText.includes('item code') || previewText.includes('kp line'))) {
+                if (excludedSheet.test(String(name).trim())) continue;
+                const candidate = sheetToPerformanceMatrix(workbook.Sheets[name]);
+                if (findPerformanceHeaderRow(candidate) >= 0) {
                   targetSheetName = name;
+                  matrix = candidate;
                   break;
                 }
               }
             }
 
             if (!targetSheetName) {
-              targetSheetName = workbook.SheetNames[0];
+              showToast('Sheet data performance tidak ditemukan. File harus memiliki kolom Tanggal, KP Line/Leader, Item Code, Standard Hasil, dan Actual Hasil.', 'error');
+              return;
             }
 
-            const sheet = workbook.Sheets[targetSheetName];
-            const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true });
+            if (!matrix) matrix = sheetToPerformanceMatrix(workbook.Sheets[targetSheetName]);
+            if (findPerformanceHeaderRow(matrix) < 0) {
+              showToast('Header pada sheet "' + targetSheetName + '" tidak dikenali. Pastikan kolom Tanggal, KP Line/Leader, dan Item Code tersedia.', 'error');
+              return;
+            }
 
-            parseTabularMatrix(matrix, `File: ${file.name} (Sheet: "${targetSheetName}")`);
+            parseTabularMatrix(matrix, 'File: ' + file.name + ' (Sheet: "' + targetSheetName + '")', { requireHeader: true });
           } catch (innerErr) {
             console.error(innerErr);
             showToast('Gagal membaca isi spreadsheet: ' + innerErr.message, 'error');
@@ -1601,29 +1660,13 @@
      * - Lewati baris TOTAL harian tim & baris kosong
      * - Normalisasi tanggal, nama leader, dan kategori masalah
      */
-    function parseTabularMatrix(matrix, sourceLabel) {
+    function parseTabularMatrix(matrix, sourceLabel, options = {}) {
       if (!Array.isArray(matrix) || matrix.length === 0) {
         showToast('Tidak ada baris data yang terbaca.', 'warning');
         return;
       }
 
-      // 1. Deteksi baris header pada 15 baris pertama
-      let headerRowIdx = -1;
-      for (let i = 0; i < Math.min(15, matrix.length); i++) {
-        const rowStr = (matrix[i] || []).map(c => String(c || '').toLowerCase().trim());
-        const hits = [
-          rowStr.some(c => c.includes('tanggal') || c === 'date' || c === 'tgl'),
-          rowStr.some(c => c.includes('kp line') || c.includes('leader')),
-          rowStr.some(c => c.includes('item code') || c.includes('kode item')),
-          rowStr.some(c => c.includes('shift') || c.includes('standard') || c.includes('actual') || c.includes('masalah'))
-        ].filter(Boolean).length;
-        if (hits >= 3) {
-          headerRowIdx = i;
-          break;
-        }
-      }
-
-      // 2. Pemetaan indeks kolom (default standar A..S: 0..18)
+      const headerRowIdx = findPerformanceHeaderRow(matrix);
       let colMap = {
         date: 0, kpLine: 1, lineNo: 2, shift: 3,
         durPlan: 4, actTime: 5, itemCode: 6, description: 7,
@@ -1631,42 +1674,52 @@
         actOp: 12, box: 13, actQty: 14, primaryCause: 16,
         machineIssue: 17, remarks: 18
       };
+      let startIdx = 0;
 
       if (headerRowIdx >= 0) {
-        const headers = matrix[headerRowIdx].map(h => String(h || '').toLowerCase().replace(/\s+/g, ' ').trim());
-        const findCol = (patterns, fallback) => {
-          for (const p of patterns) {
-            const idx = headers.findIndex(h => p.test(h));
-            if (idx !== -1) return idx;
-          }
-          return fallback;
-        };
+        const headers = (matrix[headerRowIdx] || []).map(normalizeExcelHeader);
+        const findCol = patterns => headers.findIndex(h => patterns.some(p => p.test(h)));
         colMap = {
-          date: findCol([/^tanggal/, /^tgl/, /^date/], 0),
-          kpLine: findCol([/kp\s*line/, /leader/, /nama\s*operator/], 1),
-          lineNo: findCol([/nomor\s*line/, /no\.?\s*line/, /^line$/], 2),
-          shift: findCol([/^shift/], 3),
-          durPlan: findCol([/durasi\s*plan/, /plan.*jam/, /jam\s*plan/, /durasi/], 4),
-          actTime: findCol([/actual\s*prod\s*time/, /actual\s*time/, /act.*time/, /jam\s*aktual/], 5),
-          itemCode: findCol([/item\s*code/, /kode\s*item/, /part\s*no/], 6),
-          description: findCol([/desc/, /nama\s*produk/, /deskripsi/], 7),
-          countryPo: findCol([/country/, /po\s*#/, /\bpo\b/], 8),
-          jeNo: findCol([/\bje\b/, /je\s*no/], 9),
-          stdQty: findCol([/standard\s*hasil/, /std\s*hasil/, /std\s*qty/, /planning\s*qty/, /target\s*qty/], 10),
-          stdOp: findCol([/standard\s*op/, /std\s*op/], 11),
-          actOp: findCol([/actual\s*op/, /act\s*op/], 12),
-          box: findCol([/^box/, /jml\s*box/], 13),
-          actQty: findCol([/actual\s*hasil/, /hasil\s*produksi/, /actual\s*qty/, /act\s*qty/], 14),
-          primaryCause: findCol([/masalah\s*utama/, /primary\s*cause/, /kategori/], 16),
-          machineIssue: findCol([/masalah\s*mesin/, /machine/, /^mesin$/], 17),
-          remarks: findCol([/keterangan/, /alasan/, /remark/, /catatan/], 18)
+          date: findCol([/^tanggal$/, /^tgl$/, /^date$/]),
+          kpLine: findCol([/kp\\s*line/, /leader/, /nama\\s*operator/]),
+          lineNo: findCol([/nomor\\s*line/, /no\\.?\\s*line/, /^line$/]),
+          shift: findCol([/^shift$/]),
+          durPlan: findCol([/durasi.*plan/, /plan.*jam/, /jam.*plan/, /planned.*hours/, /plan.*hours/, /durasi/]),
+          actTime: findCol([/actual.*prod.*time/, /actual.*time/, /act.*time/, /jam.*aktual/, /actual.*hours/]),
+          itemCode: findCol([/item\\s*code/, /kode\\s*item/, /part\\s*no/]),
+          description: findCol([/^description$/, /^desc$/, /nama\\s*produk/, /deskripsi/]),
+          countryPo: findCol([/country/, /po\\s*#/, /^po$/]),
+          jeNo: findCol([/^je(\\s*no)?$/]),
+          stdQty: findCol([/standard.*hasil/, /std.*hasil/, /std.*qty/, /planning.*qty/, /target.*qty/, /standard.*qty/, /qty.*plan/]),
+          stdOp: findCol([/standard.*op/, /std.*op/]),
+          actOp: findCol([/actual.*op/, /act.*op/]),
+          box: findCol([/^box/, /jumlah.*box/, /jml.*box/]),
+          actQty: findCol([/actual.*hasil/, /hasil.*produksi/, /actual.*qty/, /act.*qty/, /qty.*actual/]),
+          primaryCause: findCol([/masalah.*utama/, /primary.*cause/, /kategori/]),
+          machineIssue: findCol([/masalah.*mesin/, /machine/, /^mesin$/]),
+          remarks: findCol([/keterangan/, /alasan/, /remark/, /catatan/])
         };
+
+        const requiredFields = [
+          ['Tanggal', 'date'],
+          ['KP Line/Leader', 'kpLine'],
+          ['Item Code', 'itemCode'],
+          ['Standard Hasil/Planning Qty', 'stdQty'],
+          ['Actual Hasil/Actual Qty', 'actQty']
+        ];
+        const missingFields = requiredFields.filter(([, key]) => colMap[key] < 0).map(([label]) => label);
+        if (missingFields.length) {
+          showToast('Kolom wajib tidak terbaca: ' + missingFields.join(', ') + '. Import dibatalkan agar hasil tidak salah.', 'error');
+          return;
+        }
+        startIdx = headerRowIdx + 1;
+      } else if (options.requireHeader) {
+        showToast('Header Excel tidak dikenali. Pastikan ada Tanggal, KP Line/Leader, Item Code, Standard Hasil, dan Actual Hasil.', 'error');
+        return;
       }
 
-      const startIdx = headerRowIdx >= 0 ? headerRowIdx + 1 : 0;
       const existingKeys = new Set(allJobs.map(getDuplicateKey));
       const seenImportKeys = new Set();
-
       const validJobs = [];
       let totalRowsSkipped = 0;
       let emptyRowsSkipped = 0;
@@ -1674,7 +1727,7 @@
 
       for (let i = startIdx; i < matrix.length; i++) {
         const row = matrix[i];
-        if (!row || row.every(cell => String(cell === null || cell === undefined ? '' : cell).trim() === '')) {
+        if (!Array.isArray(row) || row.every(cell => String(cell === null || cell === undefined ? '' : cell).trim() === '')) {
           emptyRowsSkipped++;
           continue;
         }
@@ -1683,10 +1736,9 @@
         const rawKpLine = String(row[colMap.kpLine] ?? '').trim();
         const rawItem = String(row[colMap.itemCode] ?? '').trim();
 
-        // Cek apakah baris TOTAL harian tim
         const isTotalRow =
-          /^(total|sub\s*total|grand\s*total|jumlah|rata-rata)/i.test(rawKpLine) ||
-          /^(total|sub\s*total|grand\s*total|jumlah)/i.test(String(rawDate ?? '').trim()) ||
+          /^(total|sub\\s*total|grand\\s*total|jumlah|rata-rata)/i.test(rawKpLine) ||
+          /^(total|sub\\s*total|grand\\s*total|jumlah)/i.test(String(rawDate ?? '').trim()) ||
           /^(total|jumlah)/i.test(rawItem);
 
         if (isTotalRow) {
@@ -1696,13 +1748,9 @@
 
         const isoDate = parseSmartDate(rawDate);
         if (!isoDate) {
-          // Jika baris tidak punya tanggal valid tapi ada angka aktual/plan, kemungkinan baris total/ringkasan
           const maybeQty = parseSmartNumber(row[colMap.actQty], true);
-          if (maybeQty > 0 && !rawItem) {
-            totalRowsSkipped++;
-          } else {
-            emptyRowsSkipped++;
-          }
+          if (maybeQty > 0 && !rawItem) totalRowsSkipped++;
+          else emptyRowsSkipped++;
           continue;
         }
 
@@ -1711,7 +1759,6 @@
         const stdQty = parseSmartNumber(row[colMap.stdQty], true);
         const actQty = parseSmartNumber(row[colMap.actQty], true);
 
-        // Lewati jika baris tanggal terisi tapi seluruh data inti kosong
         if (!kpLine && !itemCode && stdQty === 0 && actQty === 0) {
           emptyRowsSkipped++;
           continue;
@@ -1722,7 +1769,7 @@
           date: isoDate,
           kpLine: kpLine || 'OPERATOR',
           lineNo: String(row[colMap.lineNo] ?? '').trim(),
-          shift: String(row[colMap.shift] ?? '').trim().replace(/^shift\s*/i, ''),
+          shift: String(row[colMap.shift] ?? '').trim().replace(/^shift\\s*/i, ''),
           durPlan: parseSmartNumber(row[colMap.durPlan], false),
           actTime: parseSmartNumber(row[colMap.actTime], false),
           itemCode: itemCode,
@@ -1740,33 +1787,83 @@
         };
 
         const dKey = getDuplicateKey(job);
-        if (existingKeys.has(dKey) || seenImportKeys.has(dKey)) {
+        const isDuplicate = existingKeys.has(dKey) || seenImportKeys.has(dKey);
+        if (isDuplicate) {
           dupCount++;
-          job._isDuplicate = existingKeys.has(dKey);
+          job._isDuplicate = true;
         }
         seenImportKeys.add(dKey);
         validJobs.push(job);
       }
 
       if (validJobs.length === 0) {
-        showToast('Tidak ditemukan baris job valid. Pastikan kolom Tanggal & Item Code tersedia.', 'warning');
+        showToast('Tidak ditemukan baris job valid. Periksa isi data dan format tanggal pada sheet yang dipilih.', 'warning');
         return;
       }
 
       pendingImportJobs = validJobs;
-
-      // Tampilkan preview box
       document.getElementById('importPreviewTitle').textContent = 'Ringkasan Preview Import Siap Diproses';
-      document.getElementById('importPreviewSource').textContent = sourceLabel;
+      document.getElementById('importPreviewSource').textContent = sourceLabel + (headerRowIdx >= 0 ? ' • Header baris ' + (headerRowIdx + 1) : ' • Format kolom A:S');
       document.getElementById('prevValidCount').textContent = fmtNum(validJobs.length);
       document.getElementById('prevTotalSkipped').textContent = fmtNum(totalRowsSkipped);
       document.getElementById('prevEmptySkipped').textContent = fmtNum(emptyRowsSkipped);
       document.getElementById('prevDupCount').textContent = fmtNum(dupCount);
 
-      const { cutoff } = getFilterState();
+      const { cutoff, cutoffPct } = getFilterState();
+      const causeRows = PRIMARY_CAUSES.map(category => {
+        const categoryJobs = validJobs.filter(job => job.primaryCause === category);
+        return {
+          category,
+          total: categoryJobs.length,
+          below: categoryJobs.filter(job => calcJobMetrics(job).prodRatio < cutoff).length
+        };
+      }).filter(item => item.total > 0);
+      const categorizedCount = causeRows.reduce((sum, item) => sum + item.total, 0);
+      const belowCauseCount = causeRows.reduce((sum, item) => sum + item.below, 0);
+      const uncategorizedCount = validJobs.length - categorizedCount;
+      const auditEl = document.getElementById('prevCauseAudit');
+      if (auditEl) {
+        auditEl.innerHTML = `
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h5 class="text-xs font-bold text-[#1a237e]">Audit Kategori Hasil Pembacaan Excel</h5>
+              <p class="text-[11px] text-slate-500">Total Kasus mencakup seluruh baris kategori; kolom cutoff hanya menghitung bagian di bawah ${cutoffPct}%.</p>
+            </div>
+            <span class="text-[11px] font-bold text-slate-600">${fmtNum(categorizedCount)} terkategori • ${fmtNum(uncategorizedCount)} tanpa kategori/master</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs mt-2">
+              <thead class="bg-slate-50 text-slate-600">
+                <tr>
+                  <th class="px-2 py-2 text-left">Masalah Utama</th>
+                  <th class="px-2 py-2 text-right">Total Kasus</th>
+                  <th class="px-2 py-2 text-right">Prod. Ratio &lt; ${cutoffPct}%</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${causeRows.map(item => `
+                  <tr class="border-t border-slate-100">
+                    <td class="px-2 py-2 font-semibold text-slate-700">${escapeHtml(item.category)}</td>
+                    <td class="px-2 py-2 text-right font-extrabold text-[#1a237e]">${fmtNum(item.total)}</td>
+                    <td class="px-2 py-2 text-right font-bold text-[#c62828]">${fmtNum(item.below)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+              <tfoot class="border-t-2 border-slate-200 font-bold">
+                <tr>
+                  <td class="px-2 py-2">TOTAL</td>
+                  <td class="px-2 py-2 text-right">${fmtNum(categorizedCount)}</td>
+                  <td class="px-2 py-2 text-right">${fmtNum(belowCauseCount)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        `;
+      }
+
       const tbody = document.getElementById('importPreviewTableBody');
       tbody.innerHTML = validJobs.slice(0, 6).map(j => {
-        const m = calcJobMetrics(j);
+        const metrics = calcJobMetrics(j);
         return `
           <tr class="hover:bg-slate-50">
             <td class="px-3 py-2 whitespace-nowrap font-medium">${fmtDateDisplay(j.date)}</td>
@@ -1775,14 +1872,14 @@
             <td class="px-3 py-2 whitespace-nowrap font-mono">${escapeHtml(j.itemCode)}</td>
             <td class="px-3 py-2 text-right">${fmtNum(j.stdQty)}</td>
             <td class="px-3 py-2 text-right font-semibold">${fmtNum(j.actQty)}</td>
-            <td class="px-3 py-2 text-right"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${getRatioBadgeClass(m.prodRatio, cutoff)}">${fmtPct(m.prodRatio)}</span></td>
+            <td class="px-3 py-2 text-right"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${getRatioBadgeClass(metrics.prodRatio, cutoff)}">${fmtPct(metrics.prodRatio)}</span></td>
             <td class="px-3 py-2">${escapeHtml(j.primaryCause || '-')}</td>
           </tr>
         `;
       }).join('');
 
       document.getElementById('importPreviewBox').classList.remove('hidden');
-      showToast(`Preview siap: ${validJobs.length} job valid ditemukan (${totalRowsSkipped} baris TOTAL dilewati).`, 'info');
+      showToast(`Preview siap: ${validJobs.length} job valid, ${categorizedCount} kasus memiliki kategori standar, ${totalRowsSkipped} baris TOTAL dilewati.`, 'info');
     }
 
     function cancelImportPreview() {
@@ -2124,13 +2221,13 @@
             <span class="w-2 h-2 rounded-full ${st.prodBelow > 0 ? 'bg-[#c62828]' : 'bg-slate-300'}"></span>
             <span class="underline decoration-dotted underline-offset-4">${escapeHtml(st.cat)}</span>
           </td>
-          <td class="px-3 py-2.5 text-center font-medium ${st.pctBelow > 0 ? 'text-[#ef6c00] font-bold' : 'text-slate-400'}">${fmtNum(st.pctBelow)}</td>
+          <td class="px-3 py-2.5 text-center font-extrabold text-[#1a237e]">${fmtNum(st.totalCases)}</td>
           <td class="px-3 py-2.5 text-center">
             <span class="inline-flex items-center justify-center min-w-[28px] px-2 py-0.5 rounded-full text-xs font-bold ${st.prodBelow > 0 ? 'bg-red-100 text-[#c62828]' : 'bg-slate-100 text-slate-400'}">
               ${fmtNum(st.prodBelow)}
             </span>
           </td>
-          <td class="px-3 py-2.5 text-center font-semibold text-slate-700">${fmtNum(st.totalCases)}</td>
+          <td class="px-3 py-2.5 text-center font-medium ${st.pctBelow > 0 ? 'text-[#ef6c00] font-bold' : 'text-slate-400'}">${fmtNum(st.pctBelow)}</td>
           <td class="px-3 py-2.5 text-right font-medium text-slate-700">${fmtNum(st.units)}</td>
           <td class="px-3 py-2.5 text-right">
             ${st.countMode > 0
@@ -2152,9 +2249,9 @@
       document.getElementById('primaryCauseTableFoot').innerHTML = `
         <tr>
           <td class="px-4 py-3">TOTAL MASALAH TERCATAT</td>
-          <td class="px-3 py-3 text-center">${fmtNum(sumPctBelow)}</td>
-          <td class="px-3 py-3 text-center text-[#c62828]">${fmtNum(sumProdBelow)}</td>
           <td class="px-3 py-3 text-center">${fmtNum(sumAllCases)}</td>
+          <td class="px-3 py-3 text-center text-[#c62828]">${fmtNum(sumProdBelow)}</td>
+          <td class="px-3 py-3 text-center">${fmtNum(sumPctBelow)}</td>
           <td class="px-3 py-3 text-right">${fmtNum(sumUnits)}</td>
           <td class="px-3 py-3 text-right">${allCategorizedModeJobs.length > 0 ? fmtPct(overallCatAvg) : '-'}</td>
         </tr>
