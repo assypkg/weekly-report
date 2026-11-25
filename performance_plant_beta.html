@@ -1560,9 +1560,9 @@
     function sheetToPerformanceMatrix(sheet) {
       if (!sheet || !sheet['!ref']) throw new Error('Sheet tidak memiliki rentang data yang dapat dibaca.');
       const usedRange = XLSX.utils.decode_range(sheet['!ref']);
-      // Template memiliki kolom bantu hingga XEZ. Data input performance hanya memakai A:S;
-      // dibatasi sampai AN untuk tetap mendukung variasi urutan kolom tanpa membaca ribuan kolom bantu.
-      const safeEndCol = Math.min(Math.max(usedRange.e.c, 18), 39);
+      // Template memiliki kolom bantu hingga XEZ. Data sumber performance hanya memakai A:S.
+      // Kolom T dan seterusnya adalah formula/helper, sehingga tidak ikut dibaca saat import.
+      const safeEndCol = 18;
       const safeRange = {
         s: { r: 0, c: 0 },
         e: { r: usedRange.e.r, c: safeEndCol }
