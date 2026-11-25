@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generator Daftar Laporan LMP v4 — Grafik, Ringkasan Reject & Sort Nama Item</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet" />
+
+  <!-- Libraries: SheetJS, ExcelJS, Chart.js & Chart.js DataLabels -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+  <style id="dynamicPageStyle">
+    @page { size: A4 landscape; margin: 6mm; }
+  </style>
+
+  <style>
+    :root {
+      --navy: #1a237e;
+      --navy-dark: #0f1654;
+      --navy-light: #e8eaf6;
+      --emerald: #2e7d32;
+      --emerald-light: #e8f5e9;
+      --red: #c62828;
+      --amber: #e65100;
+      --purple: #6a1b9a;
+      --cyan-draft: #ccffff;
+      --bg: #eef2f7;
+      --card: #ffffff;
+      --border: #d5dce6;
+      --text: #1e293b;
+      --muted: #64748b;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding-bottom: 48px;
+    }
+
+    /* ======================== APP CHROME (NO PRINT) ======================== */
+    .topbar {
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+      color: #fff;
+      padding: 16px 24px;
+      box-shadow: 0 4px 18px rgba(15, 22, 84, 0.22);
+    }
+    .topbar-inner {
+      max-width: 1640px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .brand-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.18rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+    .brand-sub {
+      font-size: 0.79rem;
+      color: rgba(255, 255, 255, 0.82);
+      margin-top: 2px;
+    }
+    .topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.81rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--navy); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--navy-dark); }
+    .btn-emerald { background: var(--emerald); color: #fff; }
+    .btn-emerald:hover:not(:disabled) { background: #1b5e20; }
+    .btn-pdf { background: #c62828; color: #fff; }
+    .btn-pdf:hover:not(:disabled) { background: #9b1c1c; }
+    .btn-outline-light {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border-color: rgba(255,255,255,0.28);
+    }
+    .btn-outline-light:hover:not(:disabled) { background: rgba(255,255,255,0.22); }
+    .btn-outline {
+      background: #fff;
+      color: var(--navy);
+      border-color: var(--border);
+    }
+    .btn-outline:hover:not(:disabled) { background: var(--navy-light); border-color: var(--navy); }
+    .btn-danger-outline {
+      background: #fff;
+      color: var(--red);
+      border-color: #f5c6cb;
+    }
+    .btn-danger-outline:hover:not(:disabled) { background: #ffebee; }
+    .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+
+    .container {
+      max-width: 1640px;
+      margin: 16px auto 0;
+      padding: 0 18px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 15px 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+    .dropzone {
+      border: 2px dashed #9fa8da;
+      border-radius: 10px;
+      background: #f8f9fe;
+      padding: 18px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--navy);
+      background: var(--navy-light);
+    }
+    .dropzone-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--navy);
+    }
+    .dropzone-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .file-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--navy-light);
+      color: var(--navy-dark);
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+    .file-chip button {
+      border: none;
+      background: transparent;
+      color: var(--red);
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.92rem;
+      line-height: 1;
+    }
+
+    /* Hide Column / Presentation Bar */
+    .privacy-bar {
+      background: linear-gradient(90deg, #fff8e1 0%, #ffffff 100%);
+      border: 1px solid #ffe082;
+      border-left: 5px solid var(--amber);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .privacy-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #7c2d12;
+    }
+    .toggle-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .toggle-pill input {
+      accent-color: var(--navy);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+    .toggle-pill.active {
+      background: var(--navy);
+      color: #fff;
+      border-color: var(--navy);
+    }
+
+    /* Filters Grid */
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      align-items: end;
+    }
+    .field label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+      margin-bottom: 4px;
+    }
+    .field select, .field input[type="text"] {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.81rem;
+      color: var(--text);
+      background: #fff;
+    }
+    .check-inline {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      height: 34px;
+    }
+    .check-inline input { accent-color: var(--emerald); width: 14px; height: 14px; }
+
+    /* Quick Summary Strip (Screen Only) */
+    .summary-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .sum-pill {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--navy);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .sum-pill.ekspor { border-left-color: var(--purple); }
+    .sum-pill.hoshi { border-left-color: var(--emerald); }
+    .sum-pill.lokal { border-left-color: #1565c0; }
+    .sum-pill.divisi { border-left-color: var(--amber); }
+    .sum-pill strong { font-family: 'Montserrat', sans-serif; font-size: 0.92rem; color: var(--navy-dark); }
+
+    /* ======================== DRAFT PAPER PREVIEW (EXACT PDF LAYOUT) ======================== */
+    .paper-sheet {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+      padding: 20px 22px;
+      overflow-x: auto;
+    }
+
+    .doc-header-optional {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 2px solid var(--navy);
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      font-family: 'Montserrat', 'Calibri', sans-serif;
+    }
+    .doc-header-optional h1 {
+      font-size: 13pt;
+      font-weight: 800;
+      color: var(--navy);
+      text-transform: uppercase;
+    }
+    .doc-header-optional .doc-meta {
+      font-family: 'Inter', 'Calibri', sans-serif;
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: #334155;
+      text-align: right;
+    }
+
+    /* ======================== EXECUTIVE CHARTS BLOCK (SCREEN & PDF) ======================== */
+    .charts-wrapper {
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1.5px solid #cbd5e1;
+    }
+    .charts-wrapper.page-break-after {
+      break-after: page;
+      page-break-after: always;
+      border-bottom: none;
+      margin-bottom: 14px;
+      padding-bottom: 0;
+    }
+    .charts-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .mini-kpi {
+      border: 1px solid #cbd5e1;
+      border-top: 3.5px solid var(--navy);
+      border-radius: 8px;
+      padding: 9px 11px;
+      background: #f8fafc;
+    }
+    .mini-kpi.red { border-top-color: var(--red); }
+    .mini-kpi.amber { border-top-color: var(--amber); }
+    .mini-kpi.emerald { border-top-color: var(--emerald); }
+    .mini-kpi.purple { border-top-color: var(--purple); }
+    .mini-kpi .lbl {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .mini-kpi .val {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--navy-dark);
+      margin-top: 2px;
+    }
+    .mini-kpi.red .val { color: var(--red); }
+    .mini-kpi.amber .val { color: var(--amber); }
+    .mini-kpi.emerald .val { color: var(--emerald); }
+    .mini-kpi.purple .val { color: var(--purple); }
+    .mini-kpi .sub {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .chart-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #ffffff;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .chart-card-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.25px;
+    }
+    .chart-canvas-wrap {
+      position: relative;
+      height: 220px;
+      width: 100%;
+    }
+    .chart-print-img {
+      display: none;
+      width: 100%;
+      height: auto;
+    }
+
+    /* ======================== DRAFT TABLES ======================== */
+    .draft-section {
+      margin-bottom: 18px;
+    }
+    .draft-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .draft-section-title {
+      font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+      font-size: 13.5pt;
+      font-weight: 700;
+      color: #000000;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+    .draft-section-title .sec-count-screen {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      text-transform: none;
+    }
+
+    table.lmp-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+      font-size: 8.5pt;
+      color: #000000;
+      background: #ffffff;
+    }
+
+    table.lmp-table thead {
+      display: table-header-group;
+    }
+
+    table.lmp-table th {
+      background-color: var(--cyan-draft);
+      color: #000000;
+      font-weight: 700;
+      text-align: center;
+      vertical-align: middle;
+      border: 1px solid #000000;
+      padding: 6px 3px;
+      line-height: 1.2;
+      word-break: normal;
+      overflow-wrap: break-word;
+    }
+
+    table.lmp-table td {
+      border: 1px solid #000000;
+      padding: 4px 5px;
+      vertical-align: middle;
+      line-height: 1.28;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    table.lmp-table tr {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .ta-c { text-align: center; }
+    .ta-l { text-align: left; }
+    .ta-r { text-align: right; }
+    .nowrap { white-space: nowrap; }
+
+    /* Description cell formatting & summary action buttons */
+    .desc-summary-text {
+      font-size: 8.4pt;
+      line-height: 1.32;
+      color: #000;
+    }
+    .desc-actions {
+      margin-top: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .btn-mini {
+      padding: 1px 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.64rem;
+      font-weight: 600;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+    }
+    .btn-mini:hover { background: var(--navy-light); border-color: var(--navy); color: var(--navy); }
+    .btn-mini.edited-tag { background: var(--emerald-light); border-color: #81c784; color: var(--emerald); }
+
+    .desc-formatted {
+      font-size: 8pt;
+      line-height: 1.3;
+      text-align: left;
+    }
+    .desc-formatted p { margin: 0 0 3px 0; }
+    .desc-formatted p:last-child { margin-bottom: 0; }
+    .desc-formatted ul, .desc-formatted ol { margin: 2px 0 3px 14px; padding: 0; }
+    .desc-formatted li { margin-bottom: 1px; }
+    .desc-formatted table {
+      width: 100% !important;
+      border-collapse: collapse;
+      margin: 4px 0;
+      font-size: 7pt;
+      table-layout: auto;
+    }
+    .desc-formatted table th, .desc-formatted table td {
+      border: 1px solid #555 !important;
+      padding: 2px 3px !important;
+      background: #fff !important;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    /* Inline PRODUKSI selector (screen) vs plain text (print) */
+    .prod-select {
+      width: 100%;
+      font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+      font-size: 7.8pt;
+      font-weight: 600;
+      color: #000;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 2px 2px;
+      cursor: pointer;
+    }
+    .prod-select:hover { border-color: var(--navy); background: #eef2ff; }
+    .prod-print-text { display: none; }
+
+    .zero-row td {
+      text-align: center;
+      font-style: italic;
+      color: #555;
+      padding: 10px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 46px 20px;
+      color: var(--muted);
+    }
+    .empty-state h3 {
+      font-family: 'Montserrat', sans-serif;
+      color: var(--navy);
+      font-size: 1.02rem;
+      margin-bottom: 6px;
+    }
+
+    .helper-note {
+      font-size: 0.76rem;
+      color: #334155;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+    }
+
+    /* Full Description & Summary Edit Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.56);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9600;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      max-width: 860px;
+      width: 100%;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.28);
+    }
+    .modal-header {
+      background: var(--navy);
+      color: #fff;
+      padding: 13px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-family: 'Montserrat', sans-serif; font-size: 0.92rem; }
+    .modal-close { background: transparent; border: none; color: #fff; font-size: 1.35rem; cursor: pointer; line-height: 1; }
+    .modal-body { padding: 16px 18px; overflow-y: auto; }
+    .modal-edit-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .modal-edit-box label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .modal-edit-box textarea {
+      width: 100%;
+      min-height: 62px;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.84rem;
+      resize: vertical;
+    }
+    .modal-raw-box {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: #fff;
+      max-height: 360px;
+      overflow: auto;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--navy-dark);
+      color: #fff;
+      padding: 11px 16px;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ======================== PRINT / SAVE PDF EXACT DRAFT MODE ======================== */
+    @media print {
+      html, body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .no-print { display: none !important; }
+
+      .container {
+        max-width: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .paper-sheet {
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+
+      .charts-kpi-row { gap: 6px; margin-bottom: 8px; }
+      .mini-kpi { padding: 6px 8px; }
+      .mini-kpi .val { font-size: 11pt; }
+      .mini-kpi .lbl, .mini-kpi .sub { font-size: 6.5pt; }
+
+      .charts-grid { gap: 8px; }
+      .chart-card { padding: 7px 9px; }
+      .chart-card-title { font-size: 7.5pt; margin-bottom: 4px; }
+      .chart-canvas-wrap { display: none !important; }
+      .chart-print-img { display: block !important; max-height: 185px; object-fit: contain; }
+
+      .draft-section { margin-bottom: 11px; }
+      .draft-section-title { font-size: 11pt !important; margin-bottom: 3px !important; }
+
+      table.lmp-table { font-size: 7.2pt !important; width: 100% !important; }
+      table.lmp-table th {
+        background-color: #ccffff !important;
+        padding: 4px 2.5px !important;
+        border: 0.75pt solid #000000 !important;
+        font-size: 7.1pt !important;
+      }
+      table.lmp-table td {
+        padding: 3px 3.5px !important;
+        border: 0.75pt solid #000000 !important;
+      }
+
+      .desc-summary-text { font-size: 7.1pt !important; line-height: 1.24 !important; }
+      .desc-formatted { font-size: 6.8pt !important; line-height: 1.22 !important; }
+      .desc-formatted table { font-size: 6pt !important; }
+
+      .prod-select { display: none !important; }
+      .prod-print-text { display: inline !important; }
+      .sec-count-screen { display: none !important; }
+    }
+
+    @media (max-width: 960px) {
+      .charts-kpi-row { grid-template-columns: repeat(2, 1fr); }
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .upload-grid { grid-template-columns: 1fr; }
+      .topbar { padding: 14px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR (SCREEN ONLY) -->
+  <header class="topbar no-print">
+    <div class="topbar-inner">
+      <div>
+        <div class="brand-title">GENERATOR DAFTAR LAPORAN LMP — GRAFIK &amp; RINGKASAN REJECT</div>
+        <div class="brand-sub">ASSEMBLING EKSPOR • ASSEMBLING - HOSHI • ASSEMBLING LOKAL • DIVISI LAIN</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-pdf" id="btnSavePDF" disabled>Save PDF / Cetak</button>
+        <button class="btn btn-emerald" id="btnExportExcel" disabled>Export Excel (.xlsx)</button>
+        <button class="btn btn-outline-light" id="btnCopyWA" disabled>Copy WA</button>
+        <button class="btn btn-outline-light" id="btnBackupJSON" disabled>Backup JSON</button>
+        <button class="btn btn-outline-light" id="btnRestoreJSON">Restore JSON</button>
+        <input type="file" id="jsonInput" accept=".json" style="display:none" />
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- UPLOAD PANEL (SCREEN ONLY) -->
+    <section class="panel no-print">
+      <div class="upload-grid">
+        <div class="dropzone" id="dropzone">
+          <div class="dropzone-title">Klik atau Tarik File Excel ERP (.xls / .xlsx) ke Sini</div>
+          <div class="dropzone-sub">Mendukung file ERP mentah (<code>daftar_LMPE_...xls</code>) maupun file draft (<code>daftar laporan LMP.xls</code>). Otomatis menyimpulkan jenis reject dari deskripsi panjang &amp; mengelompokkan <strong>HOSHI / KEMAS JAPAN</strong>.</div>
+          <input type="file" id="fileInput" accept=".xls,.xlsx,.csv" multiple style="display:none" />
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn btn-primary" id="btnBrowse">Pilih File Excel</button>
+          <button class="btn btn-danger-outline" id="btnResetAll" disabled>Reset Data</button>
+        </div>
+      </div>
+      <div class="file-chips" id="fileChips"></div>
+    </section>
+
+    <!-- HIDE KOLOM BAR (SCREEN ONLY) -->
+    <section class="privacy-bar no-print">
+      <div class="privacy-label">HIDE KOLOM (BERLAKU DI PREVIEW, SAVE PDF &amp; EXPORT EXCEL):</div>
+      <div class="toggle-group">
+        <label class="toggle-pill" id="pillKodeItem">
+          <input type="checkbox" id="hideKodeItem" />
+          <span>Hide Kode Item</span>
+        </label>
+        <label class="toggle-pill" id="pillNoPO">
+          <input type="checkbox" id="hideNoPO" />
+          <span>Hide Nomor PO</span>
+        </label>
+        <label class="toggle-pill" id="pillTglSample">
+          <input type="checkbox" id="hideTglSample" />
+          <span>Hide Tgl Terima Sample</span>
+        </label>
+        <label class="toggle-pill" id="pillItemCust">
+          <input type="checkbox" id="hideItemCust" checked />
+          <span>Hide Item Customer</span>
+        </label>
+        <label class="toggle-pill" id="pillProduksi">
+          <input type="checkbox" id="hideProduksi" />
+          <span>Hide Kolom Produksi</span>
+        </label>
+        <button class="btn btn-outline btn-sm" id="btnHideMain3">Hide 3 Kolom Utama</button>
+        <button class="btn btn-outline btn-sm" id="btnResetCols">Default Draft</button>
+      </div>
+    </section>
+
+    <!-- FILTER & DISPLAY OPTIONS PANEL (SCREEN ONLY) -->
+    <section class="panel no-print" id="filterPanel" style="display:none;">
+      <div class="filter-grid">
+        <div class="field">
+          <label for="filterYear">Tahun Laporan</label>
+          <select id="filterYear"><option value="ALL">Semua Tahun</option></select>
+        </div>
+        <div class="field">
+          <label for="filterType">Jenis Claim</label>
+          <select id="filterType">
+            <option value="ALL">Semua (Reject &amp; Complain)</option>
+            <option value="REJECT">Reject Customer Saja</option>
+            <option value="COMPLAIN">Complain Customer Saja</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="filterUnit">Unit Produksi</label>
+          <select id="filterUnit"><option value="ALL">Semua Unit</option></select>
+        </div>
+        <div class="field">
+          <label for="descMode">Mode Deskripsi</label>
+          <select id="descMode">
+            <option value="SUMMARY">Ringkas (Kesimpulan Reject)</option>
+            <option value="FULL">Lengkap (Teks Asli ERP)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="paperSize">Ukuran Kertas PDF</label>
+          <select id="paperSize">
+            <option value="A4 landscape">A4 Landscape (Standar)</option>
+            <option value="330mm 215mm">F4 / Folio Landscape</option>
+            <option value="A3 landscape">A3 Landscape (Lebih Lega)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sortMode">Urutkan Tabel</label>
+          <select id="sortMode">
+            <option value="ITEM_ASC" selected>Nama Item (1–10, A–Z)</option>
+            <option value="DATE_ASC">Tanggal Claim (Terlama)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="searchInput">Cari Data</label>
+          <input type="text" id="searchInput" placeholder="Customer, item, defect..." />
+        </div>
+        <div class="field">
+          <label>Grafik Analisa</label>
+          <label class="check-inline" title="Tampilkan 4 grafik analisa di layar & ikut tercetak pada PDF">
+            <input type="checkbox" id="toggleCharts" checked />
+            <span>Tampilkan Grafik</span>
+          </label>
+        </div>
+        <div class="field">
+          <label>Halaman PDF Grafik</label>
+          <label class="check-inline" title="Halaman 1 khusus Grafik, Halaman 2 dst khusus Tabel Draft">
+            <input type="checkbox" id="toggleChartPageBreak" checked />
+            <span>Grafik Halaman 1</span>
+          </label>
+        </div>
+        <div class="field">
+          <label>Opsi Multi-SJ</label>
+          <label class="check-inline" title="Menggabungkan Nomor Claim identik dengan beda Surat Jalan agar tidak terhitung ganda">
+            <input type="checkbox" id="toggleDedup" checked />
+            <span>Gabung Claim Ganda</span>
+          </label>
+        </div>
+        <div class="field">
+          <label>Bagian 0 Data</label>
+          <label class="check-inline">
+            <input type="checkbox" id="toggleShowEmpty" />
+            <span>Tampilkan Bagian Kosong</span>
+          </label>
+        </div>
+        <div class="field">
+          <label>Judul Atas PDF</label>
+          <label class="check-inline">
+            <input type="checkbox" id="toggleDocHeader" checked />
+            <span>Tampilkan Kop Judul</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK SUMMARY STRIP (SCREEN ONLY) -->
+    <div class="summary-strip no-print" id="summaryStrip" style="display:none;"></div>
+
+    <!-- HELPER TIP (SCREEN ONLY) -->
+    <div class="helper-note no-print" id="helperNote" style="display:none;">
+      <strong>Fitur Aktif:</strong> (1) Urutan baris di tiap bagian otomatis diurutkan berdasarkan <strong>Nama Item (1–10, A–Z)</strong>. (2) Ubah dropdown pada kolom <strong>PRODUKSI</strong> untuk memindahkan baris antar bagian (<code>ASSEMBLING EKSPOR</code>, <code>ASSEMBLING - HOSHI</code>, <code>ASSEMBLING LOKAL</code>, atau <code>DIVISI LAIN</code>). (3) Klik <strong>Edit / Detail</strong> di kolom Description untuk cek teks asli ERP atau menyempurnakan kesimpulan reject. Semua dropdown &amp; tombol bantu otomatis hilang saat <strong>Save PDF</strong>.
+    </div>
+
+    <!-- ==================== WYSIWYG DRAFT PAPER (EXACT PDF OUTPUT) ==================== -->
+    <section class="paper-sheet" id="paperSheet">
+      <div class="empty-state" id="emptyState">
+        <h3>Belum Ada File Excel yang Diunggah</h3>
+        <p>Silakan unggah file Excel ERP (<code>.xls</code> / <code>.xlsx</code>) pada kotak di atas untuk men-generate <strong>Grafik Analisa</strong> dan <strong>Daftar Laporan LMP</strong> siap Save PDF.</p>
+      </div>
+
+      <div id="draftDocument" style="display:none;">
+        <!-- Optional Document Header -->
+        <div class="doc-header-optional" id="docHeaderOptional">
+          <h1 id="docMainTitle">DAFTAR LAPORAN LMP — REJECT &amp; COMPLAIN CUSTOMER</h1>
+          <div class="doc-meta" id="docMainMeta"></div>
+        </div>
+
+        <!-- Executive Charts Block (Screen + PDF) -->
+        <div class="charts-wrapper" id="chartsWrapper">
+          <div class="charts-kpi-row" id="chartsKpiRow"></div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-card-title">1. Jumlah Kasus per Bagian (Reject vs Complain)</div>
+              <div class="chart-canvas-wrap"><canvas id="chartBySection"></canvas></div>
+              <img class="chart-print-img" id="imgChartBySection" alt="Grafik per Bagian" />
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-title">2. Tren Bulanan Kasus (Jan – Des)</div>
+              <div class="chart-canvas-wrap"><canvas id="chartMonthly"></canvas></div>
+              <img class="chart-print-img" id="imgChartMonthly" alt="Grafik Tren Bulanan" />
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-title">3. Pareto Top Jenis Reject / Defect (Kesimpulan)</div>
+              <div class="chart-canvas-wrap"><canvas id="chartTopDefect"></canvas></div>
+              <img class="chart-print-img" id="imgChartTopDefect" alt="Grafik Top Defect" />
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-title">4. Top Customer Berdasarkan Jumlah Kasus</div>
+              <div class="chart-canvas-wrap"><canvas id="chartTopCustomer"></canvas></div>
+              <img class="chart-print-img" id="imgChartTopCustomer" alt="Grafik Top Customer" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Stacked Draft Tables -->
+        <div id="sectionsContainer"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- DESCRIPTION DETAIL & SUMMARY EDIT MODAL (SCREEN ONLY) -->
+  <div class="modal-backdrop no-print" id="descModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="descModalTitle">Detail Deskripsi &amp; Edit Kesimpulan Reject</h3>
+        <button type="button" class="modal-close" id="btnCloseDescModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-edit-box">
+          <label for="summaryEditInput">Kesimpulan Reject (Ditampilkan di Tabel &amp; PDF Mode Ringkas)</label>
+          <textarea id="summaryEditInput" placeholder="Ketik kesimpulan singkat reject..."></textarea>
+          <div style="margin-top:8px; display:flex; gap:8px; justify-content:flex-end;">
+            <button type="button" class="btn btn-outline btn-sm" id="btnResetSummary">Kembalikan Ringkasan Otomatis</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btnSaveSummary">Simpan Kesimpulan</button>
+          </div>
+        </div>
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">
+          Deskripsi Asli Lengkap dari ERP
+        </div>
+        <div class="modal-raw-box desc-formatted" id="descModalRaw"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast no-print" id="toast"></div>
+
+  <script>    if (window.Chart && window.ChartDataLabels) {
+      Chart.register(ChartDataLabels);
+    }
+
+    // =========================================================================
+    // CONFIGURATION & STATE
+    // =========================================================================
+    const SECTIONS = [
+      { key: 'ASSEMBLING EKSPOR',  title: 'ASSEMBLING EKSPOR',  pillClass: 'ekspor', color: '#6a1b9a' },
+      { key: 'ASSEMBLING - HOSHI', title: 'ASSEMBLING - HOSHI', pillClass: 'hoshi',  color: '#2e7d32' },
+      { key: 'ASSEMBLING LOKAL',   title: 'ASSEMBLING LOKAL',   pillClass: 'lokal',  color: '#1a237e' },
+      { key: 'DIVISI LAIN',        title: 'DIVISI LAIN',        pillClass: 'divisi', color: '#e65100' }
+    ];
+
+    const ASSEMBLING_TARGETS = ['ASSEMBLING EKSPOR', 'ASSEMBLING - HOSHI', 'ASSEMBLING LOKAL'];
+    const DIVISI_LAIN_TARGETS = ['DECORATION', 'PUFF', 'KOTINDO', 'KAMA', 'INJECTION', 'LAINNYA'];
+    const PRODUKSI_OPTIONS = [...ASSEMBLING_TARGETS, ...DIVISI_LAIN_TARGETS];
+
+    // Tuned column proportions: slim Nomor, no broken 'Prosentase', no cramped dates/numbers
+    const COL_DEFS = [
+      { id: 'nomor',        label: 'Nomor',             weight: 3.4,  align: 'ta-c', hideKey: null },
+      { id: 'nomorClaim',   label: 'Nomor Claim',       weight: 6.8,  align: 'ta-l', hideKey: null },
+      { id: 'unit',         label: 'Unit Produksi',     weight: 4.9,  align: 'ta-l', hideKey: null },
+      { id: 'customer',     label: 'Nama Customer',     weight: 8.1,  align: 'ta-l', hideKey: null },
+      { id: 'itemCustomer', label: 'Item Customer',     weight: 5.0,  align: 'ta-l', hideKey: 'itemCustomer' },
+      { id: 'kodeItem',     label: 'Item',              weight: 6.1,  align: 'ta-l', hideKey: 'kodeItem' },
+      { id: 'namaItem',     label: 'Nama Item',         weight: 10.6, align: 'ta-l', hideKey: null },
+      { id: 'produksi',     label: 'PRODUKSI',          weight: 7.4,  align: 'ta-c', hideKey: 'produksi' },
+      { id: 'noPO',         label: 'No. Po',            weight: 5.0,  align: 'ta-c', hideKey: 'noPO' },
+      { id: 'noJob',        label: 'No. Job',           weight: 5.2,  align: 'ta-c', hideKey: null },
+      { id: 'qtyDelivery',  label: 'Jumlah Delivery',   weight: 5.0,  align: 'ta-c', hideKey: null },
+      { id: 'qtyOrder',     label: 'QTY Order',         weight: 5.1,  align: 'ta-c', hideKey: null },
+      { id: 'qtyReject',    label: 'Jumlah Reject',     weight: 4.5,  align: 'ta-c', hideKey: null },
+      { id: 'prosentase',   label: 'Prosentase',        weight: 5.2,  align: 'ta-c', hideKey: null },
+      { id: 'tglClaim',     label: 'Tanggal Claim',     weight: 5.7,  align: 'ta-c', hideKey: null },
+      { id: 'statusClaim',  label: 'Status Claim',      weight: 5.4,  align: 'ta-l', hideKey: null },
+      { id: 'tglSample',    label: 'Tgl Terima Sample', weight: 4.8,  align: 'ta-c', hideKey: 'tglSample' },
+      { id: 'description',  label: 'Description',       weight: 17.5, align: 'ta-l', hideKey: null }
+    ];
+
+    const state = {
+      files: [],
+      rawRecords: [],
+      overrides: {},
+      customerOverrides: {},
+      summaryOverrides: {},     // { [overrideKey]: customSummaryText }
+      hide: {
+        kodeItem: false,
+        noPO: false,
+        tglSample: false,
+        itemCustomer: true,
+        produksi: false
+      },
+      descMode: 'SUMMARY',      // 'SUMMARY' | 'FULL'
+      sortMode: 'ITEM_ASC',     // 'ITEM_ASC' (1-10, A-Z) | 'DATE_ASC'
+      showCharts: true,
+      chartPageBreak: true,
+      dedup: true,
+      showEmptySections: false,
+      showDocHeader: true,
+      paperSize: 'A4 landscape',
+      filters: {
+        year: 'ALL',
+        type: 'ALL',
+        unit: 'ALL',
+        search: ''
+      },
+      descCtx: null,
+      charts: {
+        bySection: null,
+        monthly: null,
+        topDefect: null,
+        topCustomer: null
+      }
+    };
+
+    try {
+      const savedOv = localStorage.getItem('lmp_produksi_overrides_v2');
+      if (savedOv) state.overrides = JSON.parse(savedOv) || {};
+      const savedCustOv = localStorage.getItem('lmp_customer_overrides_v2');
+      if (savedCustOv) state.customerOverrides = JSON.parse(savedCustOv) || {};
+      const savedSumOv = localStorage.getItem('lmp_summary_overrides_v3');
+      if (savedSumOv) state.summaryOverrides = JSON.parse(savedSumOv) || {};
+    } catch (_) {}
+
+    function saveOverrides() {
+      try {
+        localStorage.setItem('lmp_produksi_overrides_v2', JSON.stringify(state.overrides));
+        localStorage.setItem('lmp_customer_overrides_v2', JSON.stringify(state.customerOverrides));
+        localStorage.setItem('lmp_summary_overrides_v3', JSON.stringify(state.summaryOverrides));
+      } catch (_) {}
+    }
+
+    // =========================================================================
+    // SMART DEFECT SUMMARIZER ENGINE (INDONESIA & ENGLISH COSMETIC PACKAGING)
+    // =========================================================================
+    const DEFECT_RULES = [
+      { re: /salah kirim|wrong (item|product|delivery)|isi (di ?dalam|di) box adalah/i, label: 'Salah kirim barang (label & isi tertukar)' },
+      { re: /\brambut\b/i, label: 'Kontaminasi rambut' },
+      { re: /bulu halus|serabut|\bbenang\b|filaments|\blint\b/i, label: 'Kontaminasi serabut / benang / bulu halus' },
+      { re: /foreign material|foreign object|foreign matter|pengotor|partikel hitam|bintik hitam|\bdebu\b|\bdust\b|\bdebris\b|non-removable contamination|\bresiduals\b/i, label: 'Foreign material / kontaminasi kotoran' },
+      { re: /kotor lem/i, label: 'Kotor lem bagian dalam' },
+      { re: /berminyak|\boil\b|lubricant|\bminyak\b/i, label: 'Berminyak / residu lubricant' },
+      { re: /tinta printing.*mengotori|tinta.*belobor|printing logo blobor|tinta menempel/i, label: 'Tinta printing blobor / mengotori base' },
+      { re: /kotor (dalam|bagian dalam|pinggiran|hitam|pada)|cap kotor|pot.*tidak bersih|noda hitam|\bdirty\b|\bcontamination\b/i, label: 'Kotor / noda pada komponen' },
+      { re: /sticking to (the )?(back of )?tray|sticking to the cavity|menempel.*tray/i, label: 'Compact menempel pada tray / cavity' },
+      { re: /lifting\s*\/?\s*bubble|bubble under the film|tab.*folded|tab.*sticking out/i, label: 'Bubble / lifting protective film mirror' },
+      { re: /\bbubble\b|coldslug/i, label: 'Bubble / coldslug' },
+      { re: /unable to snap|can\s*not be closed|cannot be closed|failing to clasp shut|tidak bisa ditutup|close defect/i, label: 'Compact tidak bisa ditutup (close/clasp defect)' },
+      { re: /lock rusak|lock.*hilang|defect lock/i, label: 'Lock compact rusak / hilang' },
+      { re: /kango lemah|kango weaker|pull strength.*lemah|opening force|closing the lid is light/i, label: 'Kango / pull strength cover lemah' },
+      { re: /cap seret|tidak klik|agak membal|tidak align|capping.*keras/i, label: 'Cap seret / tidak align / susah klik' },
+      { re: /inner botol lepas/i, label: 'Inner botol lepas' },
+      { re: /ring (dan base )?lepas|base dan ring terlepas/i, label: 'Ring lepas dari base' },
+      { re: /aplikator.*lepas|ujung aplikator mudah lepas/i, label: 'Aplikator lepas dari rod' },
+      { re: /sleeve lepas/i, label: 'Sleeve lepas' },
+      { re: /outer metal base.*coming apart|cover metal.*lepas|caps with separation|separation force/i, label: 'Separasi komponen (cover/base/stem lepas)' },
+      { re: /shell corn.*remove|remove issue of shell corn/i, label: 'Shell corn terlepas (after overrun)' },
+      { re: /hot-?stamping.*(tidak komplit|mengelupas)/i, label: 'Logo hot-stamping tidak komplit / mengelupas' },
+      { re: /sticker label.*mengelupas/i, label: 'Sticker label inner tray mengelupas' },
+      { re: /silkscreen.*(terkelupas|defect)|ss terkelupas/i, label: 'Silkscreen terkelupas / defect' },
+      { re: /coating off|peel off/i, label: 'Coating terkelupas (peel off)' },
+      { re: /pocking mark/i, label: 'Pocking mark / permukaan coating kasar' },
+      { re: /printing rusak|printing logo miring/i, label: 'Printing rusak / logo miring' },
+      { re: /warna inject tidak sesuai/i, label: 'Warna inject tidak sesuai standar' },
+      { re: /godet chipped|\brompal\b/i, label: 'Godet chipped (rompal)' },
+      { re: /godet tanpa rib/i, label: 'Godet tanpa rib' },
+      { re: /\bmelting\b|\bmelted\b|plastic.*deformed/i, label: 'Plastik deformasi / meleleh (heat)' },
+      { re: /\bbocor\b|kebocoran|\bleak/i, label: 'Botol bocor (leakage)' },
+      { re: /\bpatah\b|\bcrack|\bpecah\b|\bbroken\b/i, label: 'Komponen pecah / crack / patah' },
+      { re: /flashing|rough finish|pin mark/i, label: 'Flashing / permukaan kasar / pin mark' },
+      { re: /flow mark/i, label: 'Flow mark' },
+      { re: /out of dimension/i, label: 'Dimensi sleeve di luar spesifikasi' },
+      { re: /cover.*menghadap samping|posisi cover deboss/i, label: 'Posisi cover deboss salah arah' },
+      { re: /bekas hitam dari pita|packing puff di tumpuk/i, label: 'Bekas hitam pita pada puff (packing)' },
+      { re: /packaging material is not good|fall out of tray|packing.*not correct/i, label: 'Packing kurang aman (penyok/gores saat kirim)' },
+      { re: /\bdents?\b|\bpenyok\b/i, label: 'Penyok (dent)' },
+      { re: /\blecet\b|goresan|\bscratch/i, label: 'Lecet / goresan (scratch)' },
+      { re: /kekurangan product/i, label: 'Kekurangan qty pengiriman' }
+    ];
+
+    function extractTextExcludingLotTables(rawHtml) {
+      if (!rawHtml) return '';
+      const tpl = document.createElement('template');
+      tpl.innerHTML = String(rawHtml);
+
+      // Remove only leaf inspection/lot tables (tables that don't wrap other tables and look like Lot/AQL logs)
+      const tables = Array.from(tpl.content.querySelectorAll('table')).reverse();
+      tables.forEach(tbl => {
+        if (tbl.querySelector('table')) return; // wrapper table like Intercos — keep its narrative text!
+        const txt = (tbl.textContent || '').toLowerCase();
+        if ((txt.includes('lot#') && txt.includes('aql')) ||
+            (txt.includes('intercos batch') && txt.includes('purchase order')) ||
+            (txt.includes('defective rate based on aql'))) {
+          tbl.remove();
+        }
+      });
+
+      const htmlClean = tpl.innerHTML
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/(p|li|div|tr)>/gi, '\n')
+        .replace(/<\/(td|th)>/gi, ' ');
+      const div = document.createElement('div');
+      div.innerHTML = htmlClean;
+      return (div.textContent || div.innerText || '')
+        .replace(/\u00a0/g, ' ')
+        .replace(/[ \t]+/g, ' ')
+        .replace(/\n\s*\n+/g, '\n')
+        .trim();
+    }
+
+    function autoSummarizeDefect(rawHtml) {
+      const txt = extractTextExcludingLotTables(rawHtml);
+      if (!txt) return { summary: '-', tags: ['Tidak ada keterangan'] };
+      const low = txt.toLowerCase();
+
+      let found = [];
+      for (const rule of DEFECT_RULES) {
+        if (rule.re.test(low)) {
+          if (!found.includes(rule.label)) found.push(rule.label);
+        }
+      }
+
+      // Deduplicate overlapping general vs specific tags
+      if (found.includes('Kontaminasi rambut') && found.includes('Foreign material / kontaminasi kotoran') &&
+          !/(foreign|bintik hitam|partikel hitam|debu|dust|debris|pengotor)/i.test(low)) {
+        found = found.filter(x => x !== 'Foreign material / kontaminasi kotoran');
+      }
+      if (found.includes('Bubble / lifting protective film mirror')) {
+        found = found.filter(x => x !== 'Bubble / coldslug');
+      }
+      if (found.includes('Kotor lem bagian dalam')) {
+        found = found.filter(x => x !== 'Kotor / noda pada komponen');
+      }
+      if (found.includes('Tinta printing blobor / mengotori base') && !/kotor hitam/i.test(low)) {
+        found = found.filter(x => x !== 'Kotor / noda pada komponen');
+      }
+      if (found.includes('Compact tidak bisa ditutup (close/clasp defect)') && found.includes('Lock compact rusak / hilang')) {
+        found = found.filter(x => x !== 'Lock compact rusak / hilang');
+      }
+      if (found.includes('Packing kurang aman (penyok/gores saat kirim)')) {
+        found = found.filter(x => x !== 'Penyok (dent)' && x !== 'Lecet / goresan (scratch)');
+      }
+
+      if (found.length) {
+        return { summary: found.slice(0, 4).join('; '), tags: found };
+      }
+
+      // Fallback: first concise meaningful line
+      const firstLine = txt.split('\n').map(s => s.trim()).find(Boolean) || txt;
+      const clipped = firstLine.length > 95 ? firstLine.slice(0, 95) + '...' : firstLine;
+      return { summary: clipped, tags: ['Lainnya / Cek Lampiran'] };
+    }
+
+    // =========================================================================
+    // UTILITIES & ERP .XLS OLE2 PATCHER
+    // =========================================================================
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), 3200);
+    }
+
+    function patchOle2Buffer(arrayBuffer) {
+      const bytes = new Uint8Array(arrayBuffer.slice(0));
+      if (bytes.length < 512) return bytes;
+      const sig = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+      for (let i = 0; i < 8; i++) {
+        if (bytes[i] !== sig[i]) return bytes;
+      }
+      const dv = new DataView(bytes.buffer);
+      const sectorShift = dv.getUint16(30, true);
+      const sectorSize = 1 << sectorShift;
+      const numFat = dv.getUint32(44, true);
+      const firstDir = dv.getUint32(48, true);
+
+      const dirOff = (firstDir + 1) * sectorSize;
+      if (dirOff + 128 > bytes.length) return bytes;
+
+      const rootStart = dv.getUint32(dirOff + 116, true);
+      const rootSize = dv.getUint32(dirOff + 120, true);
+      const entriesPerFat = sectorSize / 4;
+      const fatIdx = Math.floor(rootStart / entriesPerFat);
+      const fatPos = rootStart % entriesPerFat;
+
+      if (rootSize <= sectorSize && fatIdx < numFat && fatIdx < 109) {
+        const fatSec = dv.getUint32(76 + fatIdx * 4, true);
+        const entryOff = (fatSec + 1) * sectorSize + fatPos * 4;
+        if (entryOff + 4 <= bytes.length) {
+          const curVal = dv.getUint32(entryOff, true);
+          if (curVal !== 0xFFFFFFFE) {
+            dv.setUint32(entryOff, 0xFFFFFFFE, true);
+          }
+        }
+      }
+      return bytes;
+    }
+
+    function cleanCellStr(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
+    function cleanIdNumber(v) {
+      if (v === null || v === undefined || v === '') return '';
+      if (typeof v === 'number') return Number.isInteger(v) ? String(v) : String(Math.round(v));
+      return String(v).replace(/\.0$/, '').trim();
+    }
+    function parseNum(v) {
+      if (typeof v === 'number') return isNaN(v) ? 0 : v;
+      if (!v) return 0;
+      const n = parseFloat(String(v).replace(/,/g, '').replace(/%/g, '').trim());
+      return isNaN(n) ? 0 : n;
+    }
+    function normalizeDate(v) {
+      if (!v && v !== 0) return '';
+      if (typeof v === 'number' && v > 20000 && v < 80000) {
+        const d = new Date(Math.floor(v - 25569) * 86400 * 1000);
+        if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      }
+      const s = String(v).trim();
+      if (!s) return '';
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+      return s;
+    }
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function sanitizeDescriptionHtml(raw) {
+      if (!raw) return '';
+      const str = String(raw).trim();
+      if (!str) return '';
+      if (!/<[a-z][\s\S]*>/i.test(str)) return escapeHtml(str).replace(/\r?\n/g, '<br>');
+      const tpl = document.createElement('template');
+      tpl.innerHTML = str;
+      tpl.content.querySelectorAll('script, style, iframe, object, embed, form, img').forEach(el => el.remove());
+      tpl.content.querySelectorAll('*').forEach(el => {
+        [...el.attributes].forEach(attr => {
+          const name = attr.name.toLowerCase();
+          if (name.startsWith('on') || name === 'style' || name === 'width' || name === 'height' || name === 'bgcolor') {
+            el.removeAttribute(attr.name);
+          }
+        });
+      });
+      tpl.content.querySelectorAll('p').forEach(p => {
+        const txt = (p.textContent || '').replace(/\u00a0/g, '').trim();
+        if (!txt && !p.querySelector('table, ul, ol')) p.remove();
+      });
+      return tpl.innerHTML.trim();
+    }
+    function htmlToCleanPlainText(raw) {
+      if (!raw) return '';
+      const str = String(raw)
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<\/li>/gi, '\n')
+        .replace(/<\/tr>/gi, '\n')
+        .replace(/<\/td>/gi, ' | ');
+      const div = document.createElement('div');
+      div.innerHTML = str;
+      return (div.textContent || div.innerText || '').replace(/\u00a0/g, ' ').replace(/[ \t]+/g, ' ').replace(/\n\s*\n+/g, '\n').trim();
+    }
+    function fmtNum(n) {
+      if (n === null || n === undefined || n === '') return '';
+      const num = Number(n);
+      return isNaN(num) ? '' : Math.round(num).toLocaleString('en-US');
+    }
+    function fmtPct(ratio) { return ((Number(ratio) || 0) * 100).toFixed(2) + '%'; }
+
+    function extractYear(tglClaim, nomorClaim, sheetName, fileName) {
+      if (tglClaim && /^\d{4}/.test(tglClaim)) return tglClaim.slice(0, 4);
+      const m = String(nomorClaim || '').match(/(20\d{2})/);
+      if (m) return m[1];
+      const sh = String(sheetName || '').match(/^(20\d{2})$/);
+      if (sh) return sh[1];
+      const f = String(fileName || '').match(/(20\d{2})/g);
+      if (f && f.length) return f[f.length - 1];
+      return 'Lainnya';
+    }
+
+    function autoDetectProduksi(customer, noJob, suratJalan, nomorClaim, invoice, kodeItem, rawProduksi) {
+      if (rawProduksi) {
+        const up = rawProduksi.toUpperCase().trim();
+        if (up === 'ASSEMBLING EKSPOR' || up === 'ASSEMBLING - HOSHI' || up === 'ASSEMBLING LOKAL') return up;
+        if (up.includes('HOSHI')) return 'ASSEMBLING - HOSHI';
+        return up;
+      }
+      const cust = (customer || '').toUpperCase();
+      const job = (noJob || '').toUpperCase();
+      const sj = (suratJalan || '').toUpperCase();
+      const clm = (nomorClaim || '').toUpperCase();
+      const inv = (invoice || '').toUpperCase();
+      const item = (kodeItem || '').toUpperCase();
+
+      if (item.startsWith('FG-PD')) return 'PUFF';
+      if (cust.includes('HOSHI') || cust.includes('KEMAS JAPAN')) return 'ASSEMBLING - HOSHI';
+      if (job.startsWith('JD') || sj.startsWith('DDO') || clm.includes('/LMPD/')) return 'ASSEMBLING LOKAL';
+      if (job.startsWith('JE') || sj.startsWith('EDO') || inv.startsWith('N') || inv.startsWith('L')) return 'ASSEMBLING EKSPOR';
+      if (cust.startsWith('PT.') || cust.startsWith('PT ') || cust.endsWith(', PT') || cust.includes('INDONESIA')) return 'ASSEMBLING LOKAL';
+      return 'ASSEMBLING EKSPOR';
+    }
+
+    function sectionFromProduksi(produksi) {
+      const up = (produksi || '').toUpperCase().trim();
+      if (up === 'ASSEMBLING EKSPOR') return 'ASSEMBLING EKSPOR';
+      if (up === 'ASSEMBLING - HOSHI' || up.includes('HOSHI')) return 'ASSEMBLING - HOSHI';
+      if (up === 'ASSEMBLING LOKAL') return 'ASSEMBLING LOKAL';
+      return 'DIVISI LAIN';
+    }
+
+    function classifyClaimType(statusClaim) {
+      return (statusClaim || '').toLowerCase().includes('reject') ? 'REJECT' : 'COMPLAIN';
+    }
+
+    // =========================================================================
+    // MULTI-FORMAT EXCEL PARSER
+    // =========================================================================
+    async function handleFiles(fileList) {
+      const files = Array.from(fileList || []);
+      if (!files.length) return;
+
+      let totalAdded = 0;
+      let totalSkipped = 0;
+
+      for (const file of files) {
+        try {
+          const buf = await file.arrayBuffer();
+          const patched = patchOle2Buffer(buf);
+          const wb = XLSX.read(patched, { type: 'array' });
+
+          const fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+          const existingKeys = new Set(state.rawRecords.map(r => r._key));
+          const yearsSet = new Set();
+          let fileAdded = 0;
+
+          for (const sheetName of wb.SheetNames) {
+            if (sheetName.trim().toLowerCase() === 'template') continue;
+
+            const ws = wb.Sheets[sheetName];
+            const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+            if (!aoa.length) continue;
+
+            let colMap = null;
+            let currentSectionHint = '';
+
+            for (let r = 0; r < aoa.length; r++) {
+              const row = aoa[r];
+              if (!row || row.every(c => String(c || '').trim() === '')) continue;
+
+              const normCells = row.map(c => String(c || '').toLowerCase().trim());
+
+              if (normCells.includes('nomor claim') && normCells.includes('nama customer')) {
+                colMap = {};
+                normCells.forEach((h, idx) => { if (h) colMap[h] = idx; });
+                continue;
+              }
+
+              const firstCellUp = String(row[0] || '').toUpperCase().trim();
+              const nonEmptyCount = row.filter(c => String(c || '').trim() !== '').length;
+              if (nonEmptyCount === 1 && (firstCellUp.includes('ASSEMBLING') || firstCellUp.includes('DIVISI LAIN'))) {
+                currentSectionHint = firstCellUp;
+                continue;
+              }
+
+              if (!colMap) continue;
+
+              const getVal = (aliases) => {
+                for (const a of aliases) {
+                  const idx = colMap[a];
+                  if (idx !== undefined) return row[idx];
+                }
+                return '';
+              };
+
+              const nomorClaim = cleanCellStr(getVal(['nomor claim', 'no. claim', 'no claim']));
+              const namaCustomer = cleanCellStr(getVal(['nama customer', 'customer']));
+              if (!nomorClaim && !namaCustomer) continue;
+              if (nomorClaim.toLowerCase() === 'nomor claim') continue;
+
+              const nomor = cleanIdNumber(getVal(['nomor', 'no']));
+              const unitProduksi = cleanCellStr(getVal(['unit produksi', 'unit']));
+              const itemCustomer = cleanIdNumber(getVal(['item customer']));
+              const kodeItem = cleanCellStr(getVal(['item', 'kode item']));
+              const namaItem = cleanCellStr(getVal(['nama item']));
+              const rawProduksi = cleanCellStr(getVal(['produksi']));
+              const noPO = cleanIdNumber(getVal(['no. po', 'no.po', 'nomor po', 'no po']));
+              const invoice = cleanIdNumber(getVal(['invoice']));
+              const noJob = cleanCellStr(getVal(['no. job', 'no job']));
+              const suratJalan = cleanCellStr(getVal(['surat jalan']));
+              const qtyDelivery = parseNum(getVal(['jumlah delivery', 'qty delivery']));
+              const qtyOrder = parseNum(getVal(['qty order', 'qty co', 'jumlah order']));
+              const qtyReject = parseNum(getVal(['jumlah reject', 'qty reject']));
+              const tglClaim = normalizeDate(getVal(['tanggal claim', 'tgl claim']));
+              const statusClaim = cleanCellStr(getVal(['status claim']));
+              const tglSample = normalizeDate(getVal(['tgl terima sample', 'tanggal terima sample']));
+              const descRaw = String(getVal(['description', 'deskripsi']) || '');
+              const statusCapa = cleanCellStr(getVal(['status capa']));
+
+              const year = extractYear(tglClaim, nomorClaim, sheetName, file.name);
+              const month = tglClaim && /^\d{4}-\d{2}/.test(tglClaim) ? parseInt(tglClaim.slice(5, 7), 10) : 0;
+              const claimType = classifyClaimType(statusClaim);
+
+              let initProduksi = rawProduksi;
+              if (!initProduksi && currentSectionHint && currentSectionHint !== 'ASSEMBLING' && currentSectionHint !== 'DIVISI LAIN') {
+                initProduksi = currentSectionHint;
+              }
+              const produksi = autoDetectProduksi(namaCustomer, noJob, suratJalan, nomorClaim, invoice, kodeItem, initProduksi);
+
+              const uniqueKey = `${year}|${nomorClaim}|${kodeItem}|${suratJalan}|${qtyDelivery}|${tglClaim}`;
+              if (existingKeys.has(uniqueKey)) {
+                totalSkipped++;
+                continue;
+              }
+              existingKeys.add(uniqueKey);
+              yearsSet.add(year);
+
+              const overrideKey = `${year}|${nomorClaim}|${kodeItem}`;
+              const ratio = qtyDelivery > 0 ? (qtyReject / qtyDelivery) : 0;
+              const autoSum = autoSummarizeDefect(descRaw);
+
+              state.rawRecords.push({
+                _key: uniqueKey,
+                _overrideKey: overrideKey,
+                _fileId: fileId,
+                _fileName: file.name,
+                nomor,
+                nomorClaim,
+                unitProduksi,
+                namaCustomer,
+                itemCustomer,
+                kodeItem,
+                namaItem,
+                produksiDefault: produksi,
+                noPO,
+                noJob,
+                suratJalan,
+                invoice,
+                qtyDelivery,
+                qtyOrder,
+                qtyReject,
+                ratio,
+                tglClaim,
+                year,
+                month,
+                statusClaim,
+                claimType,
+                tglSample,
+                descRaw,
+                autoSummary: autoSum.summary,
+                defectTags: autoSum.tags,
+                statusCapa,
+                mergedCount: 1
+              });
+              fileAdded++;
+              totalAdded++;
+            }
+          }
+
+          if (fileAdded > 0) {
+            state.files.push({ id: fileId, name: file.name, rowCount: fileAdded, years: Array.from(yearsSet).sort() });
+          }
+        } catch (err) {
+          console.error(err);
+          showToast(`Gagal membaca ${file.name}: ${err.message}`);
+        }
+      }
+
+      if (totalAdded > 0) {
+        populateDynamicFilters();
+        renderAll();
+        const skipNote = totalSkipped > 0 ? ` (${totalSkipped} duplikat dilewati)` : '';
+        showToast(`Berhasil memuat ${totalAdded} baris data${skipNote}.`);
+      } else if (totalSkipped > 0) {
+        showToast(`Semua ${totalSkipped} baris sudah ada di sesi ini.`);
+      }
+    }
+
+    // =========================================================================
+    // PROCESSING & FILTERING
+    // =========================================================================
+    function resolveProduksi(r) {
+      const custKey = (r.namaCustomer || '').toUpperCase().trim();
+      if (state.overrides[r._overrideKey]) return { produksi: state.overrides[r._overrideKey], isEdited: true };
+      if (custKey && state.customerOverrides[custKey]) return { produksi: state.customerOverrides[custKey], isEdited: true };
+      return { produksi: r.produksiDefault, isEdited: false };
+    }
+
+    function getProcessedRecords() {
+      let rows = state.rawRecords.map(r => {
+        const res = resolveProduksi(r);
+        const customSum = state.summaryOverrides[r._overrideKey];
+        const autoSum = r.autoSummary || autoSummarizeDefect(r.descRaw).summary;
+        const tags = r.defectTags || autoSummarizeDefect(r.descRaw).tags;
+        return {
+          ...r,
+          produksi: res.produksi,
+          isEdited: res.isEdited,
+          section: sectionFromProduksi(res.produksi),
+          descSummary: customSum || autoSum,
+          isSummaryEdited: Boolean(customSum),
+          defectTags: customSum ? customSum.split(/;\s*/).filter(Boolean) : tags
+        };
+      });
+
+      if (state.dedup) {
+        const map = new Map();
+        for (const r of rows) {
+          const gKey = `${r.year}|${r.nomorClaim}|${r.kodeItem}`;
+          if (!map.has(gKey)) {
+            map.set(gKey, { ...r });
+          } else {
+            const acc = map.get(gKey);
+            acc.qtyDelivery += r.qtyDelivery;
+            acc.qtyOrder = Math.max(acc.qtyOrder, r.qtyOrder);
+            acc.qtyReject = Math.max(acc.qtyReject, r.qtyReject);
+            acc.ratio = acc.qtyDelivery > 0 ? (acc.qtyReject / acc.qtyDelivery) : 0;
+            if (!acc.tglSample && r.tglSample) acc.tglSample = r.tglSample;
+            if (!acc.descRaw && r.descRaw) {
+              acc.descRaw = r.descRaw;
+              acc.descSummary = r.descSummary;
+              acc.defectTags = r.defectTags;
+            }
+            acc.mergedCount = (acc.mergedCount || 1) + 1;
+          }
+        }
+        rows = Array.from(map.values());
+      }
+
+      const f = state.filters;
+      const q = f.search.trim().toLowerCase();
+
+      return rows.filter(r => {
+        if (f.year !== 'ALL' && r.year !== f.year) return false;
+        if (f.type !== 'ALL' && r.claimType !== f.type) return false;
+        if (f.unit !== 'ALL' && r.unitProduksi !== f.unit) return false;
+        if (q) {
+          const hay = [
+            r.nomorClaim, r.namaCustomer, r.namaItem, r.produksi,
+            state.hide.kodeItem ? '' : r.kodeItem,
+            state.hide.noPO ? '' : r.noPO,
+            r.noJob, r.statusClaim, r.descSummary, htmlToCleanPlainText(r.descRaw)
+          ].join(' ').toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).sort((a, b) => {
+        if (state.sortMode === 'ITEM_ASC') {
+          const itemCmp = (a.namaItem || '').localeCompare(b.namaItem || '', 'id', { numeric: true, sensitivity: 'base' });
+          if (itemCmp !== 0) return itemCmp;
+          const dCmp = (a.tglClaim || '').localeCompare(b.tglClaim || '');
+          if (dCmp !== 0) return dCmp;
+          return (a.nomorClaim || '').localeCompare(b.nomorClaim || '');
+        }
+        const dCmp = (a.tglClaim || '').localeCompare(b.tglClaim || '');
+        if (dCmp !== 0) return dCmp;
+        return (a.nomorClaim || '').localeCompare(b.nomorClaim || '');
+      });
+    }
+
+    function populateDynamicFilters() {
+      const years = [...new Set(state.rawRecords.map(r => r.year))].sort().reverse();
+      const yearSel = document.getElementById('filterYear');
+      const prevYear = yearSel.value;
+      yearSel.innerHTML = '<option value="ALL">Semua Tahun</option>' +
+        years.map(y => `<option value="${y}">${y}</option>`).join('');
+      if (years.includes(prevYear)) yearSel.value = prevYear;
+      else if (years.length === 1) { yearSel.value = years[0]; state.filters.year = years[0]; }
+      else { yearSel.value = 'ALL'; state.filters.year = 'ALL'; }
+
+      const units = [...new Set(state.rawRecords.map(r => r.unitProduksi).filter(Boolean))].sort();
+      const unitSel = document.getElementById('filterUnit');
+      const prevUnit = unitSel.value;
+      unitSel.innerHTML = '<option value="ALL">Semua Unit</option>' +
+        units.map(u => `<option value="${u}">${u}</option>`).join('');
+      if (units.includes(prevUnit)) unitSel.value = prevUnit;
+      else state.filters.unit = 'ALL';
+    }
+
+    function getVisibleColumns() {
+      const vis = COL_DEFS.filter(c => !c.hideKey || !state.hide[c.hideKey]);
+      const totalW = vis.reduce((s, c) => s + c.weight, 0);
+      return vis.map(c => ({ ...c, pctWidth: ((c.weight / totalW) * 100).toFixed(2) + '%' }));
+    }
+
+    // =========================================================================
+    // CHARTS RENDERING (INTERACTIVE + CRISP SNAPSHOT FOR SAVE PDF)
+    // =========================================================================
+    function syncChartsToPrintImages() {
+      const map = [
+        ['bySection', 'imgChartBySection'],
+        ['monthly', 'imgChartMonthly'],
+        ['topDefect', 'imgChartTopDefect'],
+        ['topCustomer', 'imgChartTopCustomer']
+      ];
+      map.forEach(([key, imgId]) => {
+        const ch = state.charts[key];
+        const img = document.getElementById(imgId);
+        if (ch && img) {
+          try {
+            img.src = ch.toBase64Image('image/png', 1.0);
+          } catch (_) {}
+        }
+      });
+    }
+
+    function renderChartsBlock(records, grouped) {
+      const wrapper = document.getElementById('chartsWrapper');
+      wrapper.style.display = state.showCharts ? 'block' : 'none';
+      wrapper.classList.toggle('page-break-after', state.chartPageBreak);
+      if (!state.showCharts) return;
+
+      const totalRejCase = records.filter(r => r.claimType === 'REJECT').length;
+      const totalCmpCase = records.filter(r => r.claimType === 'COMPLAIN').length;
+      const totalQtyRej = records.reduce((s, r) => s + r.qtyReject, 0);
+      const totalQtyDel = records.reduce((s, r) => s + r.qtyDelivery, 0);
+      const pctTotal = totalQtyDel > 0 ? (totalQtyRej / totalQtyDel) : 0;
+
+      document.getElementById('chartsKpiRow').innerHTML = `
+        <div class="mini-kpi">
+          <div class="lbl">Total Kasus LMP</div>
+          <div class="val">${records.length}</div>
+          <div class="sub">Reject ${totalRejCase} • Complain ${totalCmpCase}</div>
+        </div>
+        <div class="mini-kpi purple">
+          <div class="lbl">Assembling Ekspor</div>
+          <div class="val">${grouped['ASSEMBLING EKSPOR'].length}</div>
+          <div class="sub">Qty Reject: ${fmtNum(grouped['ASSEMBLING EKSPOR'].reduce((s, r) => s + r.qtyReject, 0))} pcs</div>
+        </div>
+        <div class="mini-kpi emerald">
+          <div class="lbl">Assembling - Hoshi</div>
+          <div class="val">${grouped['ASSEMBLING - HOSHI'].length}</div>
+          <div class="sub">Qty Reject: ${fmtNum(grouped['ASSEMBLING - HOSHI'].reduce((s, r) => s + r.qtyReject, 0))} pcs</div>
+        </div>
+        <div class="mini-kpi">
+          <div class="lbl">Assembling Lokal</div>
+          <div class="val">${grouped['ASSEMBLING LOKAL'].length}</div>
+          <div class="sub">Qty Reject: ${fmtNum(grouped['ASSEMBLING LOKAL'].reduce((s, r) => s + r.qtyReject, 0))} pcs</div>
+        </div>
+        <div class="mini-kpi red">
+          <div class="lbl">Total Qty Reject</div>
+          <div class="val">${fmtNum(totalQtyRej)}</div>
+          <div class="sub">Divisi Lain: ${grouped['DIVISI LAIN'].length} • Rasio ${fmtPct(pctTotal)}</div>
+        </div>
+      `;
+
+      const dlCommon = {
+        color: '#1e293b',
+        font: { family: 'Inter', weight: '700', size: 10 },
+        formatter: (v) => (v > 0 ? v : '')
+      };
+
+      // 1. By Section (Reject vs Complain)
+      const secLabels = ['Ekspor', 'Hoshi', 'Lokal', 'Divisi Lain'];
+      const secRej = SECTIONS.map(s => grouped[s.key].filter(r => r.claimType === 'REJECT').length);
+      const secCmp = SECTIONS.map(s => grouped[s.key].filter(r => r.claimType === 'COMPLAIN').length);
+
+      if (state.charts.bySection) state.charts.bySection.destroy();
+      state.charts.bySection = new Chart(document.getElementById('chartBySection'), {
+        type: 'bar',
+        data: {
+          labels: secLabels,
+          datasets: [
+            { label: 'Reject Customer', data: secRej, backgroundColor: '#c62828', borderRadius: 4 },
+            { label: 'Complain Customer', data: secCmp, backgroundColor: '#ef6c00', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          layout: { padding: { top: 18 } },
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+            datalabels: { ...dlCommon, anchor: 'end', align: 'top', offset: 1 }
+          },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
+        }
+      });
+
+      // 2. Monthly Trend Stacked by Section
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const mCounts = (arr) => {
+        const c = new Array(12).fill(0);
+        arr.forEach(r => { if (r.month >= 1 && r.month <= 12) c[r.month - 1]++; });
+        return c;
+      };
+
+      if (state.charts.monthly) state.charts.monthly.destroy();
+      state.charts.monthly = new Chart(document.getElementById('chartMonthly'), {
+        type: 'bar',
+        data: {
+          labels: months,
+          datasets: [
+            { label: 'Ekspor', data: mCounts(grouped['ASSEMBLING EKSPOR']), backgroundColor: '#6a1b9a', borderRadius: 2 },
+            { label: 'Hoshi', data: mCounts(grouped['ASSEMBLING - HOSHI']), backgroundColor: '#2e7d32', borderRadius: 2 },
+            { label: 'Lokal', data: mCounts(grouped['ASSEMBLING LOKAL']), backgroundColor: '#1a237e', borderRadius: 2 },
+            { label: 'Divisi Lain', data: mCounts(grouped['DIVISI LAIN']), backgroundColor: '#e65100', borderRadius: 2 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 11, font: { size: 10 } } },
+            datalabels: { color: '#ffffff', font: { weight: '700', size: 9 }, formatter: (v) => (v > 0 ? v : '') }
+          },
+          scales: {
+            x: { stacked: true },
+            y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }
+          }
+        }
+      });
+
+      // 3. Top Defect Pareto (from summarized defect tags)
+      const defMap = new Map();
+      records.forEach(r => {
+        (r.defectTags || []).forEach(tag => {
+          const cleanTag = tag.trim();
+          if (!cleanTag || cleanTag === '-') return;
+          defMap.set(cleanTag, (defMap.get(cleanTag) || 0) + 1);
+        });
+      });
+      const topDef = Array.from(defMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      const defLabels = topDef.map(([k]) => k.length > 34 ? k.slice(0, 34) + '…' : k);
+      const defVals = topDef.map(([, v]) => v);
+
+      if (state.charts.topDefect) state.charts.topDefect.destroy();
+      state.charts.topDefect = new Chart(document.getElementById('chartTopDefect'), {
+        type: 'bar',
+        data: {
+          labels: defLabels.length ? defLabels : ['Tidak ada data'],
+          datasets: [{ label: 'Jumlah Kasus', data: defVals.length ? defVals : [0], backgroundColor: '#1a237e', borderRadius: 4 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          layout: { padding: { right: 24 } },
+          plugins: {
+            legend: { display: false },
+            datalabels: { ...dlCommon, anchor: 'end', align: 'right', offset: 3 }
+          },
+          scales: {
+            x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } },
+            y: { ticks: { font: { size: 9.5 } } }
+          }
+        }
+      });
+
+      // 4. Top Customer by Cases (Reject + Complain stacked horizontal)
+      const custMap = new Map();
+      records.forEach(r => {
+        const c = r.namaCustomer || 'Lainnya';
+        if (!custMap.has(c)) custMap.set(c, { rej: 0, cmp: 0, tot: 0 });
+        const o = custMap.get(c);
+        if (r.claimType === 'REJECT') o.rej++; else o.cmp++;
+        o.tot++;
+      });
+      const topCust = Array.from(custMap.entries()).sort((a, b) => b[1].tot - a[1].tot).slice(0, 8);
+      const custLabels = topCust.map(([k]) => k.length > 26 ? k.slice(0, 26) + '…' : k);
+
+      if (state.charts.topCustomer) state.charts.topCustomer.destroy();
+      state.charts.topCustomer = new Chart(document.getElementById('chartTopCustomer'), {
+        type: 'bar',
+        data: {
+          labels: custLabels.length ? custLabels : ['Tidak ada data'],
+          datasets: [
+            { label: 'Reject', data: topCust.map(([, v]) => v.rej), backgroundColor: '#c62828', borderRadius: 3 },
+            { label: 'Complain', data: topCust.map(([, v]) => v.cmp), backgroundColor: '#2e7d32', borderRadius: 3 }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 11, font: { size: 10 } } },
+            datalabels: { color: '#ffffff', font: { weight: '700', size: 9 }, formatter: (v) => (v > 0 ? v : '') }
+          },
+          scales: {
+            x: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, precision: 0 } },
+            y: { stacked: true, ticks: { font: { size: 9.5 } } }
+          }
+        }
+      });
+
+      // Immediately snapshot high-res PNGs for print/Save PDF
+      syncChartsToPrintImages();
+    }
+
+    // =========================================================================
+    // RENDERING ALL
+    // =========================================================================
+    function renderAll() {
+      const hasData = state.rawRecords.length > 0;
+
+      document.getElementById('emptyState').style.display = hasData ? 'none' : 'block';
+      document.getElementById('draftDocument').style.display = hasData ? 'block' : 'none';
+      document.getElementById('filterPanel').style.display = hasData ? 'block' : 'none';
+      document.getElementById('summaryStrip').style.display = hasData ? 'flex' : 'none';
+      document.getElementById('helperNote').style.display = hasData ? 'block' : 'none';
+
+      ['btnSavePDF', 'btnExportExcel', 'btnCopyWA', 'btnBackupJSON', 'btnResetAll'].forEach(id => {
+        document.getElementById(id).disabled = !hasData;
+      });
+
+      renderFileChips();
+      updateHidePills();
+      if (!hasData) return;
+
+      const records = getProcessedRecords();
+      window._renderedMap = new Map();
+      records.forEach(r => window._renderedMap.set(r._overrideKey, r));
+
+      const grouped = {};
+      SECTIONS.forEach(s => { grouped[s.key] = []; });
+      records.forEach(r => {
+        if (!grouped[r.section]) grouped['DIVISI LAIN'].push(r);
+        else grouped[r.section].push(r);
+      });
+
+      const totalRej = records.reduce((s, r) => s + r.qtyReject, 0);
+      const totalRejectCase = records.filter(r => r.claimType === 'REJECT').length;
+      const totalComplainCase = records.filter(r => r.claimType === 'COMPLAIN').length;
+      document.getElementById('summaryStrip').innerHTML = `
+        <div class="sum-pill"><span>Total:</span> <strong>${records.length}</strong> <span>(Reject ${totalRejectCase} • Complain ${totalComplainCase} • Qty ${fmtNum(totalRej)})</span></div>
+        ${SECTIONS.map(s => `
+          <div class="sum-pill ${s.pillClass}">
+            <span>${s.title}:</span> <strong>${grouped[s.key].length}</strong>
+          </div>
+        `).join('')}
+      `;
+
+      const docHeader = document.getElementById('docHeaderOptional');
+      docHeader.style.display = state.showDocHeader ? 'flex' : 'none';
+      if (state.showDocHeader) {
+        const yrText = state.filters.year === 'ALL' ? 'SEMUA TAHUN' : `TAHUN ${state.filters.year}`;
+        const typeText = state.filters.type === 'ALL' ? 'REJECT & COMPLAIN CUSTOMER' :
+          (state.filters.type === 'REJECT' ? 'REJECT CUSTOMER' : 'COMPLAIN CUSTOMER');
+        document.getElementById('docMainTitle').textContent = `DAFTAR LAPORAN LMP (${typeText}) — ${yrText}`;
+        document.getElementById('docMainMeta').textContent = `Total: ${records.length} Kasus | Reject: ${totalRejectCase} | Complain: ${totalComplainCase} | Qty Reject: ${fmtNum(totalRej)} pcs`;
+      }
+
+      // Render Charts
+      renderChartsBlock(records, grouped);
+
+      // Render Tables
+      const visCols = getVisibleColumns();
+      const colgroupHtml = `<colgroup>${visCols.map(c => `<col style="width:${c.pctWidth};" />`).join('')}</colgroup>`;
+      const theadHtml = `<thead><tr>${visCols.map(c => `<th>${escapeHtml(c.id === 'description' && state.descMode === 'SUMMARY' ? 'Description (Kesimpulan Reject)' : c.label)}</th>`).join('')}</tr></thead>`;
+
+      const sectionsHtml = SECTIONS.map(sec => {
+        const rows = grouped[sec.key];
+        if (!rows.length && !state.showEmptySections) return '';
+
+        let tbodyHtml = '';
+        if (!rows.length) {
+          tbodyHtml = `<tr class="zero-row"><td colspan="${visCols.length}">Tidak ada data Reject / Complain pada bagian ${escapeHtml(sec.title)}</td></tr>`;
+        } else {
+          tbodyHtml = rows.map((r, idx) => {
+            const cells = visCols.map(col => renderCell(col, r, idx + 1)).join('');
+            return `<tr>${cells}</tr>`;
+          }).join('');
+        }
+
+        return `
+          <div class="draft-section">
+            <div class="draft-section-title">
+              <span>${escapeHtml(sec.title)}</span>
+              <span class="sec-count-screen no-print">${rows.length} kasus</span>
+            </div>
+            <table class="lmp-table">
+              ${colgroupHtml}
+              ${theadHtml}
+              <tbody>${tbodyHtml}</tbody>
+            </table>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('sectionsContainer').innerHTML = sectionsHtml ||
+        `<div class="empty-state"><h3>Tidak ada data sesuai filter aktif</h3></div>`;
+    }
+
+    function renderCell(col, r, seqNo) {
+      const safeKey = encodeURIComponent(r._overrideKey);
+      switch (col.id) {
+        case 'nomor': return `<td class="ta-c">${seqNo}</td>`;
+        case 'nomorClaim': return `<td class="ta-l">${escapeHtml(r.nomorClaim)}</td>`;
+        case 'unit': return `<td class="ta-l">${escapeHtml(r.unitProduksi)}</td>`;
+        case 'customer': return `<td class="ta-l">${escapeHtml(r.namaCustomer)}</td>`;
+        case 'itemCustomer': return `<td class="ta-l">${escapeHtml(r.itemCustomer)}</td>`;
+        case 'kodeItem': return `<td class="ta-l">${escapeHtml(r.kodeItem)}</td>`;
+        case 'namaItem': return `<td class="ta-l">${escapeHtml(r.namaItem)}</td>`;
+        case 'produksi': {
+          const opts = [...PRODUKSI_OPTIONS];
+          if (r.produksi && !opts.includes(r.produksi)) opts.push(r.produksi);
+          return `
+            <td class="ta-c">
+              <span class="prod-print-text">${escapeHtml(r.produksi)}</span>
+              <select class="prod-select no-print" onchange="changeProduksi('${safeKey}', this)">
+                ${opts.map(o => `<option value="${escapeHtml(o)}" ${o === r.produksi ? 'selected' : ''}>${escapeHtml(o)}</option>`).join('')}
+                <option value="__CUSTOM__">+ Divisi Custom...</option>
+              </select>
+            </td>
+          `;
+        }
+        case 'noPO': return `<td class="ta-c">${escapeHtml(r.noPO)}</td>`;
+        case 'noJob': return `<td class="ta-c nowrap">${escapeHtml(r.noJob)}</td>`;
+        case 'qtyDelivery': return `<td class="ta-c nowrap">${fmtNum(r.qtyDelivery)}</td>`;
+        case 'qtyOrder': return `<td class="ta-c nowrap">${fmtNum(r.qtyOrder)}</td>`;
+        case 'qtyReject': return `<td class="ta-c nowrap">${fmtNum(r.qtyReject)}</td>`;
+        case 'prosentase': return `<td class="ta-c nowrap">${fmtPct(r.ratio)}</td>`;
+        case 'tglClaim': return `<td class="ta-c nowrap">${escapeHtml(r.tglClaim)}</td>`;
+        case 'statusClaim': return `<td class="ta-l">${escapeHtml(r.statusClaim)}</td>`;
+        case 'tglSample': return `<td class="ta-c nowrap">${escapeHtml(r.tglSample)}</td>`;
+        case 'description': {
+          if (state.descMode === 'SUMMARY') {
+            const editBtnCls = r.isSummaryEdited ? ' edited-tag' : '';
+            return `
+              <td class="ta-l">
+                <div class="desc-summary-text">${escapeHtml(r.descSummary)}</div>
+                <div class="desc-actions no-print">
+                  <button type="button" class="btn-mini${editBtnCls}" onclick="openDescModal('${safeKey}')">${r.isSummaryEdited ? 'Edit ✓' : 'Edit / Detail'}</button>
+                </div>
+              </td>
+            `;
+          }
+          return `<td class="ta-l"><div class="desc-formatted">${sanitizeDescriptionHtml(r.descRaw)}</div></td>`;
+        }
+        default: return `<td></td>`;
+      }
+    }
+
+    // =========================================================================
+    // DESCRIPTION MODAL (VIEW FULL ERP + EDIT SUMMARY)
+    // =========================================================================    function openDescModal(encodedKey) {
+      const key = decodeURIComponent(encodedKey);
+      const r = window._renderedMap ? window._renderedMap.get(key) : null;
+      if (!r) return;
+      state.descCtx = r;
+      document.getElementById('descModalTitle').textContent = `${r.nomorClaim} — ${r.namaCustomer}`;
+      document.getElementById('summaryEditInput').value = r.descSummary || '';
+      document.getElementById('descModalRaw').innerHTML =
+        sanitizeDescriptionHtml(r.descRaw) || '<p style="color:#64748b;">Tidak ada deskripsi di file ERP.</p>';
+      document.getElementById('descModal').classList.add('open');
+    }
+
+    function closeDescModal() {
+      document.getElementById('descModal').classList.remove('open');
+      state.descCtx = null;
+    }
+
+    function saveCustomSummary() {
+      if (!state.descCtx) return;
+      const val = document.getElementById('summaryEditInput').value.trim();
+      if (val) state.summaryOverrides[state.descCtx._overrideKey] = val;
+      else delete state.summaryOverrides[state.descCtx._overrideKey];
+      saveOverrides();
+      closeDescModal();
+      renderAll();
+      showToast('Kesimpulan reject diperbarui (grafik Pareto ikut terupdate).');
+    }
+
+    function resetCustomSummary() {
+      if (!state.descCtx) return;
+      delete state.summaryOverrides[state.descCtx._overrideKey];
+      saveOverrides();
+      closeDescModal();
+      renderAll();
+      showToast('Kesimpulan dikembalikan ke ringkasan otomatis.');
+    }
+
+    function changeProduksi(encodedKey, selectEl) {
+      const overrideKey = decodeURIComponent(encodedKey);
+      let val = selectEl.value;
+      if (val === '__CUSTOM__') {
+        const custom = prompt('Masukkan nama Divisi / Produksi (contoh: INJECTION, PRINTING, QC):');
+        if (!custom || !custom.trim()) { renderAll(); return; }
+        val = custom.trim().toUpperCase();
+      }
+      state.overrides[overrideKey] = val;
+      saveOverrides();
+      renderAll();
+      showToast(`Dipindahkan ke PRODUKSI: ${val}`);
+    }
+
+    function renderFileChips() {
+      const box = document.getElementById('fileChips');
+      if (!state.files.length) { box.innerHTML = ''; return; }
+      box.innerHTML = state.files.map(f => `
+        <span class="file-chip">
+          <span>${escapeHtml(f.name)} (${f.rowCount} baris • Thn: ${f.years.join(', ')})</span>
+          <button title="Hapus file ini" onclick="removeFile('${f.id}')">&times;</button>
+        </span>
+      `).join('');
+    }
+
+    function removeFile(fileId) {
+      state.files = state.files.filter(f => f.id !== fileId);
+      state.rawRecords = state.rawRecords.filter(r => r._fileId !== fileId);
+      populateDynamicFilters();
+      renderAll();
+      showToast('File dihapus.');
+    }
+
+    function updateHidePills() {
+      const pairs = [
+        ['hideKodeItem', 'pillKodeItem', 'kodeItem'],
+        ['hideNoPO', 'pillNoPO', 'noPO'],
+        ['hideTglSample', 'pillTglSample', 'tglSample'],
+        ['hideItemCust', 'pillItemCust', 'itemCustomer'],
+        ['hideProduksi', 'pillProduksi', 'produksi']
+      ];
+      pairs.forEach(([chkId, pillId, key]) => {
+        document.getElementById(chkId).checked = state.hide[key];
+        document.getElementById(pillId).classList.toggle('active', state.hide[key]);
+      });
+    }
+
+    function updatePageSizeCSS() {
+      document.getElementById('dynamicPageStyle').textContent = `@page { size: ${state.paperSize}; margin: 6mm; }`;
+    }
+
+    // =========================================================================
+    // EXPORT EXCEL (.XLSX) — EXACT DRAFT FORMAT + RESPECTS SUMMARY MODE
+    // =========================================================================
+    async function exportStyledExcel() {
+      const records = getProcessedRecords();
+      if (!records.length) return showToast('Tidak ada data untuk di-export.');
+
+      const wb = new ExcelJS.Workbook();
+      wb.creator = 'Generator Daftar Laporan LMP';
+      wb.created = new Date();
+
+      const yrLabel = state.filters.year === 'ALL' ? 'Semua Tahun' : state.filters.year;
+      const ws = wb.addWorksheet(yrLabel, {
+        pageSetup: {
+          orientation: 'landscape',
+          paperSize: 9,
+          fitToPage: true,
+          fitToWidth: 1,
+          fitToHeight: 0,
+          margins: { left: 0.25, right: 0.25, top: 0.3, bottom: 0.3, header: 0.2, footer: 0.2 }
+        }
+      });
+
+      const visCols = getVisibleColumns();
+      const excelWidthMap = {
+        nomor: 8, nomorClaim: 20, unit: 13, customer: 24, itemCustomer: 16,
+        kodeItem: 17, namaItem: 30, produksi: 20, noPO: 15, noJob: 13,
+        qtyDelivery: 14, qtyOrder: 13, qtyReject: 13, prosentase: 12,
+        tglClaim: 13, statusClaim: 18, tglSample: 14,
+        description: state.descMode === 'SUMMARY' ? 42 : 68
+      };
+      ws.columns = visCols.map(c => ({ width: excelWidthMap[c.id] || 14 }));
+
+      const thinBorder = {
+        top: { style: 'thin', color: { argb: 'FF000000' } },
+        left: { style: 'thin', color: { argb: 'FF000000' } },
+        bottom: { style: 'thin', color: { argb: 'FF000000' } },
+        right: { style: 'thin', color: { argb: 'FF000000' } }
+      };
+
+      const grouped = {};
+      SECTIONS.forEach(s => { grouped[s.key] = []; });
+      records.forEach(r => {
+        if (!grouped[r.section]) grouped['DIVISI LAIN'].push(r);
+        else grouped[r.section].push(r);
+      });
+
+      let rowCursor = 1;
+      for (const sec of SECTIONS) {
+        const rows = grouped[sec.key];
+        if (!rows.length && !state.showEmptySections) continue;
+
+        const titleRow = ws.getRow(rowCursor);
+        titleRow.getCell(1).value = sec.title;
+        titleRow.getCell(1).font = { name: 'Calibri', size: 15, bold: true, color: { argb: 'FF000000' } };
+        titleRow.height = 24;
+        if (visCols.length >= 2) ws.mergeCells(rowCursor, 1, rowCursor, 2);
+        rowCursor++;
+
+        const hdrRow = ws.getRow(rowCursor);
+        hdrRow.height = 34;
+        visCols.forEach((col, cIdx) => {
+          const cell = hdrRow.getCell(cIdx + 1);
+          cell.value = (col.id === 'description' && state.descMode === 'SUMMARY') ? 'Description (Kesimpulan Reject)' : col.label;
+          cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF000000' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFCCFFFF' } };
+          cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+          cell.border = thinBorder;
+        });
+        rowCursor++;
+
+        if (!rows.length) {
+          const zRow = ws.getRow(rowCursor);
+          zRow.getCell(1).value = `Tidak ada data pada bagian ${sec.title}`;
+          zRow.getCell(1).font = { name: 'Calibri', size: 10, italic: true };
+          zRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+          ws.mergeCells(rowCursor, 1, rowCursor, visCols.length);
+          for (let c = 1; c <= visCols.length; c++) zRow.getCell(c).border = thinBorder;
+          zRow.height = 24;
+          rowCursor++;
+        } else {
+          rows.forEach((r, idx) => {
+            const dRow = ws.getRow(rowCursor);
+            const descOut = state.descMode === 'SUMMARY' ? r.descSummary : htmlToCleanPlainText(r.descRaw);
+            visCols.forEach((col, cIdx) => {
+              const cell = dRow.getCell(cIdx + 1);
+              let val = '', numFmt = null;
+              const horiz = col.align === 'ta-c' ? 'center' : 'left';
+              switch (col.id) {
+                case 'nomor': val = idx + 1; break;
+                case 'nomorClaim': val = r.nomorClaim; break;
+                case 'unit': val = r.unitProduksi; break;
+                case 'customer': val = r.namaCustomer; break;
+                case 'itemCustomer': val = r.itemCustomer; break;
+                case 'kodeItem': val = r.kodeItem; break;
+                case 'namaItem': val = r.namaItem; break;
+                case 'produksi': val = r.produksi; break;
+                case 'noPO': val = r.noPO; break;
+                case 'noJob': val = r.noJob; break;
+                case 'qtyDelivery': val = r.qtyDelivery; numFmt = '#,##0'; break;
+                case 'qtyOrder': val = r.qtyOrder; numFmt = '#,##0'; break;
+                case 'qtyReject': val = r.qtyReject; numFmt = '#,##0'; break;
+                case 'prosentase': val = r.ratio; numFmt = '0.00%'; break;
+                case 'tglClaim': val = r.tglClaim; break;
+                case 'statusClaim': val = r.statusClaim; break;
+                case 'tglSample': val = r.tglSample; break;
+                case 'description': val = descOut; break;
+              }
+              cell.value = val;
+              cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF000000' } };
+              cell.alignment = { horizontal: horiz, vertical: 'middle', wrapText: true };
+              cell.border = thinBorder;
+              if (numFmt) cell.numFmt = numFmt;
+            });
+
+            const wrapChars = state.descMode === 'SUMMARY' ? 38 : 64;
+            const lines = Math.max(2, String(descOut || '').split('\n').reduce((acc, ln) => acc + Math.max(1, Math.ceil(ln.length / wrapChars)), 0));
+            dRow.height = Math.min(240, Math.max(24, lines * 14.5));
+            rowCursor++;
+          });
+        }
+        rowCursor++;
+      }
+
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const a = document.createElement('a');
+      const yrTag = state.filters.year === 'ALL' ? 'AllYears' : state.filters.year;
+      a.href = URL.createObjectURL(blob);
+      a.download = `Daftar_Laporan_LMP_${yrTag}.xlsx`;
+      a.click();
+      showToast('File Excel (.xlsx) sesuai format draft berhasil diunduh.');
+    }
+
+    // =========================================================================
+    // WHATSAPP COPY & JSON BACKUP / RESTORE
+    // =========================================================================
+    function copyWhatsAppSummary() {
+      const records = getProcessedRecords();
+      const yrLabel = state.filters.year === 'ALL' ? 'Semua Tahun' : `Tahun ${state.filters.year}`;
+      const grouped = {};
+      SECTIONS.forEach(s => { grouped[s.key] = []; });
+      records.forEach(r => (grouped[r.section] || grouped['DIVISI LAIN']).push(r));
+
+      const defMap = new Map();
+      records.forEach(r => (r.defectTags || []).forEach(t => {
+        if (t && t !== '-') defMap.set(t, (defMap.get(t) || 0) + 1);
+      }));
+      const top3Def = Array.from(defMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+      const lines = [
+        `*DAFTAR LAPORAN LMP (${yrLabel})*`,
+        `Total Kasus: *${records.length}* | Total Qty Reject: *${fmtNum(records.reduce((s, r) => s + r.qtyReject, 0))} pcs*`,
+        ``
+      ];
+      SECTIONS.forEach((sec, i) => {
+        const arr = grouped[sec.key];
+        const rej = arr.filter(r => r.claimType === 'REJECT').length;
+        const cmp = arr.filter(r => r.claimType === 'COMPLAIN').length;
+        const qty = arr.reduce((s, r) => s + r.qtyReject, 0);
+        lines.push(`*${i + 1}. ${sec.title}*`);
+        lines.push(`• Kasus: ${arr.length} (Reject: ${rej}, Complain: ${cmp}) | Qty Reject: ${fmtNum(qty)} pcs`);
+      });
+      if (top3Def.length) {
+        lines.push(``, `*Top 3 Jenis Defect:*`);
+        top3Def.forEach(([k, v], idx) => lines.push(`${idx + 1}. ${k} (${v} kasus)`));
+      }
+
+      const text = lines.join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Ringkasan WhatsApp disalin ke clipboard.');
+      }).catch(() => prompt('Salin teks WhatsApp:', text));
+    }
+
+    function backupJSON() {
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        files: state.files,
+        rawRecords: state.rawRecords,
+        overrides: state.overrides,
+        customerOverrides: state.customerOverrides,
+        summaryOverrides: state.summaryOverrides
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Backup_LMP_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      showToast('Backup JSON berhasil disimpan.');
+    }
+
+    function restoreJSON(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!Array.isArray(data.rawRecords)) throw new Error('Format JSON tidak valid.');
+          state.files = data.files || [];
+          state.rawRecords = data.rawRecords;
+          if (data.overrides) state.overrides = { ...state.overrides, ...data.overrides };
+          if (data.customerOverrides) state.customerOverrides = { ...state.customerOverrides, ...data.customerOverrides };
+          if (data.summaryOverrides) state.summaryOverrides = { ...state.summaryOverrides, ...data.summaryOverrides };
+          saveOverrides();
+          populateDynamicFilters();
+          renderAll();
+          showToast(`Restore berhasil: ${state.rawRecords.length} baris dimuat.`);
+        } catch (err) {
+          showToast('Gagal restore JSON: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // =========================================================================
+    // EVENT LISTENERS
+    // =========================================================================
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    document.getElementById('btnBrowse').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => { handleFiles(e.target.files); fileInput.value = ''; });
+
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    document.getElementById('btnResetAll').addEventListener('click', () => {
+      if (!confirm('Hapus semua data Excel yang sedang dimuat?')) return;
+      state.files = [];
+      state.rawRecords = [];
+      renderAll();
+      showToast('Data berhasil direset.');
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDescModal();
+    });
+
+    // Description Modal Controls
+    document.getElementById('btnCloseDescModal').addEventListener('click', closeDescModal);
+    document.getElementById('btnSaveSummary').addEventListener('click', saveCustomSummary);
+    document.getElementById('btnResetSummary').addEventListener('click', resetCustomSummary);
+    document.getElementById('descModal').addEventListener('click', (e) => {
+      if (e.target.id === 'descModal') closeDescModal();
+    });
+
+    // Hide Column Toggles
+    document.getElementById('hideKodeItem').addEventListener('change', (e) => { state.hide.kodeItem = e.target.checked; renderAll(); });
+    document.getElementById('hideNoPO').addEventListener('change', (e) => { state.hide.noPO = e.target.checked; renderAll(); });
+    document.getElementById('hideTglSample').addEventListener('change', (e) => { state.hide.tglSample = e.target.checked; renderAll(); });
+    document.getElementById('hideItemCust').addEventListener('change', (e) => { state.hide.itemCustomer = e.target.checked; renderAll(); });
+    document.getElementById('hideProduksi').addEventListener('change', (e) => { state.hide.produksi = e.target.checked; renderAll(); });
+
+    document.getElementById('btnHideMain3').addEventListener('click', () => {
+      state.hide.kodeItem = true;
+      state.hide.noPO = true;
+      state.hide.tglSample = true;
+      renderAll();
+      showToast('Kode Item, Nomor PO, dan Tgl Terima Sample disembunyikan.');
+    });
+
+    document.getElementById('btnResetCols').addEventListener('click', () => {
+      state.hide.kodeItem = false;
+      state.hide.noPO = false;
+      state.hide.tglSample = false;
+      state.hide.itemCustomer = true;
+      state.hide.produksi = false;
+      renderAll();
+      showToast('Kolom dikembalikan ke susunan default draft.');
+    });
+
+    // Filters & Options
+    document.getElementById('filterYear').addEventListener('change', (e) => { state.filters.year = e.target.value; renderAll(); });
+    document.getElementById('filterType').addEventListener('change', (e) => { state.filters.type = e.target.value; renderAll(); });
+    document.getElementById('filterUnit').addEventListener('change', (e) => { state.filters.unit = e.target.value; renderAll(); });
+    document.getElementById('descMode').addEventListener('change', (e) => { state.descMode = e.target.value; renderAll(); });
+    document.getElementById('sortMode').addEventListener('change', (e) => { state.sortMode = e.target.value; renderAll(); });
+    document.getElementById('searchInput').addEventListener('input', (e) => { state.filters.search = e.target.value; renderAll(); });
+    document.getElementById('paperSize').addEventListener('change', (e) => { state.paperSize = e.target.value; updatePageSizeCSS(); });
+    document.getElementById('toggleCharts').addEventListener('change', (e) => { state.showCharts = e.target.checked; renderAll(); });
+    document.getElementById('toggleChartPageBreak').addEventListener('change', (e) => { state.chartPageBreak = e.target.checked; renderAll(); });
+    document.getElementById('toggleDedup').addEventListener('change', (e) => { state.dedup = e.target.checked; renderAll(); });
+    document.getElementById('toggleShowEmpty').addEventListener('change', (e) => { state.showEmptySections = e.target.checked; renderAll(); });
+    document.getElementById('toggleDocHeader').addEventListener('change', (e) => { state.showDocHeader = e.target.checked; renderAll(); });
+
+    // Action Buttons
+    document.getElementById('btnSavePDF').addEventListener('click', () => {
+      closeDescModal();
+      syncChartsToPrintImages();
+      updatePageSizeCSS();
+      setTimeout(() => window.print(), 80);
+    });
+    window.addEventListener('beforeprint', syncChartsToPrintImages);
+
+    document.getElementById('btnExportExcel').addEventListener('click', exportStyledExcel);
+    document.getElementById('btnCopyWA').addEventListener('click', copyWhatsAppSummary);
+    document.getElementById('btnBackupJSON').addEventListener('click', backupJSON);
+    document.getElementById('btnRestoreJSON').addEventListener('click', () => document.getElementById('jsonInput').click());
+    document.getElementById('jsonInput').addEventListener('change', (e) => { restoreJSON(e.target.files[0]); e.target.value = ''; });
+
+    updateHidePills();
+  </script>
+</body>
+</html>
