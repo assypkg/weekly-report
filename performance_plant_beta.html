@@ -1692,7 +1692,7 @@
           jeNo: findCol([/^je(\\s*no)?$/]),
           stdQty: findCol([/standard.*hasil/, /std.*hasil/, /std.*qty/, /planning.*qty/, /target.*qty/, /standard.*qty/, /qty.*plan/]),
           stdOp: findCol([/standard.*op/, /std.*op/]),
-          actOp: findCol([/actual.*op/, /act.*op/]),
+          actOp: findCol([/actual.*op/, /act.*op/, /op.*actual/]),
           box: findCol([/^box/, /jumlah.*box/, /jml.*box/]),
           actQty: findCol([/actual.*hasil/, /hasil.*produksi/, /actual.*qty/, /act.*qty/, /qty.*actual/]),
           primaryCause: findCol([/masalah.*utama/, /primary.*cause/, /kategori/]),
