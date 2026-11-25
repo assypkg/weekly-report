@@ -1538,10 +1538,10 @@
     function normalizeExcelHeader(value) {
       return String(value ?? '')
         .normalize('NFKD')
-        .replace(/[\\u0300-\\u036f]/g, '')
+        .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, ' ')
-        .replace(/\\s+/g, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
     }
 
@@ -1550,8 +1550,8 @@
       for (let i = 0; i < Math.min(20, matrix.length); i++) {
         const headers = (matrix[i] || []).map(normalizeExcelHeader);
         const hasDate = headers.some(h => /^(tanggal|tgl|date)$/.test(h));
-        const hasLeader = headers.some(h => /kp\\s+line|leader|nama\\s+operator/.test(h));
-        const hasItem = headers.some(h => /item\\s+code|kode\\s+item|part\\s+no/.test(h));
+        const hasLeader = headers.some(h => /kp\s+line|leader|nama\s+operator/.test(h));
+        const hasItem = headers.some(h => /item\s+code|kode\s+item|part\s+no/.test(h));
         if (hasDate && hasLeader && hasItem) return i;
       }
       return -1;
@@ -1596,7 +1596,7 @@
 
             // Prioritas utama: sheet sumber data, bukan sheet rekap/formula bantu.
             let targetSheetName = workbook.SheetNames.find(name =>
-              /^assembly\\s*line\\s*template$/i.test(String(name).trim())
+              /^assembly\s*line\s*template$/i.test(String(name).trim())
             );
             let matrix = null;
 
