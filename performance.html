@@ -673,7 +673,7 @@
                     <!-- FITUR LOGO -->
                     <div class="form-group" style="margin-top: 10px;">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" id="toggle-logo" checked onchange="toggleLogoVisibility()"> Tampilkan Logo di Header
+                            <input type="checkbox" id="toggle-logo" onchange="toggleLogoVisibility()"> Tampilkan Logo di Header
                         </label>
                     </div>
                     <div class="form-group">
@@ -1464,7 +1464,7 @@
 
         function toggleLogoVisibility() {
             const logoCheckbox = document.getElementById('toggle-logo');
-            const isVisible = logoCheckbox ? logoCheckbox.checked : true;
+            const isVisible = logoCheckbox ? logoCheckbox.checked : false;
             
             const mainLogo = document.getElementById('out-logo-main');
             if(mainLogo) mainLogo.style.display = isVisible ? 'block' : 'none';
@@ -1932,7 +1932,7 @@
             const logoCheckbox = document.getElementById('toggle-logo');
             kpiData.layout = { 
                 showCloneHeaders: cloneCheckbox ? cloneCheckbox.checked : true,
-                showLogo: logoCheckbox ? logoCheckbox.checked : true
+                showLogo: logoCheckbox ? logoCheckbox.checked : false
             };
             
             let bgImage = '';
@@ -2019,7 +2019,7 @@
                             const logoCheckbox = document.getElementById('toggle-logo');
                             if(cloneCheckbox) cloneCheckbox.checked = parsed.kpi.layout.showCloneHeaders;
                             if(logoCheckbox) {
-                                logoCheckbox.checked = parsed.kpi.layout.showLogo !== undefined ? parsed.kpi.layout.showLogo : true;
+                                logoCheckbox.checked = parsed.kpi.layout.showLogo !== undefined ? parsed.kpi.layout.showLogo : false;
                             }
                         }
                         calcMatrixPerformance();
@@ -2064,6 +2064,9 @@
                     if(mainLogo) mainLogo.src = defaultLogo;
                     document.querySelectorAll('.out-logo-clone').forEach(el => el.src = defaultLogo);
                     const inLogo = document.getElementById('in-logo'); if(inLogo) inLogo.value = '';
+                    const logoCheckbox = document.getElementById('toggle-logo');
+                    if (logoCheckbox) logoCheckbox.checked = false;
+                    toggleLogoVisibility();
                 }
                 else if (sectionId === 1) {
                     for(let i=1; i<=5; i++) {
