@@ -451,8 +451,44 @@
     }
     .home-footer strong { color: #73827b; font-weight: 700; }
 
-    /* Mobile navigation */
-    .sidebar-backdrop { display: none; border: 0; padding: 0; appearance: none; cursor: default; }
+    /* Drawer navigation saat modul aplikasi sedang aktif */
+    body.app-active .sidebar {
+      position: fixed;
+      z-index: 30;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      box-shadow: 12px 0 30px rgba(30,45,39,.12);
+      transform: translateX(-105%);
+      transition: transform .22s ease;
+    }
+    body.app-active.sidebar-open .sidebar { transform: translateX(0); }
+    body.app-active .mobile-menu-btn { display: inline-flex; }
+    .sidebar-backdrop {
+      display: none;
+      border: 0;
+      padding: 0;
+      appearance: none;
+      cursor: default;
+    }
+    body.app-active .sidebar-backdrop {
+      position: fixed;
+      z-index: 25;
+      inset: 0;
+      display: block;
+      background: rgba(34,47,42,.28);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .22s ease, visibility .22s ease;
+    }
+    body.app-active.sidebar-open .sidebar-backdrop {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
     @media (max-width: 900px) {
       .sidebar {
         position: fixed;
@@ -468,15 +504,20 @@
       body.sidebar-open .sidebar { transform: translateX(0); }
       .sidebar-backdrop {
         position: fixed;
-        z-index: 20;
+        z-index: 25;
         inset: 0;
         display: block;
         background: rgba(34,47,42,.28);
         opacity: 0;
+        visibility: hidden;
         pointer-events: none;
-        transition: opacity .22s ease;
+        transition: opacity .22s ease, visibility .22s ease;
       }
-      body.sidebar-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+      body.sidebar-open .sidebar-backdrop {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
       .mobile-menu-btn { display: inline-flex; }
       .topbar { padding: 0 17px; }
       .home-view { padding: 22px 20px 34px; }
@@ -815,6 +856,7 @@
       const pageTitle = (element && element.dataset.title) || 'Assembly Application';
 
       homeView.style.display = 'none';
+      document.body.classList.add('app-active');
       appView.classList.add('visible');
       document.getElementById('pageTitle').textContent = pageTitle;
       document.getElementById('homeShortcut').classList.add('visible');
@@ -847,6 +889,7 @@
       const appView = document.getElementById('appView');
 
       appView.classList.remove('visible');
+      document.body.classList.remove('app-active');
       homeView.style.display = '';
       iframeCache.forEach(function (iframe) {
         iframe.style.display = 'none';
