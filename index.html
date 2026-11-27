@@ -1,323 +1,877 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assembly Weekly Report</title>
-    
-    <!-- Favicon Standar & Favicon Khusus HP -->
-    <link rel="icon" type="image/png" href="97799.png">
-    <link rel="apple-touch-icon" href="97799.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f6f4">
+  <title>Assembly Operations</title>
+  <link rel="icon" type="image/png" href="97799.png">
+  <link rel="apple-touch-icon" href="97799.png">
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f4f6f4;
+      --surface: #ffffff;
+      --surface-soft: #f8faf9;
+      --surface-muted: #eef2ef;
+      --ink: #263544;
+      --ink-soft: #536273;
+      --muted: #82908e;
+      --line: #e4e9e6;
+      --navy: #34495e;
+      --navy-deep: #293d50;
+      --teal: #6f9386;
+      --teal-deep: #557c6e;
+      --teal-soft: #e8f0ec;
+      --sand: #f2eee8;
+      --sand-ink: #8b735a;
+      --sidebar-width: 258px;
+      --topbar-height: 68px;
+      --shadow-card: 0 2px 10px rgba(37, 55, 48, .035), 0 1px 2px rgba(37, 55, 48, .025);
+    }
 
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body {
+      overflow: hidden;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    button, a { font: inherit; }
+    button { color: inherit; }
+    a { color: inherit; }
 
-    <style>
-        :root {
-            --navy-blue: #0A192F;
-            --emerald-green: #10B981;
-            --white: #FFFFFF;
-            --bg-light: #F3F4F6;
-            --text-muted: #94A3B8;
-        }
+    .app-layout { display: flex; width: 100%; height: 100dvh; min-height: 0; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
+    /* Sidebar */
+    .sidebar {
+      position: relative;
+      z-index: 30;
+      display: flex;
+      flex: 0 0 var(--sidebar-width);
+      flex-direction: column;
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      background: var(--surface);
+      border-right: 1px solid var(--line);
+    }
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-height: 82px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand-logo {
+      width: 39px;
+      height: 39px;
+      flex: 0 0 39px;
+      object-fit: contain;
+      border: 1px solid #e7ebe8;
+      border-radius: 11px;
+      background: #fff;
+      padding: 3px;
+    }
+    .brand-name { min-width: 0; }
+    .brand-name strong {
+      display: block;
+      color: var(--navy-deep);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .075em;
+      line-height: 1.35;
+    }
+    .brand-name span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .035em;
+    }
+    .sidebar-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 13px 22px; }
+    .nav-caption {
+      padding: 0 11px;
+      margin: 15px 0 8px;
+      color: #9aa5a1;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .nav-caption:first-child { margin-top: 0; }
+    .sidebar-link, .sidebar-parent {
+      display: flex;
+      width: 100%;
+      min-height: 42px;
+      align-items: center;
+      gap: 11px;
+      padding: 10px 11px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #667582;
+      cursor: pointer;
+      text-align: left;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background .16s ease, color .16s ease;
+    }
+    .sidebar-link:hover, .sidebar-parent:hover {
+      background: #f5f8f6;
+      color: var(--navy-deep);
+    }
+    .sidebar-link.active, .sidebar-parent.active {
+      background: var(--teal-soft);
+      color: var(--teal-deep);
+      font-weight: 700;
+    }
+    .nav-icon {
+      display: inline-flex;
+      width: 19px;
+      height: 19px;
+      flex: 0 0 19px;
+      align-items: center;
+      justify-content: center;
+      color: #82918e;
+    }
+    .sidebar-link.active .nav-icon, .sidebar-parent.active .nav-icon { color: var(--teal-deep); }
+    .nav-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-chevron {
+      width: 14px;
+      height: 14px;
+      margin-left: auto;
+      color: #98a39f;
+      transition: transform .18s ease;
+    }
+    .nav-chevron svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .sidebar-parent[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
+    .submenu {
+      display: none;
+      margin: 4px 0 7px 29px;
+      padding-left: 12px;
+      border-left: 1px solid #e2e9e5;
+    }
+    .submenu.open { display: block; }
+    .submenu .sidebar-link {
+      min-height: 37px;
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+    .submenu .sidebar-link::before {
+      width: 5px;
+      height: 5px;
+      flex: 0 0 5px;
+      border-radius: 50%;
+      background: #b7c3bd;
+      content: "";
+    }
+    .submenu .sidebar-link.active::before { background: var(--teal-deep); }
+    .sidebar-footer {
+      padding: 14px 19px 16px;
+      border-top: 1px solid var(--line);
+      color: #98a39f;
+      font-size: 10px;
+      line-height: 1.6;
+    }
+    .sidebar-footer strong { color: #75847f; font-weight: 700; }
 
-        body {
-            background-color: var(--bg-light);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
+    /* Main frame */
+    .main-column { display: flex; min-width: 0; min-height: 0; flex: 1; flex-direction: column; }
+    .topbar {
+      display: flex;
+      min-height: var(--topbar-height);
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 27px;
+      background: rgba(255,255,255,.94);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-left { display: flex; min-width: 0; align-items: center; gap: 13px; }
+    .mobile-menu-btn {
+      display: none;
+      width: 37px;
+      height: 37px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fff;
+      color: var(--navy);
+      cursor: pointer;
+    }
+    .mobile-menu-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+    .page-heading { min-width: 0; }
+    .page-eyebrow {
+      display: block;
+      margin-bottom: 3px;
+      color: #9aa5a1;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .page-title {
+      overflow: hidden;
+      color: var(--navy-deep);
+      font-size: 14px;
+      font-weight: 750;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .topbar-right { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; }
+    .module-count {
+      display: inline-flex;
+      min-height: 31px;
+      align-items: center;
+      gap: 7px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+      color: #718078;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .module-count svg { width: 13px; height: 13px; color: var(--teal-deep); fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .home-shortcut {
+      display: none;
+      min-height: 32px;
+      align-items: center;
+      gap: 6px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: #64746d;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .home-shortcut.visible { display: inline-flex; }
+    .home-shortcut svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-        /* Top Bar Container */
-        .top-navbar {
-            background-color: var(--navy-blue);
-            color: var(--white);
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 100;
-        }
+    .view-area { position: relative; display: flex; min-width: 0; min-height: 0; flex: 1; flex-direction: column; overflow: hidden; }
+    .home-view { flex: 1; min-height: 0; overflow: auto; padding: 29px clamp(18px, 3vw, 42px) 42px; }
+    .app-view { display: none; position: relative; min-width: 0; min-height: 0; flex: 1; background: var(--page); }
+    .app-view.visible { display: flex; }
+    .app-view iframe {
+      display: none;
+      width: 100%;
+      height: 100%;
+      flex: 1;
+      border: 0;
+      background: var(--page);
+    }
 
-        /* Top Brand & Status Line */
-        .brand-header {
-            padding: 10px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
+    /* Home */
+    .home-wrap { width: 100%; max-width: 1320px; margin: 0 auto; }
+    .welcome-panel {
+      position: relative;
+      display: flex;
+      min-height: 205px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      overflow: hidden;
+      padding: 33px 38px;
+      border: 1px solid #e1e9e4;
+      border-radius: 15px;
+      background: #eaf0ec;
+    }
+    .welcome-copy { position: relative; z-index: 1; max-width: 650px; }
+    .welcome-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 13px;
+      color: #668376;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .welcome-kicker::before { width: 6px; height: 6px; border-radius: 50%; background: #7fa08f; content: ""; }
+    .welcome-title {
+      margin: 0;
+      color: #304657;
+      font-size: clamp(23px, 2.5vw, 31px);
+      font-weight: 760;
+      letter-spacing: -.035em;
+      line-height: 1.2;
+    }
+    .welcome-description {
+      max-width: 560px;
+      margin: 11px 0 0;
+      color: #64776f;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+    .welcome-aside {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex: 0 0 230px;
+      flex-direction: column;
+      gap: 11px;
+      padding: 19px 20px;
+      border: 1px solid rgba(255,255,255,.82);
+      border-radius: 12px;
+      background: rgba(255,255,255,.58);
+    }
+    .overview-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .overview-row + .overview-row { padding-top: 10px; border-top: 1px solid rgba(119,145,131,.17); }
+    .overview-row span { color: #708078; font-size: 10px; font-weight: 600; }
+    .overview-row strong { color: #3f5f53; font-size: 14px; font-weight: 800; }
+    .welcome-mark {
+      position: absolute;
+      top: -96px;
+      right: 205px;
+      width: 330px;
+      height: 330px;
+      border: 1px solid rgba(107,143,125,.12);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .welcome-mark::before, .welcome-mark::after {
+      position: absolute;
+      border: 1px solid rgba(107,143,125,.11);
+      border-radius: 50%;
+      content: "";
+    }
+    .welcome-mark::before { inset: 25px; }
+    .welcome-mark::after { inset: 53px; }
 
-        .brand-title {
-            font-size: 0.95rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 29px 1px 13px;
+    }
+    .section-heading h2 { margin: 0; color: var(--navy-deep); font-size: 14px; font-weight: 780; letter-spacing: -.01em; }
+    .section-heading p { margin: 5px 0 0; color: #88958f; font-size: 10px; line-height: 1.5; }
+    .section-note { color: #9aa5a1; font-size: 10px; font-weight: 600; white-space: nowrap; }
+    .module-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .module-card {
+      display: flex;
+      min-width: 0;
+      min-height: 126px;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 17px 18px 15px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: var(--shadow-card);
+      transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+    }
+    .module-card:hover {
+      transform: translateY(-2px);
+      border-color: #cbdad1;
+      box-shadow: 0 7px 18px rgba(37,55,48,.07);
+    }
+    .module-card-top { display: flex; align-items: flex-start; gap: 12px; }
+    .module-icon {
+      display: inline-flex;
+      width: 39px;
+      height: 39px;
+      flex: 0 0 39px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: #edf2ef;
+      color: #5f8072;
+    }
+    .module-icon.sand { background: var(--sand); color: var(--sand-ink); }
+    .module-icon.blue { background: #edf1f5; color: #62778a; }
+    .module-icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .module-copy { min-width: 0; flex: 1; padding-top: 1px; }
+    .module-copy h3 { margin: 0; color: #34485a; font-size: 12px; font-weight: 750; line-height: 1.45; }
+    .module-copy p { margin: 5px 0 0; color: #89958f; font-size: 10px; line-height: 1.55; }
+    .module-card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 14px;
+    }
+    .module-type { color: #9aa59f; font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+    .module-open {
+      display: inline-flex;
+      min-height: 28px;
+      align-items: center;
+      gap: 6px;
+      padding: 0 9px;
+      border: 1px solid #e2e9e5;
+      border-radius: 7px;
+      background: #fbfcfb;
+      color: #5c776b;
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 750;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    .module-open:hover { border-color: #cbdcd2; background: #f0f5f1; }
+    .module-open svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .plant-actions { display: flex; align-items: center; gap: 7px; }
+    .plant-actions a {
+      display: inline-flex;
+      min-height: 29px;
+      align-items: center;
+      padding: 0 9px;
+      border: 1px solid #dfe8e2;
+      border-radius: 7px;
+      background: #f8faf8;
+      color: #587568;
+      text-decoration: none;
+      font-size: 9px;
+      font-weight: 750;
+      transition: background .15s ease;
+    }
+    .plant-actions a:hover { background: #eaf1ec; }
+    .home-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 28px;
+      padding: 14px 2px 0;
+      border-top: 1px solid var(--line);
+      color: #9aa49f;
+      font-size: 9px;
+    }
+    .home-footer strong { color: #73827b; font-weight: 700; }
 
-        .brand-title img {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-            border-radius: 4px;
-        }
-
-        .brand-title span {
-            color: var(--emerald-green);
-        }
-
-        .cloud-badge {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--emerald-green);
-            background: rgba(16, 185, 129, 0.12);
-            padding: 4px 10px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .cloud-dot {
-            width: 7px;
-            height: 7px;
-            background-color: var(--emerald-green);
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
-        /* Modern Scrollable Top Menu */
-        .nav-menu-top {
-            display: flex;
-            overflow-x: auto;
-            white-space: nowrap;
-            list-style: none;
-            scrollbar-width: none; /* Firefox */
-        }
-
-        .nav-menu-top::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
-        }
-
-        .nav-menu-top li {
-            flex-shrink: 0;
-        }
-
-        .nav-item-top {
-            text-decoration: none;
-            padding: 12px 16px;
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.25s ease;
-            border-bottom: 3px solid transparent;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .nav-item-top:hover {
-            color: var(--white);
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .nav-item-top.active {
-            color: var(--white);
-            border-bottom: 3px solid var(--emerald-green);
-            background: rgba(16, 185, 129, 0.08);
-        }
-
-        .nav-menu-top button.nav-item-top {
-            background: transparent;
-            border-top: 0;
-            border-left: 0;
-            border-right: 0;
-            appearance: none;
-        }
-        .performance-submenu {
-            display: none;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px 10px;
-            background: #0b2040;
-            border-top: 1px solid rgba(255,255,255,.08);
-        }
-        .performance-submenu.open { display: flex; }
-        .nav-subitem {
-            display: inline-flex;
-            align-items: center;
-            text-decoration: none;
-            padding: 7px 13px;
-            border-radius: 18px;
-            border: 1px solid rgba(255,255,255,.18);
-            color: #cbd5e1;
-            font-size: .76rem;
-            font-weight: 700;
-            transition: all .2s ease;
-        }
-        .nav-subitem:hover { color: #fff; background: rgba(255,255,255,.08); }
-        .nav-subitem.active {
-            color: #fff;
-            background: rgba(16,185,129,.15);
-            border-color: var(--emerald-green);
-        }
-        .submenu-chevron { margin-left: 5px; font-size: .7rem; }
-
-        /* Area Konten Aplikasi Utama */
-        .app-workspace {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-light);
-            position: relative;
-        }
-
-        /* Konfigurasi tumpukan iframe agar saling menutupi */
-        .app-workspace iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background-color: var(--bg-light);
-            position: absolute; /* Membuat iframe bertumpuk */
-            top: 0;
-            left: 0;
-            display: none; /* Secara default disembunyikan */
-        }
-    </style>
+    /* Mobile navigation */
+    .sidebar-backdrop { display: none; }
+    @media (max-width: 900px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: min(285px, 84vw);
+        min-width: 0;
+        box-shadow: 12px 0 30px rgba(30,45,39,.12);
+        transform: translateX(-105%);
+        transition: transform .22s ease;
+      }
+      body.sidebar-open .sidebar { transform: translateX(0); }
+      .sidebar-backdrop {
+        position: fixed;
+        z-index: 20;
+        inset: 0;
+        display: block;
+        background: rgba(34,47,42,.28);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .22s ease;
+      }
+      body.sidebar-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+      .mobile-menu-btn { display: inline-flex; }
+      .topbar { padding: 0 17px; }
+      .home-view { padding: 22px 20px 34px; }
+    }
+    @media (max-width: 620px) {
+      :root { --topbar-height: 60px; }
+      .topbar { gap: 8px; padding: 0 12px; }
+      .topbar-left { gap: 9px; }
+      .page-eyebrow { font-size: 8px; }
+      .page-title { font-size: 12px; }
+      .module-count { min-height: 29px; padding: 0 8px; font-size: 9px; }
+      .module-count svg { display: none; }
+      .home-shortcut { min-height: 29px; padding: 0 8px; font-size: 9px; }
+      .welcome-panel { min-height: 0; padding: 25px 22px; }
+      .welcome-title { font-size: 23px; }
+      .welcome-description { font-size: 11px; }
+      .welcome-aside, .welcome-mark { display: none; }
+      .section-heading { align-items: flex-start; margin-top: 25px; }
+      .section-note { display: none; }
+      .module-grid { grid-template-columns: 1fr; gap: 10px; }
+      .module-card { min-height: 118px; padding: 15px; }
+      .home-footer { align-items: flex-start; flex-direction: column; gap: 4px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
 </head>
 <body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
+      <div class="brand-block">
+        <img class="brand-logo" src="97799.png" alt="Logo Assembly">
+        <div class="brand-name">
+          <strong>ASSEMBLY OPERATIONS</strong>
+          <span>Production reporting workspace</span>
+        </div>
+      </div>
 
-    <!-- Header & Top Navigasi -->
-    <header class="top-navbar">
-        <div class="brand-header">
-            <div class="brand-title">
-                <!-- 🌟 Logo Mini di Samping Judul Portal -->
-                <img src="97799.png" alt="Logo">
-                Assembly <span>Weekly Report</span>
-            </div>
-            <div class="cloud-badge">
-                <div class="cloud-dot"></div> Connected
-            </div>
+      <nav class="sidebar-scroll">
+        <div class="nav-caption">Workspace</div>
+        <a href="#" class="sidebar-link active" id="homeNav" onclick="goHome(event)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></span>
+          Home
+        </a>
+
+        <div class="nav-caption">Performance &amp; Monitoring</div>
+        <button type="button" class="sidebar-parent" id="performanceMenuBtn" aria-expanded="false" aria-controls="performanceSubmenu" onclick="togglePerformanceMenu(event)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 20V9l8-5 8 5v11"/><path d="M8 20v-6h8v6M2 20h20"/></svg></span>
+          Performance Assembly
+          <span class="nav-chevron"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
+        </button>
+        <div class="submenu" id="performanceSubmenu">
+          <a href="performance_plant_alpha.html?v=20261126fix1" class="sidebar-link" data-app-link data-url="performance_plant_alpha.html?v=20261126fix1" data-title="Performance Assembly — Plant Alpha" onclick="loadApp(event, 'performance_plant_alpha.html?v=20261126fix1', this)">
+            Plant Alpha
+          </a>
+          <a href="performance_plant_beta.html?v=20261126fix1" class="sidebar-link" data-app-link data-url="performance_plant_beta.html?v=20261126fix1" data-title="Performance Assembly — Plant Beta" onclick="loadApp(event, 'performance_plant_beta.html?v=20261126fix1', this)">
+            Plant Beta
+          </a>
         </div>
 
-        <ul class="nav-menu-top">
-            <li>
-                <button type="button" id="performanceMenuBtn" class="nav-item-top active" aria-expanded="true" aria-controls="performanceSubmenu" onclick="togglePerformanceMenu(event)">
-                    ⚙️ 1. Performance Assembly <span class="submenu-chevron">▾</span>
-                </button>
-            </li>
-            <li>
-                <a href="performance.html" class="nav-item-top" onclick="loadApp(event, 'performance.html', this)">
-                    ⚙️ 2. Performance
-                </a>
-            </li>
-            <li>
-                <a href="reject_assy.html?v=444869c" class="nav-item-top" onclick="loadApp(event, 'reject_assy.html?v=444869c', this)">
-                    📊 3. Reject Assembly
-                </a>
-            </li>
-            <li>
-                <a href="dashboard_lhpr.html" class="nav-item-top" onclick="loadApp(event, 'dashboard_lhpr.html', this)">
-                    📈 4. Dashboard LHPR
-                </a>
-            </li>
-            <li>
-                <a href="generate_lhpr.html" class="nav-item-top" onclick="loadApp(event, 'generate_lhpr.html', this)">
-                    ☁️ 5. Generate LHPR
-                </a>
-            </li>
-            <li>
-                <a href="laporan_fg.html" class="nav-item-top" onclick="loadApp(event, 'laporan_fg.html', this)">
-                    🖼️ 6. Laporan FG WhatsApp
-                </a>
-            </li>
-            <li>
-                <a href="generate_kontrol_material.html" class="nav-item-top" onclick="loadApp(event, 'generate_kontrol_material.html', this)">
-                    📦 7. Generate Kontrol Material
-                </a>
-            </li>
-            <li>
-                <a href="generate_lmp.html" class="nav-item-top" onclick="loadApp(event, 'generate_lmp.html', this)">
-                    📋 8. Generator LMP
-                </a>
-            </li>
-        </ul>
-        <div id="performanceSubmenu" class="performance-submenu open" aria-label="Submenu Performance Assembly">
-            <a href="performance_plant_alpha.html?v=20261126fix1" class="nav-subitem active" onclick="loadApp(event, 'performance_plant_alpha.html?v=20261126fix1', this)">
-                Assembly Plant Alpha
-            </a>
-            <a href="performance_plant_beta.html?v=20261126fix1" class="nav-subitem" onclick="loadApp(event, 'performance_plant_beta.html?v=20261126fix1', this)">
-                Assembly Plant Beta
-            </a>
+        <a href="performance.html" class="sidebar-link" data-app-link data-url="performance.html" data-title="Performance" onclick="loadApp(event, 'performance.html', this)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></svg></span>
+          Performance
+        </a>
+        <a href="reject_assy.html?v=444869c" class="sidebar-link" data-app-link data-url="reject_assy.html?v=444869c" data-title="Reject Assembly" onclick="loadApp(event, 'reject_assy.html?v=444869c', this)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m8 8 8 8m0-8-8 8"/></svg></span>
+          Reject Assembly
+        </a>
+        <a href="dashboard_lhpr.html" class="sidebar-link" data-app-link data-url="dashboard_lhpr.html" data-title="Dashboard LHPR" onclick="loadApp(event, 'dashboard_lhpr.html', this)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 16v-4m4 4V7m4 9v-6"/></svg></span>
+          Dashboard LHPR
+        </a>
+
+        <div class="nav-caption">Reporting &amp; Generator</div>
+        <a href="generate_lhpr.html" class="sidebar-link" data-app-link data-url="generate_lhpr.html" data-title="Generate LHPR" onclick="loadApp(event, 'generate_lhpr.html', this)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v6h5M9 14h6m-6 4h6"/></svg></span>
+          Generate LHPR
+        </a>
+        <a href="laporan_fg.html" class="sidebar-link" data-app-link data-url="laporan_fg.html" data-title="Laporan FG WhatsApp" onclick="loadApp(event, 'laporan_fg.html', this)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8m-8 4h5"/></svg></span>
+          Laporan FG WhatsApp
+        </a>
+        <a href="generate_kontrol_material.html" class="sidebar-link" data-app-link data-url="generate_kontrol_material.html" data-title="Generate Kontrol Material" onclick="loadApp(event, 'generate_kontrol_material.html', this)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7 12 3l8 4v10l-8 4-8-4z"/><path d="m4 7 8 4 8-4m-8 4v10"/></svg></span>
+          Generate Kontrol Material
+        </a>
+        <a href="generate_lmp.html" class="sidebar-link" data-app-link data-url="generate_lmp.html" data-title="Generator LMP" onclick="loadApp(event, 'generate_lmp.html', this)">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6z"/><path d="M9 8h6m-6 4h6m-6 4h4"/></svg></span>
+          Generator LMP
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <strong>Assembly Operations</strong><br>
+        Internal production reporting portal
+      </div>
+    </aside>
+
+    <button class="sidebar-backdrop" id="sidebarBackdrop" type="button" aria-label="Tutup navigasi" onclick="closeSidebar()"></button>
+
+    <div class="main-column">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" aria-label="Buka navigasi" onclick="toggleSidebar()">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div class="page-heading">
+            <span class="page-eyebrow">ASSEMBLY / WORKSPACE</span>
+            <div class="page-title" id="pageTitle">Home</div>
+          </div>
         </div>
-    </header>
+        <div class="topbar-right">
+          <button type="button" class="home-shortcut" id="homeShortcut" onclick="goHome(event)">
+            <svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7"/></svg>
+            Beranda
+          </button>
+          <div class="module-count">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            8 Modul
+          </div>
+        </div>
+      </header>
 
-    <!-- Workspace Utama -->
-    <main class="app-workspace" id="workspace">
-        <!-- Render otomatis halaman pertama saat aplikasi dibuka -->
-        <iframe id="iframe-performance_plant_alpha.html?v=20261126fix1" src="performance_plant_alpha.html?v=20261126fix1" style="display: block;"></iframe>
-    </main>
+      <main class="view-area" id="workspace">
+        <section class="home-view" id="homeView" aria-label="Halaman Home">
+          <div class="home-wrap">
+            <section class="welcome-panel">
+              <div class="welcome-copy">
+                <div class="welcome-kicker">Production reporting workspace</div>
+                <h1 class="welcome-title">Selamat Datang di<br>Assembly Operations</h1>
+                <p class="welcome-description">
+                  Pusat akses untuk monitoring kinerja, evaluasi kualitas, dan pembuatan laporan produksi Assembly Plant Alpha &amp; Plant Beta.
+                </p>
+              </div>
+              <div class="welcome-aside" aria-label="Ringkasan workspace">
+                <div class="overview-row"><span>Area produksi</span><strong>02 Plant</strong></div>
+                <div class="overview-row"><span>Aplikasi tersedia</span><strong>08 Modul</strong></div>
+                <div class="overview-row"><span>Workspace</span><strong>Assembly</strong></div>
+              </div>
+              <div class="welcome-mark" aria-hidden="true"></div>
+            </section>
 
-    <script>
-        function togglePerformanceMenu(event) {
-            event.preventDefault();
-            const submenu = document.getElementById('performanceSubmenu');
-            const button = document.getElementById('performanceMenuBtn');
-            if (!submenu || !button) return;
-            const shouldOpen = !submenu.classList.contains('open');
-            submenu.classList.toggle('open', shouldOpen);
-            button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-        }
+            <div class="section-heading">
+              <div>
+                <h2>Performance &amp; Monitoring</h2>
+                <p>Pantau kinerja produksi dan kualitas proses Assembly.</p>
+              </div>
+              <span class="section-note">4 area kerja</span>
+            </div>
+            <section class="module-grid" aria-label="Menu performance dan monitoring">
+              <article class="module-card">
+                <div class="module-card-top">
+                  <span class="module-icon"><svg viewBox="0 0 24 24"><path d="M4 20V9l8-5 8 5v11"/><path d="M8 20v-6h8v6M2 20h20"/></svg></span>
+                  <div class="module-copy">
+                    <h3>Performance Assembly</h3>
+                    <p>Monitoring hasil dan pencapaian masing-masing plant.</p>
+                  </div>
+                </div>
+                <div class="module-card-bottom">
+                  <span class="module-type">Plant performance</span>
+                  <div class="plant-actions">
+                    <a href="performance_plant_alpha.html?v=20261126fix1" data-title="Performance Assembly — Plant Alpha" onclick="loadApp(event, 'performance_plant_alpha.html?v=20261126fix1', this)">Plant Alpha</a>
+                    <a href="performance_plant_beta.html?v=20261126fix1" data-title="Performance Assembly — Plant Beta" onclick="loadApp(event, 'performance_plant_beta.html?v=20261126fix1', this)">Plant Beta</a>
+                  </div>
+                </div>
+              </article>
 
-        function loadApp(event, url, element) {
-            event.preventDefault();
+              <article class="module-card">
+                <div class="module-card-top">
+                  <span class="module-icon blue"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></svg></span>
+                  <div class="module-copy">
+                    <h3>Performance</h3>
+                    <p>Analisis dan evaluasi performa operasional Assembly.</p>
+                  </div>
+                </div>
+                <div class="module-card-bottom">
+                  <span class="module-type">Performance analysis</span>
+                  <a class="module-open" href="performance.html" data-title="Performance" onclick="loadApp(event, 'performance.html', this)">Buka modul <svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+                </div>
+              </article>
 
-            document.querySelectorAll('.nav-item-top, .nav-subitem').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
+              <article class="module-card">
+                <div class="module-card-top">
+                  <span class="module-icon sand"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m8 8 8 8m0-8-8 8"/></svg></span>
+                  <div class="module-copy">
+                    <h3>Reject Assembly</h3>
+                    <p>Monitoring, pengelompokan, dan analisis reject produksi.</p>
+                  </div>
+                </div>
+                <div class="module-card-bottom">
+                  <span class="module-type">Quality monitoring</span>
+                  <a class="module-open" href="reject_assy.html?v=444869c" data-title="Reject Assembly" onclick="loadApp(event, 'reject_assy.html?v=444869c', this)">Buka modul <svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+                </div>
+              </article>
 
-            const submenu = document.getElementById('performanceSubmenu');
-            const parentButton = document.getElementById('performanceMenuBtn');
-            if (element.classList.contains('nav-subitem')) {
-                if (parentButton) parentButton.classList.add('active');
-                if (submenu) submenu.classList.add('open');
-                if (parentButton) parentButton.setAttribute('aria-expanded', 'true');
-            } else {
-                if (submenu) submenu.classList.remove('open');
-                if (parentButton) {
-                    parentButton.classList.remove('active');
-                    parentButton.setAttribute('aria-expanded', 'false');
-                }
-            }
+              <article class="module-card">
+                <div class="module-card-top">
+                  <span class="module-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 16v-4m4 4V7m4 9v-6"/></svg></span>
+                  <div class="module-copy">
+                    <h3>Dashboard LHPR</h3>
+                    <p>Visualisasi dan monitoring laporan hasil produksi harian.</p>
+                  </div>
+                </div>
+                <div class="module-card-bottom">
+                  <span class="module-type">Production dashboard</span>
+                  <a class="module-open" href="dashboard_lhpr.html" data-title="Dashboard LHPR" onclick="loadApp(event, 'dashboard_lhpr.html', this)">Buka modul <svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+                </div>
+              </article>
+            </section>
 
-            document.querySelectorAll('.app-workspace iframe').forEach(iframe => {
-                iframe.style.display = 'none';
-            });
+            <div class="section-heading">
+              <div>
+                <h2>Reporting &amp; Generator</h2>
+                <p>Siapkan laporan dan dokumen pendukung aktivitas produksi.</p>
+              </div>
+              <span class="section-note">4 area kerja</span>
+            </div>
+            <section class="module-grid" aria-label="Menu reporting dan generator">
+              <article class="module-card">
+                <div class="module-card-top">
+                  <span class="module-icon blue"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v6h5M9 14h6m-6 4h6"/></svg></span>
+                  <div class="module-copy">
+                    <h3>Generate LHPR</h3>
+                    <p>Pembuatan laporan hasil produksi harian.</p>
+                  </div>
+                </div>
+                <div class="module-card-bottom">
+                  <span class="module-type">Report generator</span>
+                  <a class="module-open" href="generate_lhpr.html" data-title="Generate LHPR" onclick="loadApp(event, 'generate_lhpr.html', this)">Buka modul <svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+                </div>
+              </article>
 
-            let targetIframe = document.getElementById('iframe-' + url);
-            if (!targetIframe) {
-                targetIframe = document.createElement('iframe');
-                targetIframe.id = 'iframe-' + url;
-                targetIframe.src = url;
-                document.getElementById('workspace').appendChild(targetIframe);
-            }
-            targetIframe.style.display = 'block';
-        }
-    </script>
+              <article class="module-card">
+                <div class="module-card-top">
+                  <span class="module-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8m-8 4h5"/></svg></span>
+                  <div class="module-copy">
+                    <h3>Laporan FG WhatsApp</h3>
+                    <p>Rekapitulasi finish good dan audit hasil produksi.</p>
+                  </div>
+                </div>
+                <div class="module-card-bottom">
+                  <span class="module-type">Finish good report</span>
+                  <a class="module-open" href="laporan_fg.html" data-title="Laporan FG WhatsApp" onclick="loadApp(event, 'laporan_fg.html', this)">Buka modul <svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+                </div>
+              </article>
+
+              <article class="module-card">
+                <div class="module-card-top">
+                  <span class="module-icon sand"><svg viewBox="0 0 24 24"><path d="M4 7 12 3l8 4v10l-8 4-8-4z"/><path d="m4 7 8 4 8-4m-8 4v10"/></svg></span>
+                  <div class="module-copy">
+                    <h3>Generate Kontrol Material</h3>
+                    <p>Pembuatan dokumen kontrol dan pemakaian material.</p>
+                  </div>
+                </div>
+                <div class="module-card-bottom">
+                  <span class="module-type">Material control</span>
+                  <a class="module-open" href="generate_kontrol_material.html" data-title="Generate Kontrol Material" onclick="loadApp(event, 'generate_kontrol_material.html', this)">Buka modul <svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+                </div>
+              </article>
+
+              <article class="module-card">
+                <div class="module-card-top">
+                  <span class="module-icon blue"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6z"/><path d="M9 8h6m-6 4h6m-6 4h4"/></svg></span>
+                  <div class="module-copy">
+                    <h3>Generator LMP</h3>
+                    <p>Pembuatan laporan LMP dengan format terstruktur.</p>
+                  </div>
+                </div>
+                <div class="module-card-bottom">
+                  <span class="module-type">Document generator</span>
+                  <a class="module-open" href="generate_lmp.html" data-title="Generator LMP" onclick="loadApp(event, 'generate_lmp.html', this)">Buka modul <svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+                </div>
+              </article>
+            </section>
+
+            <footer class="home-footer">
+              <span><strong>Assembly Operations</strong> · Weekly Report &amp; Production Monitoring</span>
+              <span>Plant Alpha &amp; Plant Beta</span>
+            </footer>
+          </div>
+        </section>
+
+        <section class="app-view" id="appView" aria-label="Area aplikasi">
+          <!-- Modul dimuat di sini dan dipakai kembali saat dipilih ulang. -->
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const iframeCache = new Map();
+
+    function togglePerformanceMenu(event) {
+      if (event) event.preventDefault();
+      const submenu = document.getElementById('performanceSubmenu');
+      const button = document.getElementById('performanceMenuBtn');
+      if (!submenu || !button) return;
+      const shouldOpen = !submenu.classList.contains('open');
+      submenu.classList.toggle('open', shouldOpen);
+      button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    }
+
+    function toggleSidebar() {
+      document.body.classList.toggle('sidebar-open');
+    }
+
+    function closeSidebar() {
+      document.body.classList.remove('sidebar-open');
+    }
+
+    function setActiveNavigation(url) {
+      document.querySelectorAll('[data-app-link]').forEach(function (link) {
+        link.classList.toggle('active', link.dataset.url === url);
+      });
+
+      const isPlant = url.indexOf('performance_plant_') === 0;
+      const submenu = document.getElementById('performanceSubmenu');
+      const parentButton = document.getElementById('performanceMenuBtn');
+
+      if (submenu && parentButton) {
+        submenu.classList.toggle('open', isPlant);
+        parentButton.setAttribute('aria-expanded', isPlant ? 'true' : 'false');
+        parentButton.classList.toggle('active', isPlant);
+      }
+
+      document.getElementById('homeNav').classList.remove('active');
+    }
+
+    function loadApp(event, url, element) {
+      if (event) event.preventDefault();
+      if (!url) return;
+
+      const appView = document.getElementById('appView');
+      const homeView = document.getElementById('homeView');
+      const pageTitle = (element && element.dataset.title) || 'Assembly Application';
+
+      homeView.style.display = 'none';
+      appView.classList.add('visible');
+      document.getElementById('pageTitle').textContent = pageTitle;
+      document.getElementById('homeShortcut').classList.add('visible');
+      document.title = pageTitle + ' | Assembly Operations';
+
+      setActiveNavigation(url);
+
+      let targetIframe = iframeCache.get(url);
+      if (!targetIframe) {
+        targetIframe = document.createElement('iframe');
+        targetIframe.title = pageTitle;
+        targetIframe.src = url;
+        targetIframe.loading = 'eager';
+        targetIframe.style.display = 'none';
+        appView.appendChild(targetIframe);
+        iframeCache.set(url, targetIframe);
+      }
+
+      iframeCache.forEach(function (iframe) {
+        iframe.style.display = 'none';
+      });
+      targetIframe.style.display = 'block';
+
+      closeSidebar();
+    }
+
+    function goHome(event) {
+      if (event) event.preventDefault();
+      const homeView = document.getElementById('homeView');
+      const appView = document.getElementById('appView');
+
+      appView.classList.remove('visible');
+      homeView.style.display = '';
+      iframeCache.forEach(function (iframe) {
+        iframe.style.display = 'none';
+      });
+
+      document.getElementById('pageTitle').textContent = 'Home';
+      document.getElementById('homeShortcut').classList.remove('visible');
+      document.getElementById('homeNav').classList.add('active');
+      document.querySelectorAll('[data-app-link]').forEach(function (link) {
+        link.classList.remove('active');
+      });
+
+      const submenu = document.getElementById('performanceSubmenu');
+      const parentButton = document.getElementById('performanceMenuBtn');
+      submenu.classList.remove('open');
+      parentButton.classList.remove('active');
+      parentButton.setAttribute('aria-expanded', 'false');
+
+      document.title = 'Assembly Operations';
+      closeSidebar();
+    }
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') closeSidebar();
+    });
+  </script>
 </body>
 </html>
