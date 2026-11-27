@@ -273,30 +273,58 @@
             pointer-events: none;
         }
         body.editor-open .editor-backdrop { display: block; }
-        .editor-open-btn {
-            position: sticky;
-            top: 10px;
-            z-index: 30;
-            display: inline-flex;
-            align-self: flex-start;
+        /* Seluruh sisi kiri layar menjadi area klik untuk membuka editor. */
+        .editor-edge-trigger {
+            position: fixed;
+            inset: 0 auto 0 0;
+            z-index: 35;
+            display: flex;
+            width: 18px;
             align-items: center;
-            gap: 7px;
-            min-height: 32px;
-            margin: 10px 0 0 15px;
-            padding: 0 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            background: rgba(255,255,255,.96);
-            color: #334155;
-            box-shadow: 0 2px 8px rgba(15,23,42,.10);
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 800;
-            transition: background .18s ease, border-color .18s ease;
+            justify-content: flex-start;
+            padding: 0;
+            border: 0;
+            border-right: 1px solid rgba(148, 163, 184, .28);
+            background: rgba(248, 250, 252, .12);
+            color: #64748b;
+            cursor: ew-resize;
+            touch-action: manipulation;
+            transition: width .18s ease, background .18s ease, border-color .18s ease;
         }
-        .editor-open-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .editor-open-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        body.editor-open .editor-open-btn { visibility: hidden; pointer-events: none; }
+        .editor-edge-trigger:hover,
+        .editor-edge-trigger:focus-visible {
+            width: 24px;
+            border-right-color: #cbd5e1;
+            background: rgba(226, 232, 240, .72);
+            outline: none;
+        }
+        .editor-edge-handle {
+            display: flex;
+            width: 17px;
+            min-width: 17px;
+            height: 58px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #cbd5e1;
+            border-left: 0;
+            border-radius: 0 8px 8px 0;
+            background: rgba(255,255,255,.96);
+            box-shadow: 2px 2px 8px rgba(15,23,42,.10);
+        }
+        .editor-edge-handle svg {
+            width: 12px;
+            height: 12px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        body.editor-open .editor-edge-trigger {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
 
         /* --- DASHBOARD DESIGN --- */
         .dashboard {
@@ -509,7 +537,7 @@
                 overflow: visible !important; 
                 margin: 0 !important; 
             }
-            .editor-sidebar, .editor-backdrop, .editor-open-btn { display: none !important; }
+            .editor-sidebar, .editor-backdrop, .editor-edge-trigger { display: none !important; }
             .preview-area { 
                 background-color: var(--print-bg) !important; 
                 padding: 0 !important; 
@@ -848,9 +876,10 @@
 
     <!-- PREVIEW AREA -->
     <div class="preview-area">
-        <button type="button" class="editor-open-btn" onclick="toggleSidebar(true)" aria-controls="editor-sidebar" aria-expanded="false">
-            <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M9 5v14M13 9h4m-4 4h4"/></svg>
-            Buka Editor
+        <button type="button" class="editor-edge-trigger" onclick="toggleSidebar(true)" aria-controls="editor-sidebar" aria-expanded="false" aria-label="Buka editor dari sisi kiri" title="Klik sisi kiri untuk membuka editor">
+            <span class="editor-edge-handle" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M14 4H5v16h9"/><path d="m10 8 4 4-4 4"/></svg>
+            </span>
         </button>
 
         <div class="preview-content">
@@ -2332,7 +2361,7 @@
         // --- DRAWER EDITOR: TERSEMBUNYI SAAT AWAL, DIBUKA SAAT DIBUTUHKAN ---
         function toggleSidebar(forceOpen) {
             const sidebar = document.getElementById('editor-sidebar');
-            const openButton = document.querySelector('.editor-open-btn');
+            const edgeTrigger = document.querySelector('.editor-edge-trigger');
             if (!sidebar) return;
 
             const shouldOpen = typeof forceOpen === 'boolean'
@@ -2342,7 +2371,7 @@
             sidebar.classList.toggle('hidden-sidebar', !shouldOpen);
             document.body.classList.toggle('editor-open', shouldOpen);
 
-            if (openButton) openButton.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+            if (edgeTrigger) edgeTrigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
 
             // Beri waktu transisi drawer sebelum meminta grafik menyesuaikan ukuran.
             setTimeout(() => {
@@ -2356,7 +2385,7 @@
         if (previewArea) {
             previewArea.addEventListener('click', function(event) {
                 if (!document.body.classList.contains('editor-open')) return;
-                if (event.target.closest('.editor-open-btn')) return;
+                if (event.target.closest('.editor-edge-trigger')) return;
                 toggleSidebar(false);
             });
         }
@@ -2422,7 +2451,7 @@
                 body { display: block !important; height: auto !important; overflow: auto !important; background-color: var(--print-bg) !important; margin: 0 !important; padding: 20px 0 !important; }
                 .preview-area { display: block !important; height: auto !important; overflow: visible !important; padding: 0 !important; background-color: transparent !important; }
                 .preview-content { padding: 0 !important; display: block !important; }
-                .editor-open-btn, .editor-backdrop, .editor-close-btn { display: none !important; }
+                .editor-edge-trigger, .editor-backdrop, .editor-close-btn { display: none !important; }
                 .dashboard { margin: 0 !important; box-shadow: none !important; width: ${dashWidth}px !important; }
             </style>
             `;
