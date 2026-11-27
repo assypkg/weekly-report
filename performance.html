@@ -46,13 +46,20 @@
 
         /* --- SIDEBAR EDITOR --- */
         .editor-sidebar {
-            width: 480px;
+            position: fixed;
+            inset: 0 auto 0 0;
+            z-index: 1001;
+            width: min(420px, 88vw);
+            max-width: 420px;
+            height: 100dvh;
             background-color: var(--bg-gray);
             border-right: 2px solid var(--border-color);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            transition: transform 0.3s ease;
+            box-shadow: 12px 0 32px rgba(15, 23, 42, 0.18);
+            transform: translateX(0);
+            transition: transform 0.28s ease, visibility 0.28s ease;
         }
         
         .editor-header {
@@ -62,9 +69,27 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.1); /* Efek freeze yang elegan */
+            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.1);
         }
-        .editor-header h2 { color: var(--navy-blue); font-size: 18px; font-weight: 800; margin-bottom: 5px; }
+        .editor-header h2 { color: var(--navy-blue); font-size: 18px; font-weight: 800; margin-bottom: 5px; padding-right: 34px; }
+        .editor-close-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d8dee6;
+            border-radius: 7px;
+            background: #f8fafc;
+            color: #475569;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+        }
+        .editor-close-btn:hover { background: #e9eef4; color: #1e293b; }
         .editor-header p { font-size: 11px; color: #666; line-height: 1.4; font-weight: 600; margin-bottom: 15px; }
 
         /* Desain Grid Tombol Header */
@@ -223,45 +248,51 @@
             flex-direction: column;
             overflow: auto; 
         }
-        .preview-topbar {
-            background-color: #374151;
-            color: #9ca3af;
-            font-size: 11px;
-            padding: 8px 20px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-        }
-        
         .preview-content {
             padding: 15px;
-            min-width: fit-content; 
+            min-width: fit-content;
         }
 
-        /* --- TAMBAHAN UNTUK TOGGLE SIDEBAR --- */
+        /* Editor disembunyikan saat awal agar area laporan mendapat lebar penuh. */
         .hidden-sidebar {
-            display: none !important;
+            transform: translateX(-105%);
+            visibility: hidden;
+            pointer-events: none;
         }
-        .toggle-sidebar-btn {
-            background-color: #1e293b;
-            color: #e2e8f0;
-            border: 1px solid #475569;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 11px;
-            margin-right: 15px;
-            transition: background 0.2s, color 0.2s;
-            display: flex;
+        .editor-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            border: 0;
+            background: rgba(15, 23, 42, 0.34);
+            cursor: default;
+        }
+        body.editor-open .editor-backdrop { display: block; }
+        .editor-open-btn {
+            position: sticky;
+            top: 10px;
+            z-index: 30;
+            display: inline-flex;
+            align-self: flex-start;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
+            min-height: 32px;
+            margin: 10px 0 0 15px;
+            padding: 0 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: rgba(255,255,255,.96);
+            color: #334155;
+            box-shadow: 0 2px 8px rgba(15,23,42,.10);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 800;
+            transition: background .18s ease, border-color .18s ease;
         }
-        .toggle-sidebar-btn:hover { 
-            background-color: #e2e8f0; 
-            color: #1e293b; 
-        }
+        .editor-open-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .editor-open-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        body.editor-open .editor-open-btn { visibility: hidden; pointer-events: none; }
 
         /* --- DASHBOARD DESIGN --- */
         .dashboard {
@@ -474,7 +505,7 @@
                 overflow: visible !important; 
                 margin: 0 !important; 
             }
-            .editor-sidebar, .preview-topbar { display: none !important; }
+            .editor-sidebar, .editor-backdrop, .editor-open-btn { display: none !important; }
             .preview-area { 
                 background-color: var(--print-bg) !important; 
                 padding: 0 !important; 
@@ -510,9 +541,10 @@
 <body>
 
     <!-- SIDEBAR EDITOR -->
-    <div class="editor-sidebar">
+    <div class="editor-sidebar hidden-sidebar" id="editor-sidebar">
         <!-- HEADER FROZEN BUTTONS -->
         <div class="editor-header">
+            <button type="button" class="editor-close-btn" onclick="toggleSidebar(false)" aria-label="Tutup panel editor" title="Tutup editor">&times;</button>
             <h2>PERFORMANCE ASSY EDITOR</h2>
             <p>Kelola data lengkap & visibilitas laporan performa assembly.</p>
             <div class="header-actions">
@@ -808,16 +840,15 @@
             </fieldset>
         </div>
     </div>
+    <button type="button" class="editor-backdrop" onclick="toggleSidebar(false)" aria-label="Tutup panel editor"></button>
 
     <!-- PREVIEW AREA -->
     <div class="preview-area">
-        <div class="preview-topbar">
-            <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
-                ☰ TAMPILKAN/SEMBUNYIKAN PANEL
-            </button>
-            LIVE PREVIEW - Tampilan Responsif (Mendatar / Tegak)
-        </div>
-        
+        <button type="button" class="editor-open-btn" onclick="toggleSidebar(true)" aria-controls="editor-sidebar" aria-expanded="false">
+            <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M9 5v14M13 9h4m-4 4h4"/></svg>
+            Buka Editor
+        </button>
+
         <div class="preview-content">
             <div class="dashboard" id="printable-dashboard">
                 
@@ -2291,16 +2322,32 @@
             });
         }
 
-        // --- FUNGSI HIDE/UNHIDE SIDEBAR ---
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.editor-sidebar');
-            if(sidebar) sidebar.classList.toggle('hidden-sidebar');
-            
-            // Trigger event resize agar Google Charts menyesuaikan lebar layar baru
+        // --- DRAWER EDITOR: TERSEMBUNYI SAAT AWAL, DIBUKA SAAT DIBUTUHKAN ---
+        function toggleSidebar(forceOpen) {
+            const sidebar = document.getElementById('editor-sidebar');
+            const openButton = document.querySelector('.editor-open-btn');
+            if (!sidebar) return;
+
+            const shouldOpen = typeof forceOpen === 'boolean'
+                ? forceOpen
+                : sidebar.classList.contains('hidden-sidebar');
+
+            sidebar.classList.toggle('hidden-sidebar', !shouldOpen);
+            document.body.classList.toggle('editor-open', shouldOpen);
+
+            if (openButton) openButton.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+
+            // Beri waktu transisi drawer sebelum meminta grafik menyesuaikan ukuran.
             setTimeout(() => {
                 window.dispatchEvent(new Event('resize'));
-            }, 100);
+            }, 320);
         }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.body.classList.contains('editor-open')) {
+                toggleSidebar(false);
+            }
+        });
 
         // --- FUNGSI SIMPAN HTML INTERAKTIF DENGAN STATE INJECTION ---
         function saveHTML(btn) {
@@ -2333,20 +2380,12 @@
             stateDiv.setAttribute('data-state', JSON.stringify({ leaders, analyses, prodLogs, spaChanges, machineIssues, qualityIssues }));
             document.body.insertBefore(stateDiv, document.body.firstChild);
 
-            // 3. Sembunyikan sidebar dan topbar secara otomatis
+            // 3. Sembunyikan kontrol editor agar file hasil ekspor hanya menampilkan laporan
             const sidebar = document.querySelector('.editor-sidebar');
-            let wasHidden = true;
-            if(sidebar) {
-                wasHidden = sidebar.classList.contains('hidden-sidebar');
-                if (!wasHidden) sidebar.classList.add('hidden-sidebar');
-            }
-
-            const topbar = document.querySelector('.preview-topbar');
-            let topbarWasHidden = true;
-            if(topbar) {
-                topbarWasHidden = topbar.style.display === 'none';
-                if (!topbarWasHidden) topbar.style.display = 'none';
-            }
+            const wasHidden = !sidebar || sidebar.classList.contains('hidden-sidebar');
+            const editorWasOpen = document.body.classList.contains('editor-open');
+            if (sidebar) sidebar.classList.add('hidden-sidebar');
+            document.body.classList.remove('editor-open');
 
             // 4. Ambil dan Modifikasi HTML untuk Mode View HP
             let htmlContent = "<!DOCTYPE html>\n<html lang=\"id\">\n" + document.documentElement.outerHTML + "\n</html>";
@@ -2365,6 +2404,7 @@
                 body { display: block !important; height: auto !important; overflow: auto !important; background-color: var(--print-bg) !important; margin: 0 !important; padding: 20px 0 !important; }
                 .preview-area { display: block !important; height: auto !important; overflow: visible !important; padding: 0 !important; background-color: transparent !important; }
                 .preview-content { padding: 0 !important; display: block !important; }
+                .editor-open-btn, .editor-backdrop, .editor-close-btn { display: none !important; }
                 .dashboard { margin: 0 !important; box-shadow: none !important; width: ${dashWidth}px !important; }
             </style>
             `;
@@ -2372,8 +2412,8 @@
             // ------------------------------------
 
             // 5. Kembalikan State UI Editor seperti semula
-            if(sidebar && !wasHidden) sidebar.classList.remove('hidden-sidebar');
-            if(topbar && !topbarWasHidden) topbar.style.display = '';
+            if (sidebar && !wasHidden) sidebar.classList.remove('hidden-sidebar');
+            if (editorWasOpen) document.body.classList.add('editor-open');
             document.body.removeChild(stateDiv);
 
             // 6. Proses Unduh
