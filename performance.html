@@ -242,11 +242,15 @@
 
         /* --- PREVIEW AREA --- */
         .preview-area {
+            position: relative;
             flex: 1;
+            min-width: 0;
+            min-height: 0;
             background-color: #d1d5db;
             display: flex;
             flex-direction: column;
-            overflow: auto; 
+            overflow: auto;
+            overscroll-behavior: contain;
         }
         .preview-content {
             padding: 15px;
@@ -266,7 +270,7 @@
             z-index: 1000;
             border: 0;
             background: rgba(15, 23, 42, 0.34);
-            cursor: default;
+            pointer-events: none;
         }
         body.editor-open .editor-backdrop { display: block; }
         .editor-open-btn {
@@ -840,7 +844,7 @@
             </fieldset>
         </div>
     </div>
-    <button type="button" class="editor-backdrop" onclick="toggleSidebar(false)" aria-label="Tutup panel editor"></button>
+    <div class="editor-backdrop" aria-hidden="true"></div>
 
     <!-- PREVIEW AREA -->
     <div class="preview-area">
@@ -2344,6 +2348,17 @@
             setTimeout(() => {
                 window.dispatchEvent(new Event('resize'));
             }, 320);
+        }
+
+        // Preview tetap bisa menerima wheel/touch scroll saat drawer terbuka.
+        // Klik pada area preview menutup drawer, tetapi tidak menghentikan aksi klik aslinya.
+        const previewArea = document.querySelector('.preview-area');
+        if (previewArea) {
+            previewArea.addEventListener('click', function(event) {
+                if (!document.body.classList.contains('editor-open')) return;
+                if (event.target.closest('.editor-open-btn')) return;
+                toggleSidebar(false);
+            });
         }
 
         document.addEventListener('keydown', function(event) {
